@@ -54,7 +54,9 @@ protected:
    bool init();
    
 private:
+   void InitSystem();
    void CreatePhysics();
+   void CreateSensors();
    void CreateEntity();
    void SetZoom(float zoom);
    void UpdateEntity();

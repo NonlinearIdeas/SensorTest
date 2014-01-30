@@ -31,27 +31,9 @@
 #include "CommonProject.h"
 #include "SingletonTemplate.h"
 #include "GraphSensor.h"
+#include "GraphSensorGenerator.h"
 #include "EntityManager.h"
 
-
-/* This abstract base class is a generator for the 
- * graph sensor nodes.  It is used by the GraphSensorManager
- * to create the nodes so the GSM does not have to 
- * know the actual geometry/positions of each node.
- * 
- * The generator is responsible for generating the nodes
- * (internally) and then allowing the GSM to access each
- * one so that it may be registered with the EntityManager
- * and placed into the GSM for management.
- *
- */
-class GraphSensorGenerator
-{
-public:
-   virtual uint32 GetSensorCount() = 0;
-   virtual GraphSensor* GetSensor(uint32 sensorIdx) = 0;
-   virtual void CreateSensors() = 0;
-};
 
 /* This class is a container and manager for
  * GraphSensor objects.  It creates them and
@@ -103,12 +85,12 @@ public:
    {
       EntityManager& em = EntityManager::Instance();
       generator.CreateSensors();
-      _sensors.resize(generator.GetSensorCount());
-      for(uint32 idx = 0; idx < generator.GetSensorCount(); ++idx)
+      const vector<GraphSensor*> sensors = generator.GetSensorsConst();
+      _sensors.resize(sensors.size());
+      for(uint32 idx = 0; idx < sensors.size(); ++idx)
       {
-         GraphSensor* node = generator.GetSensor(idx);
-         em.RegisterEntity(node);
-         _sensors[idx] = node;
+         em.RegisterEntity(sensors[idx]);
+         _sensors[idx] = sensors[idx];
       }
    }
    

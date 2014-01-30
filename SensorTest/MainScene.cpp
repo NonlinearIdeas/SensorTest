@@ -33,6 +33,111 @@
 #include "Viewport.h"
 #include "Entity.h"
 #include "EntityManager.h"
+#include "GraphSensorGenerator.h"
+#include "GraphSensorManager.h"
+#include "SystemContactListener.h"
+
+
+/* This class generates a graph sensor array on a rectangular
+ * grid.
+ *
+ * Each sensor is a circle with a given radius and a separation
+ * between the edges.
+ *
+ * The size of the world is gleaned from the Viewport.
+ */
+class GraphSensorGrid : public GraphSensorGenerator
+{
+private:
+   // Private constructor.
+   GraphSensorGrid()
+   {
+      
+   
+   }
+   
+   b2World* _world;
+   float32 _diameter;
+   float32 _separation;
+   
+public:
+   GraphSensorGrid(b2World* world, float32 diameter = 15.0f, float32 separation = 20.0f) :
+   _world(world),
+   _diameter(diameter),
+   _separation(separation)
+   {
+      
+   }
+   
+   virtual void CreateSensors()
+   {
+      Viewport& vp = Viewport::Instance();
+      CCSize worldSize = vp.GetWorldSizeMeters();
+      vector<GraphSensor*>& sensors = GetSensors();
+      // Calculate the rows and columns so that there is at least one gap between each
+      // shape.
+      int32 cols = (uint32)ceil(worldSize.width/_separation);
+      int32 rows = (uint32)ceil(worldSize.height/_separation);
+      sensors.clear();
+      
+      if(cols%2 != 0)
+         cols++;
+      if(rows%2 != 0)
+         rows++;
+      
+      b2BodyDef bodyDef;
+      bodyDef.type = b2_staticBody;
+      
+      b2CircleShape circleShape;
+      circleShape.m_radius = _diameter/2;
+      circleShape.m_p = b2Vec2(0,0);
+      
+      b2FixtureDef fixtureDef;
+      fixtureDef.shape = &circleShape;
+      fixtureDef.isSensor = true;
+      
+      GraphSensor* sensor = NULL;
+      b2Body* body = NULL;
+      b2Fixture* fixture = NULL;
+      
+      CCLOG("Rows = %d, Cols = %d",rows,cols);
+      
+      for(int32 row = 0; row <= rows; ++row)
+      {
+         for(int32 col = 0; col <= cols; ++col)
+         {
+            b2Vec2 pos((col-cols/2) * _separation, (row-rows/2) * _separation);
+            bodyDef.position = pos;
+            
+            body = _world->CreateBody(&bodyDef);
+            fixture = body->CreateFixture(&fixtureDef);
+            sensor = new GraphSensor();
+            sensor->SetBody(body);
+            fixture->SetUserData(sensor);
+            body->SetUserData(sensor);
+            sensors.push_back(sensor);
+            
+            int32 calcIdx = row*(cols+1) + col;
+            int32 calcRow = calcIdx/(cols+1);
+            int32 calcCol = calcIdx%(cols+1);
+            
+            CCLOG("AIdx = %04ld, Index = %04d, agrid(%d,%d), grid(%d,%d)",
+                  sensors.size()-1,
+                  calcIdx,
+                  row,
+                  col,
+                  calcRow,
+                  calcCol
+                  );
+            
+            assert(calcIdx == sensors.size()-1);
+            assert(row == calcRow);
+            assert(col == calcCol);
+         }
+      }
+      
+   }
+};
 
 
 MainScene::MainScene()
@@ -47,7 +152,7 @@ void MainScene::CreateEntity()
 {
 }
 
-void MainScene::CreatePhysics()
+void MainScene::InitSystem()
 {
    // Set up the viewport
    static const float32 worldSizeMeters = 100.0;
@@ -55,17 +160,35 @@ void MainScene::CreatePhysics()
    // Initialize the Viewport
    Viewport::Instance().Init(worldSizeMeters);
    
+   EntityManager::Instance().Init();
+   GraphSensorManager::Instance().Init();
+   SystemContactListener::Instance().Init();
+   
+}
+
+void MainScene::CreatePhysics()
+{   
    _world = new b2World(Vec2(0.0,0.0));
    // Do we want to let bodies sleep?
    // No for now...makes the debug layer blink
    // which is annoying.
    _world->SetAllowSleeping(false);
    _world->SetContinuousPhysics(true);
+   
+   // Set the contact callback.
+   _world->SetContactListener(&SystemContactListener::Instance());
+}
+
+void MainScene::CreateSensors()
+{
+   GraphSensorGrid sensorGrid(_world);
+   
+   GraphSensorManager::Instance().CreateSensors(sensorGrid);
 }
 
 bool MainScene::init()
 {
-
+   InitSystem();
    return true;
 }
 
@@ -89,6 +212,9 @@ void MainScene::onEnter()
    CCScene::onEnter();
    // Create physical world
    CreatePhysics();
+   
+   // Create the sensor grid
+   CreateSensors();
    
    // Add a color background.  This will make it easier on the eyes.
    //addChild(CCLayerColor::create(ccc4(200, 200, 200, 255)));

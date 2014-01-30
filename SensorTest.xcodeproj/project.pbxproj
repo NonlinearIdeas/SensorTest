@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A94E93718941D2300BD4025 /* GraphSensorGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */; };
 		1A961818188AED3F006789B0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961817188AED3F006789B0 /* QuartzCore.framework */; };
 		1A96181A188AED3F006789B0 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961819188AED3F006789B0 /* OpenGLES.framework */; };
 		1A96181C188AED3F006789B0 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A96181B188AED3F006789B0 /* OpenAL.framework */; };
@@ -317,6 +318,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGenerator.cpp; sourceTree = "<group>"; };
+		1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGenerator.h; sourceTree = "<group>"; };
 		1A961814188AED3F006789B0 /* SensorTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SensorTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A961817188AED3F006789B0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1A961819188AED3F006789B0 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -2262,6 +2265,8 @@
 				1AFC7626188DE1B400A258FB /* EntityManager.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
 				1AFC762B188DE36A00A258FB /* GraphSensor.cpp */,
+				1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */,
+				1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */,
 				1AFC762F188DE3AC00A258FB /* GraphSensorManager.h */,
 				1AFC762E188DE3AC00A258FB /* GraphSensorManager.cpp */,
 				1A961C1D188AEE57006789B0 /* GridLayer.cpp */,
@@ -2390,6 +2395,7 @@
 				1A9618EF188AED41006789B0 /* ray2.c in Sources */,
 				1A961973188AED42006789B0 /* CCThread.mm in Sources */,
 				1A961B9A188AED46006789B0 /* b2World.cpp in Sources */,
+				1A94E93718941D2300BD4025 /* GraphSensorGenerator.cpp in Sources */,
 				1A961A76188AED45006789B0 /* CCData.cpp in Sources */,
 				1A961AE8188AED45006789B0 /* CCEditBoxImplTizen.cpp in Sources */,
 				1A961A7F188AED45006789B0 /* CCLayerColorLoader.cpp in Sources */,

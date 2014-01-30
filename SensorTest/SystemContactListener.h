@@ -113,6 +113,11 @@ public:
       _contactPairs.clear();
    }
    
+   virtual void Shutdown()
+   {
+      Reset();
+   }
+   
    inline void NotifyContacts()
    {
       for(uint32 idx = 0; idx < _contactPairs.size(); idx++)
