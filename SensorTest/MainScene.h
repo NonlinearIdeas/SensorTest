@@ -34,6 +34,7 @@
 #include "TapDragPinchInput.h"
 #include "Notifier.h"
 #include "ViewportCamera.h"
+#include "MovingEntity.h"
 
 class MovingEntityIFace;
 
@@ -47,6 +48,7 @@ private:
 
    // Box2d Physics World
    b2World* _world;
+   MovingEntity* _entity;
    
 protected:
    // This is protected so that derived classes can call it

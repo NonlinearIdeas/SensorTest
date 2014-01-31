@@ -1,10 +1,10 @@
 /********************************************************************
- * File   : GraphSensor.h
- * Project: SensorTest
+ * File   : PIDController.cpp
+ * Project: Interpolator
  *
  ********************************************************************
- * Created on 1/20/14 By Nonlinear Ideas Inc.
- * Copyright (c) 2014 Nonlinear Ideas Inc. All rights reserved.
+ * Created on 10/13/13 By Nonlinear Ideas Inc.
+ * Copyright (c) 2013 Nonlinear Ideas Inc. All rights reserved.
  ********************************************************************
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any 
@@ -24,58 +24,6 @@
  *    distribution. 
  */
 
-#ifndef __GraphSensor__
-#define __GraphSensor__
 
-#include "Entity.h"
+#include "PIDController.h"
 
-class GraphSensor : public Entity
-{
-private:
-   int32 _occupyCount;
-   int32 _index;
-   
-public:
-   
-   inline void ResetOccupyCount()
-   {
-      _occupyCount = 0;
-   }
-   
-   inline bool IsClear()
-   {
-      return (_occupyCount == 0);
-   }
-   
-   inline void UpdateOccupyCount(int32 count)
-   {
-      _occupyCount+= count;
-   }
-   
-   inline int32 GetOccupyCount()
-   {
-      return _occupyCount;
-   }
-   
-   inline int32 GetIndex()
-   {
-      return _index;
-   }
-   
-   inline void SetIndex(int32 index)
-   {
-      _index = index;
-   }
-      
-   GraphSensor() :
-   _occupyCount(0)
-   {
-      SetFlag(EF_IS_GRAPH_SENSOR);
-   }
-   
-   ~GraphSensor()
-   {
-   }
-};
-
-#endif /* defined(__GraphSensor__) */

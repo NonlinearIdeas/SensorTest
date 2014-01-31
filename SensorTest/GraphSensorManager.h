@@ -51,21 +51,36 @@ public:
 private:
    
    vector<GraphSensor*> _sensors;
-   SENSOR_SET_T _occupiedSensors;
+   SENSOR_SET_T _changedSensors;
    
    void DestroySensors()
    {
       EntityManager& em = EntityManager::Instance();
-      _occupiedSensors.clear();
+      _changedSensors.clear();
       for(int idx = 0; idx < _sensors.size(); ++idx)
       {
-         em.DeregisterEntity(_sensors[idx]->GetID());
+         delete em.DeregisterEntity(_sensors[idx]->GetID());
       }
       _sensors.clear();
    }
    
 public:
-   bool Init()
+   const vector<GraphSensor*> GetSensors() const
+   {
+      return _sensors;
+   }
+   
+   const SENSOR_SET_T GetChangedSensors() const
+   {
+      return _changedSensors;
+   }
+   
+   void ClearChangedSensors()
+   {
+      _changedSensors.clear();
+   }
+   
+   virtual bool Init()
    {
       Reset();
       return true;
@@ -94,10 +109,7 @@ public:
       }
    }
    
-   const SENSOR_SET_T& GetOcuppiedSensors() const
-   {
-      return _occupiedSensors;
-   }   
+
 
    /* This method is called by the physics engine when a sensor
     * has a beginContact/endContact event.  The call is made
@@ -105,33 +117,15 @@ public:
     * as accumulated the begin/end count (so it should be positive
     * or 0).
     *
-    * This method will update the state of the set of sensors that
-    * are occupied.
+    * A client comes along (later) and reads the changed sensors.
+    * After they are read, they should be cleared for the next
+    * round of physics.  They don't have to be cleared every round,
+    * just on a regular basis.
     *
     */
    void UpdateGraphSensorState(GraphSensor* sensor)
    {
-      SENSOR_SET_ITER_T iter = _occupiedSensors.find(sensor);
-      /* Possibilities:
-       * 1. This sensor WAS NOT occupied before and IS occupied now.
-       * 2. This sensor WAS occupied before and IS occupied still.
-       * 3. This sensor WAS occupied before and IS NOT occupied now.
-       * 4. This sensor WAS NOT occupied before and IS NOT occupied now.
-       */
-      if(iter == _occupiedSensors.end())
-      {  // Was not occupied before
-         if(sensor->GetOccupyCount() != 0)
-         {  // Mark it as occupied now
-            _occupiedSensors.insert(sensor);
-         }
-      }
-      else
-      {  // Was being tracked before
-         if(sensor->GetOccupyCount() == 0)
-         {  // Not occupied any more
-            _occupiedSensors.erase(iter);
-         }
-      }
+      _changedSensors.insert(sensor);
    }
    
    GraphSensorManager()

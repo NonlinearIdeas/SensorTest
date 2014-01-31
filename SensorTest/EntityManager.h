@@ -37,7 +37,10 @@
  * this class), it is registered here and THIS
  * CONTAINER OWNS THE OBJECT.  This container
  * is responsible for releasing the memory associated
- * with the object.
+ * with the object. 
+ *
+ * If you deregister an entity from the EntityManager,
+ * you are responsible for releasing its memory as well.
  */
 class EntityManager : public SingletonDynamic<EntityManager>
 {
@@ -49,6 +52,9 @@ private:
    
    ENTITY_MAP_T _entities;
    
+   /* This will remove all
+    * entities and delete them.
+    */
    void RemoveAllEntities()
    {
       for(ENTITY_MAP_ITER_T iter = _entities.begin(); iter != _entities.end(); ++iter)
@@ -60,6 +66,10 @@ private:
    }
    
 public:
+   
+   /* Remove all entities and 
+    * delete them as well.
+    */
    virtual void Reset()
    {
       RemoveAllEntities();
@@ -67,13 +77,13 @@ public:
    
    virtual bool Init()
    {
-      RemoveAllEntities();
+      Reset();
       return true;
    }
    
    virtual void Shutdown()
    {
-      RemoveAllEntities();
+      Reset();
    }
    
    EntityManager()
@@ -110,12 +120,13 @@ public:
       _entities[ID] = entity;
    }
    
-   void DeregisterEntity(uint32 ID)
+   Entity* DeregisterEntity(uint32 ID)
    {
       ENTITY_MAP_ITER_T iter = _entities.find(ID);
       assert(iter != _entities.end());
-      delete iter->second;
+      Entity* entity = iter->second;
       _entities.erase(iter);
+      return entity;
    }
 };
 

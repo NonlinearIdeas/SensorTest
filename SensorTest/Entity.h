@@ -39,8 +39,9 @@ public:
       // for the base class.
       // Flags above this may be used by
       // derived classes.
-      EF_IS_GRAPH_SENSOR = 1 << 0,
-      EF_FLAG_MAX = 1 << 31
+      EF_IS_GRAPH_SENSOR   = 1 << 0,
+      EF_CAN_MOVE          = 1 << 1,
+      EF_FLAG_MAX          = 1 << 31
    };
    
    enum
@@ -50,8 +51,32 @@ public:
 private:
    uint32 _ID;
    uint32 _flags;
-   
+   // Every entity has one "main" body which it
+   // controls in some way.  Or not.
+   b2Body* _body;
+   // Every entity has a scale size from 1 to 100.
+   // This maps on to the meters size of 0.1 to 10
+   // in the physics engine.
+   uint32 _scale;
 public:
+
+   void SetBody(b2Body* body)
+   {
+      assert(_body == NULL);
+      if(_body != NULL)
+      {
+         CCLOG("BODY SHOULD BE NULL BEFORE ASSIGNING");
+         _body->GetWorld()->DestroyBody(_body);
+         _body = NULL;
+      }
+      _body = body;
+      if(body != NULL)
+      {
+         _body->SetUserData(this);
+      }
+   }
+   
+   
    inline void SetFlag(uint32 flag)
    {
       _flags |= flag;
@@ -95,10 +120,57 @@ public:
    
    Entity() :
    _ID(DEFAULT_ENTITY_ID),
-   _flags(0)
+   _flags(0),
+   _body(NULL),
+   _scale(1)
    {
    }
    
+   Entity(uint32 flags, uint32 scale) :
+   _flags(flags),
+   _body(NULL),
+   _scale(scale)
+   {
+      
+   }
+   
+   virtual void Update()
+   {
+      
+   }
+   
+   virtual ~Entity()
+   {
+      if(_body != NULL)
+      {
+         _body->GetWorld()->DestroyBody(_body);
+      }
+   }
+   
+   inline static float32 ScaleToMeters(uint32 scale)
+   {
+      return 0.1*scale;
+   }
+   
+   inline Body* GetBody()
+   {
+      return _body;
+   }
+   
+   inline const Body* GetBody() const
+   {
+      return _body;
+   }
+   
+   inline uint32 GetScale()
+   {
+      return _scale;
+   }
+   
+   inline float32 GetSizeMeters()
+   {
+      return ScaleToMeters(_scale);
+   }
 };
 
 

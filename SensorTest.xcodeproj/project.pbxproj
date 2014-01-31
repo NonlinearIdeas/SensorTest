@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A845797189A835600B4BD66 /* MovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845795189A835600B4BD66 /* MovingEntity.cpp */; };
+		1A84579A189A838400B4BD66 /* PIDController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845798189A838400B4BD66 /* PIDController.cpp */; };
 		1A94E93718941D2300BD4025 /* GraphSensorGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */; };
+		1A9583CE189BD1DA0035AF80 /* GraphSensorContactLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */; };
 		1A961818188AED3F006789B0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961817188AED3F006789B0 /* QuartzCore.framework */; };
 		1A96181A188AED3F006789B0 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961819188AED3F006789B0 /* OpenGLES.framework */; };
 		1A96181C188AED3F006789B0 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A96181B188AED3F006789B0 /* OpenAL.framework */; };
@@ -318,8 +321,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A845795189A835600B4BD66 /* MovingEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MovingEntity.cpp; sourceTree = "<group>"; };
+		1A845796189A835600B4BD66 /* MovingEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovingEntity.h; sourceTree = "<group>"; };
+		1A845798189A838400B4BD66 /* PIDController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PIDController.cpp; sourceTree = "<group>"; };
+		1A845799189A838400B4BD66 /* PIDController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PIDController.h; sourceTree = "<group>"; };
 		1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGenerator.cpp; sourceTree = "<group>"; };
 		1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGenerator.h; sourceTree = "<group>"; };
+		1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorContactLayer.cpp; sourceTree = "<group>"; };
+		1A9583CD189BD1DA0035AF80 /* GraphSensorContactLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorContactLayer.h; sourceTree = "<group>"; };
 		1A961814188AED3F006789B0 /* SensorTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SensorTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A961817188AED3F006789B0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1A961819188AED3F006789B0 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -2265,6 +2274,8 @@
 				1AFC7626188DE1B400A258FB /* EntityManager.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
 				1AFC762B188DE36A00A258FB /* GraphSensor.cpp */,
+				1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */,
+				1A9583CD189BD1DA0035AF80 /* GraphSensorContactLayer.h */,
 				1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */,
 				1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */,
 				1AFC762F188DE3AC00A258FB /* GraphSensorManager.h */,
@@ -2275,8 +2286,12 @@
 				1A961C03188AEDB7006789B0 /* MainScene.h */,
 				1A961C04188AEDB7006789B0 /* MathUtilities.cpp */,
 				1A961C05188AEDB7006789B0 /* MathUtilities.h */,
+				1A845795189A835600B4BD66 /* MovingEntity.cpp */,
+				1A845796189A835600B4BD66 /* MovingEntity.h */,
 				1A961C06188AEDB7006789B0 /* Notifier.cpp */,
 				1A961C07188AEDB7006789B0 /* Notifier.h */,
+				1A845798189A838400B4BD66 /* PIDController.cpp */,
+				1A845799189A838400B4BD66 /* PIDController.h */,
 				1A961C08188AEDB7006789B0 /* SingletonTemplate.h */,
 				1A961C09188AEDB7006789B0 /* Stopwatch.cpp */,
 				1A961C0A188AEDB7006789B0 /* Stopwatch.h */,
@@ -2420,6 +2435,7 @@
 				1A961965188AED42006789B0 /* CCES2Renderer.m in Sources */,
 				1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */,
 				1A961B42188AED46006789B0 /* SkeletonJson.cpp in Sources */,
+				1A845797189A835600B4BD66 /* MovingEntity.cpp in Sources */,
 				1A961C12188AEDB7006789B0 /* Box2DDebugDrawLayer.cpp in Sources */,
 				1A961A70188AED45006789B0 /* CCControlButtonLoader.cpp in Sources */,
 				1A961A2D188AED44006789B0 /* CCTMXXMLParser.cpp in Sources */,
@@ -2556,6 +2572,7 @@
 				1A961A48188AED45006789B0 /* CocosDenshion.m in Sources */,
 				1A9619D6188AED44006789B0 /* ccUTF8.cpp in Sources */,
 				1A961904188AED41006789B0 /* CCLabelBMFont.cpp in Sources */,
+				1A9583CE189BD1DA0035AF80 /* GraphSensorContactLayer.cpp in Sources */,
 				1A961B79188AED46006789B0 /* b2BlockAllocator.cpp in Sources */,
 				1A961878188AED40006789B0 /* CCNode.cpp in Sources */,
 				1A961BB6188AED47006789B0 /* b2PolygonAndCircleContact.cpp in Sources */,
@@ -2618,6 +2635,7 @@
 				1A9619BA188AED43006789B0 /* CCAnimationCache.cpp in Sources */,
 				1A961925188AED41006789B0 /* CCMotionStreak.cpp in Sources */,
 				1A961B8D188AED46006789B0 /* b2Body.cpp in Sources */,
+				1A84579A189A838400B4BD66 /* PIDController.cpp in Sources */,
 				1A961898188AED40006789B0 /* CCDictionary.cpp in Sources */,
 				1A9619CA188AED44006789B0 /* base64.cpp in Sources */,
 				1A961881188AED40006789B0 /* CCDirector.cpp in Sources */,

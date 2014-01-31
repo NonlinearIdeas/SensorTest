@@ -100,7 +100,7 @@ public:
       b2Body* body = NULL;
       b2Fixture* fixture = NULL;
       
-      CCLOG("Rows = %d, Cols = %d",rows,cols);
+      //CCLOG("Rows = %d, Cols = %d",rows,cols);
       
       for(int32 row = 0; row <= rows; ++row)
       {
@@ -120,7 +120,7 @@ public:
             int32 calcIdx = row*(cols+1) + col;
             int32 calcRow = calcIdx/(cols+1);
             int32 calcCol = calcIdx%(cols+1);
-            
+            /*
             CCLOG("AIdx = %04ld, Index = %04d, agrid(%d,%d), grid(%d,%d)",
                   sensors.size()-1,
                   calcIdx,
@@ -129,7 +129,7 @@ public:
                   calcRow,
                   calcCol
                   );
-            
+             */
             assert(calcIdx == sensors.size()-1);
             assert(row == calcRow);
             assert(col == calcCol);
@@ -140,7 +140,8 @@ public:
 };
 
 
-MainScene::MainScene()
+MainScene::MainScene() :
+   _entity(NULL)
 {
 }
 
@@ -150,6 +151,8 @@ MainScene::~MainScene()
 
 void MainScene::CreateEntity()
 {
+   Vec2 position(0,0);
+   _entity = new MovingEntity(*_world,position, 0);
 }
 
 void MainScene::InitSystem()
@@ -257,6 +260,10 @@ void MainScene::onExitTransitionDidStart()
 
 void MainScene::UpdateEntity()
 {
+   if(_entity != NULL)
+   {
+      _entity->Update();
+   }
 }
 
 void MainScene::UpdatePhysics()
@@ -267,6 +274,8 @@ void MainScene::UpdatePhysics()
    // Instruct the world to perform a single step of simulation. It is
    // generally best to keep the time step and iterations fixed.
    _world->Step(fixedDT, velocityIterations, positionIterations);
+   
+   SystemContactListener::Instance().NotifyContacts();
 }
 
 void MainScene::update(float dt)
@@ -281,16 +290,15 @@ void MainScene::update(float dt)
 // Handler for Tap/Drag/Pinch Events
 void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 {
-   
+   _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
 {
+   _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
 }
-
-
-
 void MainScene::TapDragPinchInputPinchBegin(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
+   _entity->CommandIdle();
    _camera.PinchBegin(point0, point1);
 }
 void MainScene::TapDragPinchInputPinchContinue(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
@@ -303,9 +311,11 @@ void MainScene::TapDragPinchInputPinchEnd(const TOUCH_DATA_T& point0, const TOUC
 }
 void MainScene::TapDragPinchInputDragBegin(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
+   _entity->CommandSeek(Viewport::Instance().Convert(point0.pos));
 }
 void MainScene::TapDragPinchInputDragContinue(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
+   _entity->CommandSeek(Viewport::Instance().Convert(point1.pos));
    Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE);
 }
 void MainScene::TapDragPinchInputDragEnd(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
