@@ -27,3 +27,73 @@
 
 #include "MovingEntity.h"
 
+void MovingEntity::StopBody()
+{
+   Vec2 vel0(0,0);
+   
+   GetBody()->SetLinearVelocity(vel0);
+   GetBody()->SetAngularVelocity(0);
+}
+
+
+void MovingEntity::SetupTurnController()
+{
+   GetBody()->SetAngularDamping(0);
+   PIDController& turnController = GetTurnController();
+   
+   turnController.ResetHistory();
+   _turnController.ResetHistory();
+   _turnController.SetKDerivative(5.0);
+   _turnController.SetKProportional(1.0);
+   _turnController.SetKIntegral(0.05);
+   _turnController.SetKPlant(1.0);
+   // Setup Parameters
+   SetMaxAngularAcceleration(4*M_PI);
+}
+
+void MovingEntity::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads)
+{
+   // Create the body.
+   b2BodyDef bodyDef;
+   bodyDef.position = position;
+   bodyDef.type = b2_dynamicBody;
+   Body* body = world.CreateBody(&bodyDef);
+   assert(body != NULL);
+   // Store it in the base.
+   SetBody(body);
+   
+   // Now attach fixtures to the body.
+   FixtureDef fixtureDef;
+   PolygonShape polyShape;
+   vector<Vec2> vertices;
+   
+   const float32 VERT_SCALE = .5;
+   fixtureDef.shape = &polyShape;
+   fixtureDef.density = 1.0;
+   fixtureDef.friction = 1.0;
+   fixtureDef.isSensor = false;
+   
+   // Nose
+   vertices.clear();
+   vertices.push_back(Vec2(4*VERT_SCALE,2*VERT_SCALE));
+   vertices.push_back(Vec2(4*VERT_SCALE,-2*VERT_SCALE));
+   vertices.push_back(Vec2(8*VERT_SCALE,-0.5*VERT_SCALE));
+   vertices.push_back(Vec2(8*VERT_SCALE,0.5*VERT_SCALE));
+   polyShape.Set(&vertices[0],vertices.size());
+   body->CreateFixture(&fixtureDef);
+   body->SetLinearDamping(0.25);
+   body->SetAngularDamping(0.25);
+   
+   // Main body
+   vertices.clear();
+   vertices.push_back(Vec2(-4*VERT_SCALE,2*VERT_SCALE));
+   vertices.push_back(Vec2(-4*VERT_SCALE,-2*VERT_SCALE));
+   vertices.push_back(Vec2(4*VERT_SCALE,-2*VERT_SCALE));
+   vertices.push_back(Vec2(4*VERT_SCALE,2*VERT_SCALE));
+   polyShape.Set(&vertices[0],vertices.size());
+   body->CreateFixture(&fixtureDef);
+   
+   SetMaxLinearAcceleration(100);
+   SetMaxSpeed(10);
+   SetMinSeekDistance(1.0);
+}

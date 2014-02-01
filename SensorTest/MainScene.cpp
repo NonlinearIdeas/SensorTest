@@ -37,7 +37,9 @@
 #include "GraphSensorManager.h"
 #include "SystemContactListener.h"
 #include "GraphSensorContactLayer.h"
-
+#include "Box2DShapeCache.h"
+#include "SunBackgroundLayer.h"
+#include "Snake.h"
 
 /* This class generates a graph sensor array on a rectangular
  * grid.
@@ -156,7 +158,8 @@ MainScene::~MainScene()
 void MainScene::CreateEntity()
 {
    Vec2 position(0,0);
-   _entity = new MovingEntity(*_world,position, 0);
+   _entity = new Snake();
+   _entity->Create(*_world,position, 0);
 }
 
 void MainScene::InitSystem()

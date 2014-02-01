@@ -57,6 +57,10 @@ public:
 
     /// Get a vertex by index. Used by b2Distance.
     const b2Vec2& GetVertex(int32 index) const;
+   
+   // @see b2Shape::ApplyScale
+   void ApplyScale(float32 scale) { m_radius *= scale; }
+
 
     /// Position
     b2Vec2 m_p;

@@ -359,3 +359,15 @@ void b2PolygonShape::ComputeMass(b2MassData* massData, float32 density) const
     // Shift to center of mass then to original body origin.
     massData->I += massData->mass * (b2Dot(massData->center, massData->center) - b2Dot(center, center));
 }
+
+
+void b2PolygonShape::ApplyScale(float32 scale)
+{
+   b2Vec2 vertices[b2_maxPolygonVertices];
+	// Copy vertices.
+	for (int32 i = 0; i < m_vertexCount; ++i)
+	{
+		vertices[i] = scale * m_vertices[i];
+	}
+   Set(vertices,m_vertexCount);
+}

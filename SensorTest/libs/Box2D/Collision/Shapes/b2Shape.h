@@ -89,6 +89,10 @@ public:
     /// @param density the density in kilograms per meter squared.
     virtual void ComputeMass(b2MassData* massData, float32 density) const = 0;
 
+   /// Scale the size of the shape by a factor.
+	/// @param scale the scale factor.
+	virtual void ApplyScale(float32 scale) = 0;
+
     Type m_type;
     float32 m_radius;
 };

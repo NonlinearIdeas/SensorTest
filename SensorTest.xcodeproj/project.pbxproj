@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */; };
+		1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B298189C96320034D1B9 /* Asteroids.plist */; };
+		1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */; };
+		1A81B29D189C96430034D1B9 /* Asteroids_ImgData.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29B189C96430034D1B9 /* Asteroids_ImgData.png */; };
+		1A81B29F189C96830034D1B9 /* back_01.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29E189C96830034D1B9 /* back_01.png */; };
+		1A81B2A1189C96920034D1B9 /* suncenter.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B2A0189C96920034D1B9 /* suncenter.png */; };
+		1A81B2A4189C96AE0034D1B9 /* SunBackgroundLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B2A2189C96AE0034D1B9 /* SunBackgroundLayer.cpp */; };
+		1A81B2A7189C98E60034D1B9 /* Snake.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B2A5189C98E60034D1B9 /* Snake.cpp */; };
 		1A845797189A835600B4BD66 /* MovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845795189A835600B4BD66 /* MovingEntity.cpp */; };
 		1A84579A189A838400B4BD66 /* PIDController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845798189A838400B4BD66 /* PIDController.cpp */; };
 		1A94E93718941D2300BD4025 /* GraphSensorGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */; };
@@ -298,7 +306,6 @@
 		1A961BDB188AED47006789B0 /* b2WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961BDA188AED47006789B0 /* b2WheelJoint.cpp */; };
 		1A961BDF188AED47006789B0 /* b2Rope.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961BDE188AED47006789B0 /* b2Rope.cpp */; };
 		1A961BE7188AED47006789B0 /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961BE6188AED47006789B0 /* libwebsockets.a */; };
-		1A961BF2188AED47006789B0 /* blocks.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A961BF1188AED47006789B0 /* blocks.png */; };
 		1A961C0F188AEDB7006789B0 /* Arial_32_Green.fnt in Resources */ = {isa = PBXBuildFile; fileRef = 1A961BF8188AEDB7006789B0 /* Arial_32_Green.fnt */; };
 		1A961C10188AEDB7006789B0 /* Arial_32_Green.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A961BF9188AEDB7006789B0 /* Arial_32_Green.png */; };
 		1A961C11188AEDB7006789B0 /* Box2DDebugDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961BFA188AEDB7006789B0 /* Box2DDebugDraw.cpp */; };
@@ -321,6 +328,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DShapeCache.cpp; sourceTree = "<group>"; };
+		1A81B296189C96130034D1B9 /* Box2DShapeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DShapeCache.h; sourceTree = "<group>"; };
+		1A81B298189C96320034D1B9 /* Asteroids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids.plist; sourceTree = "<group>"; };
+		1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids_ImgData.plist; sourceTree = "<group>"; };
+		1A81B29B189C96430034D1B9 /* Asteroids_ImgData.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Asteroids_ImgData.png; sourceTree = "<group>"; };
+		1A81B29E189C96830034D1B9 /* back_01.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back_01.png; sourceTree = "<group>"; };
+		1A81B2A0189C96920034D1B9 /* suncenter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = suncenter.png; sourceTree = "<group>"; };
+		1A81B2A2189C96AE0034D1B9 /* SunBackgroundLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SunBackgroundLayer.cpp; sourceTree = "<group>"; };
+		1A81B2A3189C96AE0034D1B9 /* SunBackgroundLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SunBackgroundLayer.h; sourceTree = "<group>"; };
+		1A81B2A5189C98E60034D1B9 /* Snake.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Snake.cpp; sourceTree = "<group>"; };
+		1A81B2A6189C98E60034D1B9 /* Snake.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Snake.h; sourceTree = "<group>"; };
 		1A845795189A835600B4BD66 /* MovingEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MovingEntity.cpp; sourceTree = "<group>"; };
 		1A845796189A835600B4BD66 /* MovingEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovingEntity.h; sourceTree = "<group>"; };
 		1A845798189A838400B4BD66 /* PIDController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PIDController.cpp; sourceTree = "<group>"; };
@@ -947,7 +965,6 @@
 		1A961BE4188AED47006789B0 /* libwebsockets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = libwebsockets.h; path = libs/libwebsockets/ios/include/libwebsockets.h; sourceTree = "<group>"; };
 		1A961BE6188AED47006789B0 /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = libs/libwebsockets/ios/lib/libwebsockets.a; sourceTree = "<group>"; };
 		1A961BE9188AED47006789B0 /* Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
-		1A961BF1188AED47006789B0 /* blocks.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blocks.png; path = Resources/blocks.png; sourceTree = "<group>"; };
 		1A961BF8188AEDB7006789B0 /* Arial_32_Green.fnt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Arial_32_Green.fnt; sourceTree = "<group>"; };
 		1A961BF9188AEDB7006789B0 /* Arial_32_Green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Arial_32_Green.png; sourceTree = "<group>"; };
 		1A961BFA188AEDB7006789B0 /* Box2DDebugDraw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DDebugDraw.cpp; sourceTree = "<group>"; };
@@ -1058,6 +1075,10 @@
 		1A961828188AED3F006789B0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1A81B298189C96320034D1B9 /* Asteroids.plist */,
+				1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */,
+				1A81B29B189C96430034D1B9 /* Asteroids_ImgData.png */,
+				1A81B29E189C96830034D1B9 /* back_01.png */,
 				1A961829188AED3F006789B0 /* CloseNormal.png */,
 				1A96182B188AED3F006789B0 /* CloseSelected.png */,
 				1A96182D188AED3F006789B0 /* Default.png */,
@@ -1070,7 +1091,7 @@
 				1A96183B188AED3F006789B0 /* Icon@2x.png */,
 				1A96183D188AED3F006789B0 /* iTunesArtwork */,
 				1A96183F188AED3F006789B0 /* Info.plist */,
-				1A961BF1188AED47006789B0 /* blocks.png */,
+				1A81B2A0189C96920034D1B9 /* suncenter.png */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -2264,6 +2285,8 @@
 				1A961BFB188AEDB7006789B0 /* Box2DDebugDraw.h */,
 				1A961BFC188AEDB7006789B0 /* Box2DDebugDrawLayer.cpp */,
 				1A961BFD188AEDB7006789B0 /* Box2DDebugDrawLayer.h */,
+				1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */,
+				1A81B296189C96130034D1B9 /* Box2DShapeCache.h */,
 				1A961BFE188AEDB7006789B0 /* CommonProject.h */,
 				1A961BFF188AEDB7006789B0 /* CommonSTL.h */,
 				1A961C00188AEDB7006789B0 /* DebugLinesLayer.cpp */,
@@ -2292,9 +2315,13 @@
 				1A961C07188AEDB7006789B0 /* Notifier.h */,
 				1A845798189A838400B4BD66 /* PIDController.cpp */,
 				1A845799189A838400B4BD66 /* PIDController.h */,
+				1A81B2A5189C98E60034D1B9 /* Snake.cpp */,
+				1A81B2A6189C98E60034D1B9 /* Snake.h */,
 				1A961C08188AEDB7006789B0 /* SingletonTemplate.h */,
 				1A961C09188AEDB7006789B0 /* Stopwatch.cpp */,
 				1A961C0A188AEDB7006789B0 /* Stopwatch.h */,
+				1A81B2A2189C96AE0034D1B9 /* SunBackgroundLayer.cpp */,
+				1A81B2A3189C96AE0034D1B9 /* SunBackgroundLayer.h */,
 				1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */,
 				1AB7D90C188EA66700D311F2 /* SystemContactListener.h */,
 				1A961C0B188AEDB7006789B0 /* TapDragPinchInput.cpp */,
@@ -2358,21 +2385,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A96183A188AED3F006789B0 /* Icon.png in Resources */,
+				1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */,
 				1A9618DD188AED40006789B0 /* ChangeLog in Resources */,
 				1A961C10188AEDB7006789B0 /* Arial_32_Green.png in Resources */,
 				1A96182A188AED3F006789B0 /* CloseNormal.png in Resources */,
 				1A961836188AED3F006789B0 /* Icon-Small.png in Resources */,
+				1A81B29D189C96430034D1B9 /* Asteroids_ImgData.png in Resources */,
+				1A81B29F189C96830034D1B9 /* back_01.png in Resources */,
 				1A961832188AED3F006789B0 /* Icon-72.png in Resources */,
 				1A961830188AED3F006789B0 /* HelloWorld.png in Resources */,
 				1A961834188AED3F006789B0 /* Icon-Small-50.png in Resources */,
+				1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */,
 				1A96183E188AED3F006789B0 /* iTunesArtwork in Resources */,
 				1A961C0F188AEDB7006789B0 /* Arial_32_Green.fnt in Resources */,
 				1A961838188AED3F006789B0 /* Icon-Small@2x.png in Resources */,
 				1A96182E188AED3F006789B0 /* Default.png in Resources */,
 				1A96182C188AED3F006789B0 /* CloseSelected.png in Resources */,
+				1A81B2A1189C96920034D1B9 /* suncenter.png in Resources */,
 				1A96183C188AED3F006789B0 /* Icon@2x.png in Resources */,
 				1A961A51188AED45006789B0 /* project.pbxproj in Resources */,
-				1A961BF2188AED47006789B0 /* blocks.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2389,6 +2420,7 @@
 				1A961A6D188AED45006789B0 /* CCBValue.cpp in Sources */,
 				1A961875188AED40006789B0 /* CCAtlasNode.cpp in Sources */,
 				1A961BB0188AED47006789B0 /* b2EdgeAndCircleContact.cpp in Sources */,
+				1A81B2A7189C98E60034D1B9 /* Snake.cpp in Sources */,
 				1A961AFF188AED46006789B0 /* LocalStorageAndroid.cpp in Sources */,
 				1A961B4E188AED46006789B0 /* spine-cocos2dx.cpp in Sources */,
 				1A961BA4188AED47006789B0 /* b2ChainAndPolygonContact.cpp in Sources */,
@@ -2619,6 +2651,7 @@
 				1A961928188AED41006789B0 /* CCProgressTimer.cpp in Sources */,
 				1A961938188AED41006789B0 /* CCParticleSystemQuad.cpp in Sources */,
 				1A961B12188AED46006789B0 /* Animation.cpp in Sources */,
+				1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */,
 				1A961B33188AED46006789B0 /* extension.cpp in Sources */,
 				1A961AB9188AED45006789B0 /* CCControlButton.cpp in Sources */,
 				1A9618ED188AED41006789B0 /* quaternion.c in Sources */,
@@ -2646,6 +2679,7 @@
 				1A961A9C188AED45006789B0 /* CCScale9SpriteLoader.cpp in Sources */,
 				1A9619D9188AED44006789B0 /* ccUtils.cpp in Sources */,
 				1A961ADC188AED45006789B0 /* CCEditBox.cpp in Sources */,
+				1A81B2A4189C96AE0034D1B9 /* SunBackgroundLayer.cpp in Sources */,
 				1A961AEB188AED45006789B0 /* CCEditBoxImplWin.cpp in Sources */,
 				1A961901188AED41006789B0 /* CCLabelAtlas.cpp in Sources */,
 				1A961BAA188AED47006789B0 /* b2Contact.cpp in Sources */,
