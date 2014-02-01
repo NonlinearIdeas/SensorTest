@@ -39,6 +39,7 @@
 #include "GraphSensorContactLayer.h"
 #include "Box2DShapeCache.h"
 #include "SunBackgroundLayer.h"
+#include "SpriteBatchLayer.h"
 #include "Snake.h"
 
 /* This class generates a graph sensor array on a rectangular
@@ -301,7 +302,8 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Add a color background.  This will make it easier on the eyes.
-   //addChild(CCLayerColor::create(ccc4(200, 200, 200, 255)));
+   //addChild(CCLayerColor::create(ccc4(200, 200, 200, 255)));   
+   addChild(SunBackgroundLayer::create());
    
    // Adding the debug lines so that we can draw the path followed.
    addChild(DebugLinesLayer::create());

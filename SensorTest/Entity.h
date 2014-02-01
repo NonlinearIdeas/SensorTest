@@ -58,6 +58,15 @@ private:
    // This maps on to the meters size of 0.1 to 10
    // in the physics engine.
    uint32 _scale;
+   
+protected:
+   void SetScale(uint32 value)
+   {
+      assert(value > 1);
+      assert(value <= 100);
+      _scale = value;
+   }
+   
 public:
 
    void SetBody(b2Body* body)

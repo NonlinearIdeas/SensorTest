@@ -1,9 +1,9 @@
 /********************************************************************
- * File   : Snake.h
+ * File   : StraightMovingEntity.cpp
  * Project: SensorTest
  *
  ********************************************************************
- * Created on 1/31/14 By Nonlinear Ideas Inc.
+ * Created on 2/1/14 By Nonlinear Ideas Inc.
  * Copyright (c) 2014 Nonlinear Ideas Inc. All rights reserved.
  ********************************************************************
  * This software is provided 'as-is', without any express or implied
@@ -24,38 +24,35 @@
  *    distribution. 
  */
 
-#ifndef __Snake__
-#define __Snake__
 
-#include "CommonProject.h"
-#include "CommonSTL.h"
-#include "MovingEntity.h"
+#include "StraightMovingEntity.h"
 
-class Snake : public MovingEntity
+
+StraightMovingEntity::StraightMovingEntity()
 {
-private:
-   vector<Body*> _segments;
-   
-public:
-	Snake()
-   {
-      SetScale(2);
-   }
-   
-	virtual ~Snake()
-   {
-      for(int idx = 0; idx < _segments.size(); ++idx)
-      {
-         b2Body* body = _segments[idx];
-         body->GetWorld()->DestroyBody(body);
-      }
-      _segments.clear();
-   }
-   
+	
+}
 
-public:
-   virtual void StopBody();
-   virtual void CreateBody(b2World& world, const b2Vec2& position, float32 angleRads);
-};
+StraightMovingEntity::~StraightMovingEntity()
+{
+	
+}
 
-#endif /* defined(__Snake__) */
+void StraightMovingEntity::ApplyThrust()
+{
+   // Get the world vector (normalized) along the axis of the body.
+   Vec2 direction = GetBody()->GetWorldVector(Vec2(1.0,0.0));
+   Vec2 linVel = GetBody()->GetLinearVelocity();
+   float32 speed = linVel.Length();
+   if(speed >= GetMaxSpeed())
+      speed = GetMaxSpeed();
+   // Pile all the momentum in the direction the body is facing.
+   // The missile "cannot" slip sideways.
+   GetBody()->SetLinearVelocity(speed*direction);
+   
+   // Thrust Calculation
+   float32 thrust = GetMaxLinearAcceleration() * GetBody()->GetMass();
+   
+   // Apply Thrust
+   GetBody()->ApplyForceToCenter(thrust*direction);
+}

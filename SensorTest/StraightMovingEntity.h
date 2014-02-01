@@ -1,9 +1,9 @@
 /********************************************************************
- * File   : Snake.h
+ * File   : StraightMovingEntity.h
  * Project: SensorTest
  *
  ********************************************************************
- * Created on 1/31/14 By Nonlinear Ideas Inc.
+ * Created on 2/1/14 By Nonlinear Ideas Inc.
  * Copyright (c) 2014 Nonlinear Ideas Inc. All rights reserved.
  ********************************************************************
  * This software is provided 'as-is', without any express or implied
@@ -24,38 +24,19 @@
  *    distribution. 
  */
 
-#ifndef __Snake__
-#define __Snake__
+#ifndef __StraightMovingEntity__
+#define __StraightMovingEntity__
 
-#include "CommonProject.h"
-#include "CommonSTL.h"
 #include "MovingEntity.h"
 
-class Snake : public MovingEntity
+class StraightMovingEntity : public MovingEntity
 {
+public:
+	StraightMovingEntity();
+	virtual ~StraightMovingEntity();
+protected:
+   virtual void ApplyThrust();
 private:
-   vector<Body*> _segments;
-   
-public:
-	Snake()
-   {
-      SetScale(2);
-   }
-   
-	virtual ~Snake()
-   {
-      for(int idx = 0; idx < _segments.size(); ++idx)
-      {
-         b2Body* body = _segments[idx];
-         body->GetWorld()->DestroyBody(body);
-      }
-      _segments.clear();
-   }
-   
-
-public:
-   virtual void StopBody();
-   virtual void CreateBody(b2World& world, const b2Vec2& position, float32 angleRads);
 };
 
-#endif /* defined(__Snake__) */
+#endif /* defined(__StraightMovingEntity__) */

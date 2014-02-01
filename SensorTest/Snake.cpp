@@ -56,7 +56,7 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    PolygonShape polyShape;
    vector<Vec2> vertices;
    
-   const float32 VERT_SCALE = .5;
+   float32 VERT_SCALE = GetSizeMeters();
    fixtureDef.shape = &polyShape;
    fixtureDef.density = 1.0;
    fixtureDef.friction = 1.0;
@@ -144,8 +144,8 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
       
       _segments.push_back(pBodyB);
       // Add some damping so body parts don't 'flop' around.
-      pBodyB->SetLinearDamping(0.25);
-      pBodyB->SetAngularDamping(0.25);
+      pBodyB->SetLinearDamping(0.5);
+      pBodyB->SetAngularDamping(0.1);
       // Offset the vertices for the fixture.
       for(int vidx = 0; vidx < vertices.size(); vidx++)
       {
@@ -159,8 +159,6 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
       // Create a Revolute Joint at a position half way between the two bodies.
       Vec2 midpoint = (pBodyA->GetPosition() + pBodyB->GetPosition());
       revJointDef.Initialize(pBodyA, pBodyB, midpoint);
-      revJointDef.lowerAngle = -0.5f * M_PI;
-      revJointDef.upperAngle = 0.5f * M_PI;
       world.CreateJoint(&revJointDef);
       // Update so the next time through the loop, we are
       // connecting the next body to the one we just
@@ -173,13 +171,9 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    pBodyB->SetAngularDamping(1.5);
    
    // Setup Parameters
-   SetMaxAngularAcceleration(4*M_PI);
-   // As long as this is high, they forces will be strong
-   // enough to get the body close to the target position
-   // very quickly so the entity does not "circle" the
-   // point.
-   SetMaxLinearAcceleration(100);
-   SetMaxSpeed(10);
+   SetMaxAngularAcceleration(8*M_PI);
+   SetMaxLinearAcceleration(10);
+   SetMaxSpeed(5);
    SetMinSeekDistance(1.0);
 }
 

@@ -321,6 +321,8 @@
 		1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1D188AEE57006789B0 /* GridLayer.cpp */; };
 		1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */; };
 		1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */; };
+		1AC9EFA1189D507A00397F34 /* SpriteBatchLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */; };
+		1AC9EFA4189D543900397F34 /* StraightMovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */; };
 		1AFC7627188DE1B400A258FB /* EntityManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7625188DE1B400A258FB /* EntityManager.cpp */; };
 		1AFC762A188DE21600A258FB /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7628188DE21600A258FB /* Entity.cpp */; };
 		1AFC762D188DE36A00A258FB /* GraphSensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC762B188DE36A00A258FB /* GraphSensor.cpp */; };
@@ -996,6 +998,10 @@
 		1A961C24188AEF2E006789B0 /* ViewportCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewportCamera.h; sourceTree = "<group>"; };
 		1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemContactListener.cpp; sourceTree = "<group>"; };
 		1AB7D90C188EA66700D311F2 /* SystemContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemContactListener.h; sourceTree = "<group>"; };
+		1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteBatchLayer.cpp; sourceTree = "<group>"; };
+		1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatchLayer.h; sourceTree = "<group>"; };
+		1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StraightMovingEntity.cpp; sourceTree = "<group>"; };
+		1AC9EFA3189D543900397F34 /* StraightMovingEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StraightMovingEntity.h; sourceTree = "<group>"; };
 		1AFC7625188DE1B400A258FB /* EntityManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityManager.cpp; sourceTree = "<group>"; };
 		1AFC7626188DE1B400A258FB /* EntityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityManager.h; sourceTree = "<group>"; };
 		1AFC7628188DE21600A258FB /* Entity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Entity.cpp; sourceTree = "<group>"; };
@@ -2318,8 +2324,12 @@
 				1A81B2A5189C98E60034D1B9 /* Snake.cpp */,
 				1A81B2A6189C98E60034D1B9 /* Snake.h */,
 				1A961C08188AEDB7006789B0 /* SingletonTemplate.h */,
+				1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */,
+				1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */,
 				1A961C09188AEDB7006789B0 /* Stopwatch.cpp */,
 				1A961C0A188AEDB7006789B0 /* Stopwatch.h */,
+				1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */,
+				1AC9EFA3189D543900397F34 /* StraightMovingEntity.h */,
 				1A81B2A2189C96AE0034D1B9 /* SunBackgroundLayer.cpp */,
 				1A81B2A3189C96AE0034D1B9 /* SunBackgroundLayer.h */,
 				1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */,
@@ -2473,6 +2483,7 @@
 				1A961A2D188AED44006789B0 /* CCTMXXMLParser.cpp in Sources */,
 				1A961A82188AED45006789B0 /* CCLayerGradientLoader.cpp in Sources */,
 				1A9619AF188AED43006789B0 /* CCShaderCache.cpp in Sources */,
+				1AC9EFA1189D507A00397F34 /* SpriteBatchLayer.cpp in Sources */,
 				1A961862188AED40006789B0 /* CCActionInterval.cpp in Sources */,
 				1A9619B7188AED43006789B0 /* CCAnimation.cpp in Sources */,
 				1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */,
@@ -2513,6 +2524,7 @@
 				1A961A21188AED44006789B0 /* CCTileMapAtlas.cpp in Sources */,
 				1A961BDB188AED47006789B0 /* b2WheelJoint.cpp in Sources */,
 				1A96190E188AED41006789B0 /* CCScene.cpp in Sources */,
+				1AC9EFA4189D543900397F34 /* StraightMovingEntity.cpp in Sources */,
 				1A961C17188AEDB7006789B0 /* Stopwatch.cpp in Sources */,
 				1A961BD8188AED47006789B0 /* b2WeldJoint.cpp in Sources */,
 				1A9619ED188AED44006789B0 /* TGAlib.cpp in Sources */,

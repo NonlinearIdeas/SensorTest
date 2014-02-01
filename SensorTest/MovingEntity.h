@@ -92,7 +92,7 @@ private:
       GetBody()->ApplyTorque(torque);
    }
    
-   void ApplyThrust()
+   virtual void ApplyThrust()
    {
       // Get the distance to the target.
       Vec2 toTarget = GetTargetPos() - GetBody()->GetWorldCenter();
