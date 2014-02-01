@@ -130,13 +130,13 @@ public:
          if(entA->IsFlagSet(Entity::EF_IS_GRAPH_SENSOR))
          {
             sensor = (GraphSensor*)entA;
-            sensor->UpdateOccupyCount(cp.contactCount);
+            sensor->UpdateContactCount(cp.contactCount);
             gsm.UpdateGraphSensorState(sensor);
          }
          else if(entB->IsFlagSet(Entity::EF_IS_GRAPH_SENSOR))
          {
             sensor = (GraphSensor*)entB;
-            sensor->UpdateOccupyCount(cp.contactCount);
+            sensor->UpdateContactCount(cp.contactCount);
             gsm.UpdateGraphSensorState(sensor);
          }
          else

@@ -32,29 +32,29 @@
 class GraphSensor : public Entity
 {
 private:
-   int32 _occupyCount;
+   int32 _contactCount;
    int32 _index;
    
 public:
    
-   inline void ResetOccupyCount()
+   inline void ResetContactCount()
    {
-      _occupyCount = 0;
+      _contactCount = 0;
    }
    
    inline bool IsClear()
    {
-      return (_occupyCount == 0);
+      return (_contactCount == 0);
    }
    
-   inline void UpdateOccupyCount(int32 count)
+   inline void UpdateContactCount(int32 count)
    {
-      _occupyCount+= count;
+      _contactCount+= count;
    }
    
-   inline int32 GetOccupyCount()
+   inline int32 GetContactCount()
    {
-      return _occupyCount;
+      return _contactCount;
    }
    
    inline int32 GetIndex()
@@ -68,7 +68,7 @@ public:
    }
       
    GraphSensor() :
-   _occupyCount(0)
+   _contactCount(0)
    {
       SetFlag(EF_IS_GRAPH_SENSOR);
    }

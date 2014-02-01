@@ -30,6 +30,7 @@
 #include "CommonSTL.h"
 #include "CommonProject.h"
 #include "Notifier.h"
+#include "Stopwatch.h"
 
 class GraphSensorContactLayer : public CCLayer, Notified
 {
@@ -37,6 +38,8 @@ private:
    void UpdateSensorLabels();
    void InitSensorLabels();
    void ViewportChanged();
+   StopWatch _stopWatch;
+   bool _viewportChanged;
    
 protected:
    bool init();
@@ -44,7 +47,6 @@ protected:
 public:
    static GraphSensorContactLayer* create();
    virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value);
-   virtual void draw();
    virtual void update(float dt);
    virtual void onEnterTransitionDidFinish();
    virtual void onExitTransitionDidStart();

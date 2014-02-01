@@ -36,6 +36,7 @@
 #include "GraphSensorGenerator.h"
 #include "GraphSensorManager.h"
 #include "SystemContactListener.h"
+#include "GraphSensorContactLayer.h"
 
 
 /* This class generates a graph sensor array on a rectangular
@@ -61,7 +62,7 @@ private:
    float32 _separation;
    
 public:
-   GraphSensorGrid(b2World* world, float32 diameter = 15.0f, float32 separation = 20.0f) :
+   GraphSensorGrid(b2World* world, float32 diameter = 2.0f, float32 separation = 2.0f) :
    _world(world),
    _diameter(diameter),
    _separation(separation)
@@ -115,6 +116,9 @@ public:
             sensor->SetBody(body);
             fixture->SetUserData(sensor);
             body->SetUserData(sensor);
+            // We don't need to draw these in box2d debug
+            body->SetDebugDraw(false);
+            
             sensors.push_back(sensor);
             
             int32 calcIdx = row*(cols+1) + col;
@@ -162,6 +166,7 @@ void MainScene::InitSystem()
    
    // Initialize the Viewport
    Viewport::Instance().Init(worldSizeMeters);
+   Viewport::Instance().SetScale(2.0f);
    
    EntityManager::Instance().Init();
    GraphSensorManager::Instance().Init();
@@ -234,6 +239,9 @@ void MainScene::onEnter()
    // Grid
    addChild(GridLayer::create());
    
+   // Contact Counts
+   addChild(GraphSensorContactLayer::create());
+   
    // Populate physical world
    CreateEntity();
 }
@@ -294,7 +302,6 @@ void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
 {
-   _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
 }
 void MainScene::TapDragPinchInputPinchBegin(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {

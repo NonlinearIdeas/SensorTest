@@ -28,20 +28,74 @@
 #include "GraphSensorManager.h"
 #include "Viewport.h"
 
+#define LABEL_SCALE 0.5
+
 void GraphSensorContactLayer::update(float dt)
 {
    UpdateSensorLabels();
+   if(_viewportChanged && _stopWatch.GetSeconds() > 0.5f)
+   {
+      vector<GraphSensor*> sensors = GraphSensorManager::Instance().GetSensors();
+      for(int idx = 0; idx < sensors.size(); ++idx)
+      {
+         GraphSensor& sensor = *sensors[idx];
+         uint32 id = sensor.GetID();
+         
+         b2Vec2 wPos = sensor.GetBody()->GetWorldCenter();
+         CCPoint pPos = Viewport::Instance().Convert(wPos);
+         CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
+         label->setPosition(pPos);
+      }
+      _viewportChanged = false;
+      setVisible(true);
+   }
 }
 
 void GraphSensorContactLayer::InitSensorLabels()
 {
    // Clear out anything we may have from the past.
    removeAllChildren();
+   vector<GraphSensor*> sensors = GraphSensorManager::Instance().GetSensors();
+   char buffer[32];
+   for(int idx = 0; idx < sensors.size(); ++idx)
+   {
+      GraphSensor& sensor = *sensors[idx];
+      uint32 id = sensor.GetID();
+      
+      sprintf(buffer,"%d",sensor.GetContactCount());
+      b2Vec2 wPos = sensor.GetBody()->GetWorldCenter();
+      CCPoint pPos = Viewport::Instance().Convert(wPos);
+      CCLabelBMFont* label = CCLabelBMFont::create(buffer, "Arial_32_Green.fnt",100,kCCTextAlignmentCenter);
+      label->setPosition(pPos);
+      label->setTag(id);
+      label->setScale(LABEL_SCALE);
+      label->setVisible(false);
+      addChild(label);
+   }
 }
 
 void GraphSensorContactLayer::UpdateSensorLabels()
 {
-   
+   set<GraphSensor*> sensors = GraphSensorManager::Instance().GetChangedSensors();
+   char buffer[32];
+   for(set<GraphSensor*>::iterator iter = sensors.begin(); iter != sensors.end(); ++iter)
+   {
+      GraphSensor& sensor = *(*iter);
+      int32 count = sensor.GetContactCount();
+      sprintf(buffer,"%d",count);
+      uint32 id = sensor.GetID();
+      CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
+      label->setString(buffer);
+      label->setVisible(count != 0);
+   }
+   GraphSensorManager::Instance().ClearChangedSensors();
+}
+
+void GraphSensorContactLayer::ViewportChanged()
+{
+   _viewportChanged = true;
+   setVisible(false);
+   _stopWatch.Start();
 }
 
 void GraphSensorContactLayer::onEnterTransitionDidFinish()
@@ -96,19 +150,3 @@ bool GraphSensorContactLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool
    }
    return result;
 }
-
-
-/*
-void GridLayer::InitScaleLabel()
-{
-   CCSize scrSize = CCDirector::sharedDirector()->getWinSize();
-   char buffer[32];
-   
-   sprintf(buffer,"Scale\n%4.2f",Viewport::Instance().GetScale());
-   
-   CCLabelBMFont* label = CCLabelBMFont::create(buffer, "Arial_32_Green.fnt",100,kCCTextAlignmentCenter);
-   label->setPosition(ccp(0.95f*scrSize.width,0.95f*scrSize.height));
-   label->setTag(TAG_LABEL_SCALE);
-   addChild(label);
-}
-*/

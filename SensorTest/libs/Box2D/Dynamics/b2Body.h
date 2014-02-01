@@ -306,6 +306,12 @@ public:
     /// Is this body treated like a bullet for continuous collision detection?
     bool IsBullet() const;
 
+   /// Should this body be allowed to do debug drawing?
+   void SetDebugDraw(bool flag);
+   
+   /// Is this body allowed to do debug drawing.
+   bool IsDebugDraw() const;
+
     /// You can disable sleeping on this body. If you disable sleeping, the
     /// body will be woken.
     void SetSleepingAllowed(bool flag);
@@ -400,13 +406,14 @@ private:
     // m_flags
     enum
     {
-        e_islandFlag        = 0x0001,
+        e_islandFlag           = 0x0001,
         e_awakeFlag            = 0x0002,
         e_autoSleepFlag        = 0x0004,
-        e_bulletFlag        = 0x0008,
+        e_bulletFlag           = 0x0008,
         e_fixedRotationFlag    = 0x0010,
-        e_activeFlag        = 0x0020,
-        e_toiFlag            = 0x0040
+        e_activeFlag           = 0x0020,
+        e_toiFlag              = 0x0040,
+        e_debugDraw            = 0x0080,
     };
 
     b2Body(const b2BodyDef* bd, b2World* world);
@@ -605,6 +612,24 @@ inline float32 b2Body::GetGravityScale() const
 inline void b2Body::SetGravityScale(float32 scale)
 {
     m_gravityScale = scale;
+}
+
+inline void b2Body::SetDebugDraw(bool flag)
+{
+   if (flag)
+   {
+      m_flags |= e_debugDraw;
+   }
+   else
+   {
+      m_flags &= ~e_debugDraw;
+   }
+}
+
+
+inline bool b2Body::IsDebugDraw() const
+{
+   return (m_flags & e_debugDraw) == e_debugDraw;
 }
 
 inline void b2Body::SetBullet(bool flag)
