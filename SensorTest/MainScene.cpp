@@ -49,11 +49,11 @@
  *
  * The size of the world is gleaned from the Viewport.
  */
-class GraphSensorGridCircularSensors : public GraphSensorGenerator
+class GraphSensorGridSquareSensors : public GraphSensorGenerator
 {
 private:
    // Private constructor.
-   GraphSensorGridCircularSensors()
+   GraphSensorGridSquareSensors()
    {
       
    
@@ -88,12 +88,17 @@ private:
       b2BodyDef bodyDef;
       bodyDef.type = b2_staticBody;
       
-      b2CircleShape circleShape;
-      circleShape.m_radius = _diameter/2;
-      circleShape.m_p = b2Vec2(0,0);
+      /*
+      b2CircleShape shape;
+      shape.m_radius = _diameter/2;
+      shape.m_p = b2Vec2(0,0);
+      */
+      b2PolygonShape shape;
+      shape.SetAsBox(_diameter/2, _diameter/2);
+      
       
       b2FixtureDef fixtureDef;
-      fixtureDef.shape = &circleShape;
+      fixtureDef.shape = &shape;
       fixtureDef.isSensor = true;
       
       GraphSensor* sensor = NULL;
@@ -198,7 +203,7 @@ private:
 
    
 public:
-   GraphSensorGridCircularSensors(b2World* world, float32 diameter = 1.0f, float32 separation = 1.0f) :
+   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 2.0f, float32 separation = 2.0f) :
    _world(world),
    _diameter(diameter),
    _separation(separation)
@@ -256,7 +261,7 @@ void MainScene::CreatePhysics()
 
 void MainScene::CreateSensors()
 {
-   GraphSensorGridCircularSensors sensorGrid(_world);
+   GraphSensorGridSquareSensors sensorGrid(_world);
    sensorGrid.Create();
    
    GraphSensorManager::Instance().LoadSensors(sensorGrid);
@@ -311,7 +316,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
    
    // Contact Counts
-   //addChild(GraphSensorContactLayer::create());
+   addChild(GraphSensorContactLayer::create());
 }
 
 void MainScene::onExit()
