@@ -62,7 +62,7 @@ private:
 protected:
    void SetScale(uint32 value)
    {
-      assert(value > 1);
+      assert(value >= 1);
       assert(value <= 100);
       _scale = value;
    }
@@ -82,6 +82,10 @@ public:
       if(body != NULL)
       {
          _body->SetUserData(this);
+         for (b2Fixture* f = _body->GetFixtureList(); f; f = f->GetNext())
+         {
+            f->SetUserData(this);
+         }
       }
    }
    
@@ -136,6 +140,7 @@ public:
    }
    
    Entity(uint32 flags, uint32 scale) :
+   _ID(DEFAULT_ENTITY_ID),
    _flags(flags),
    _body(NULL),
    _scale(scale)

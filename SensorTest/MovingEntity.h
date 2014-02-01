@@ -99,13 +99,20 @@ private:
       toTarget.Normalize();
       Vec2 desiredVel = GetMaxSpeed()*toTarget;
       Vec2 currentVel = GetBody()->GetLinearVelocity();
-      Vec2 thrust = desiredVel - currentVel;
-      GetBody()->ApplyForceToCenter(GetMaxLinearAcceleration()*thrust);
+      Vec2 thrust = GetMaxLinearAcceleration()*(desiredVel - currentVel);
+      GetBody()->ApplyForceToCenter(thrust);
+   }
+   
+   void PrepareForMotion()
+   {
+      GetBody()->SetLinearDamping(0.0f);
+      GetBody()->SetAngularDamping(0.0f);
    }
    
    void EnterSeek()
    {
-      SetupTurnController();
+      PrepareForMotion();
+      GetTurnController().ResetHistory();
    }
    
    void ExecuteSeek()
@@ -113,6 +120,7 @@ private:
       if(IsNearTarget())
       {
          StopBody();
+         ChangeState(ST_IDLE);
       }
       else
       {
@@ -133,7 +141,8 @@ private:
    
    void EnterTurnTowards()
    {
-      SetupTurnController();
+      PrepareForMotion();
+      GetTurnController().ResetHistory();
    }
    
    void ExecuteTurnTowards()
@@ -169,7 +178,8 @@ private:
       UpdatePathTarget();
       if(GetPath().size() > 0)
       {
-         SetupTurnController();
+         PrepareForMotion();
+         GetTurnController().ResetHistory();
       }
       else
       {
@@ -248,6 +258,10 @@ protected:
       return _turnController;
    }
    
+   virtual void UpdateDisplay()
+   {
+   }
+   
 
    
 public:
@@ -271,7 +285,7 @@ public:
    
    // Constructor
 	MovingEntity() :
-   Entity(EF_CAN_MOVE,10),
+   Entity(EF_CAN_MOVE,2),
    _state(ST_IDLE)
    {
    }
@@ -318,6 +332,7 @@ public:
    virtual void Update()
    {
       ExecuteState(_state);
+      UpdateDisplay();
    }
 };
 

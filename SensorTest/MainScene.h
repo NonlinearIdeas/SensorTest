@@ -35,10 +35,13 @@
 #include "Notifier.h"
 #include "ViewportCamera.h"
 #include "MovingEntity.h"
+#include "SpriteBatchLayer.h"
+#include "Asteroid.h"
+#include "Spaceship.h"
 
 class MovingEntityIFace;
 
-class MainScene : public CCScene, public TapDragPinchInputTarget
+class MainScene : public CCScene, public TapDragPinchInputTarget, public Notified
 {
 private:
    // This class follows the "create"/"autorelease" pattern.
@@ -48,7 +51,12 @@ private:
 
    // Box2d Physics World
    b2World* _world;
-   MovingEntity* _entity;
+   Spaceship* _entity;
+   SpriteBatchLayer* _asteroidLayer;
+   SpriteBatchLayer* _shipLayer;
+   vector<Asteroid*> _asteroids;
+   b2Body* _anchor;
+
    
 protected:
    // This is protected so that derived classes can call it
@@ -60,9 +68,13 @@ private:
    void CreatePhysics();
    void CreateSensors();
    void CreateEntity();
+   void CreateAsteroids();
+   void CreateAnchor();
    void SetZoom(float zoom);
    void UpdateEntity();
    void UpdatePhysics();
+   void UpdateAsteroids();
+   void ViewportChanged();
 public:
    
    static MainScene* create();
@@ -84,6 +96,9 @@ public:
    virtual void TapDragPinchInputDragBegin(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1);
    virtual void TapDragPinchInputDragContinue(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1);
    virtual void TapDragPinchInputDragEnd(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1);
+   
+   // Get notified about cetain events
+   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value);
 };
 
 

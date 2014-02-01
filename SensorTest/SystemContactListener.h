@@ -157,10 +157,11 @@ public:
    {
       Entity* entA = (Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
       Entity* entB = (Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
-      
-      assert(entA != NULL);
-      assert(entB != NULL);
-      UpdateContact(entA,entB,BEGIN_CONTACT);
+      // We only care about contacts with actual entities, not just geometry.
+      if(entA != NULL && entB != NULL)
+      {
+         UpdateContact(entA,entB,BEGIN_CONTACT);
+      }
    }
    
    // BEWARE:  You may get multiple calls for the same event.
@@ -169,9 +170,11 @@ public:
       Entity* entA = (Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
       Entity* entB = (Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
       
-      assert(entA != NULL);
-      assert(entB != NULL);
-      UpdateContact(entA,entB,END_CONTACT);
+      // We only care about contacts with actual entities, not just geometry.
+      if(entA != NULL && entB != NULL)
+      {
+         UpdateContact(entA,entB,END_CONTACT);
+      }
    }
 };
 

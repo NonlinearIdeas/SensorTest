@@ -40,7 +40,8 @@
 #include "Box2DShapeCache.h"
 #include "SunBackgroundLayer.h"
 #include "SpriteBatchLayer.h"
-#include "Snake.h"
+#include "EntityUtilities.h"
+#include "Spaceship.h"
 
 /* This class generates a graph sensor array on a rectangular
  * grid.
@@ -117,11 +118,10 @@ private:
             
             body = _world->CreateBody(&bodyDef);
             fixture = body->CreateFixture(&fixtureDef);
+            
             sensor = new GraphSensor();
             sensor->SetBody(body);
             sensor->SetIndex(sensors.size());
-            fixture->SetUserData(sensor);
-            body->SetUserData(sensor);
             
             // We don't need to draw these in box2d debug
             body->SetDebugDraw(false);
@@ -227,9 +227,12 @@ MainScene::~MainScene()
 
 void MainScene::CreateEntity()
 {
-   Vec2 position(0,0);
-   _entity = new Snake();
+   CCSize wSize = Viewport::Instance().GetWorldSizeMeters();
+   Vec2 position(wSize.width/2,wSize.height/2);
+   _entity = new Spaceship();
    _entity->Create(*_world,position, 0);
+   _shipLayer->AddSprite(_entity->GetSprite());
+   EntityManager::Instance().RegisterEntity(_entity);
 }
 
 void MainScene::InitSystem()
@@ -244,6 +247,9 @@ void MainScene::InitSystem()
    EntityManager::Instance().Init();
    GraphSensorManager::Instance().Init();
    SystemContactListener::Instance().Init();
+   Box2DShapeCache::instance().addShapesWithFile("Asteroids.plist");
+   Box2DShapeCache::instance().addShapesWithFile("Entity.plist");
+   
    
 }
 
@@ -295,14 +301,7 @@ void MainScene::onEnter()
    // Create physical world
    CreatePhysics();
    
-   // Populate physical world
-   CreateEntity();
-   
-   // Create the sensor grid
-   CreateSensors();
-   
    // Add a color background.  This will make it easier on the eyes.
-   //addChild(CCLayerColor::create(ccc4(200, 200, 200, 255)));   
    addChild(SunBackgroundLayer::create());
    
    // Adding the debug lines so that we can draw the path followed.
@@ -311,14 +310,42 @@ void MainScene::onEnter()
    // Touch Input
    addChild(TapDragPinchInput::create(this));
    
-   // Box2d Debug
-   addChild(Box2DDebugDrawLayer::create(_world));
-   
    // Grid
    addChild(GridLayer::create());
+
+   // Box2d Debug
+   //addChild(Box2DDebugDrawLayer::create(_world));
+   
+   // Asteroids
+   _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
+   assert(_asteroidLayer != NULL);
+   addChild(_asteroidLayer);
+
+   // Space Ships
+   _shipLayer = SpriteBatchLayer::create("EntitySpriteImages.png", "EntitySpriteImages.plist");
+   assert(_shipLayer != NULL);
+   addChild(_shipLayer);
+   
+   // Create the Anchor
+   CreateAnchor();
+   
+   // Asteroids
+   CreateAsteroids();
+   
+   // Populate physical world
+   CreateEntity();
+   
+   // Create the sensor grid
+   CreateSensors();
    
    // Contact Counts
-   addChild(GraphSensorContactLayer::create());
+   //addChild(GraphSensorContactLayer::create());
+   
+   // Register for events
+   Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
+   
+   // Kickstart all sizes
+   ViewportChanged();
 }
 
 void MainScene::onExit()
@@ -363,8 +390,9 @@ void MainScene::UpdatePhysics()
 
 void MainScene::update(float dt)
 {
-   UpdateEntity();
    UpdatePhysics();
+   UpdateEntity();
+   UpdateAsteroids();
 }
 
 
@@ -405,12 +433,144 @@ void MainScene::TapDragPinchInputDragEnd(const TOUCH_DATA_T& point0, const TOUCH
    Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE);
 }
 
+bool MainScene::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
+{
+   bool result =  true;
+   switch(eventType)
+   {
+      case NE_VIEWPORT_CHANGED:
+         ViewportChanged();
+         break;
+      default:
+         result = false;
+         break;
+   }
+   return result;
+}
+
 
 void MainScene::SetZoom(float scale)
 {
    Viewport::Instance().SetScale(scale);
 }
 
+void MainScene::CreateAsteroids()
+{
+   Vec2 center(0,0);
+   
+   const string names[] =
+   {
+      "Asteroid_01",
+      "Asteroid_02",
+      "Asteroid_03",
+      "Asteroid_04",
+      "Asteroid_05",
+      "Asteroid_06",
+      "Asteroid_07",
+      //       "Asteroid_08",
+   };
+   
+   const int MAX_NAMES = sizeof(names)/sizeof(names[0]);
+   
+   typedef struct
+   {
+      float32 radius;
+      uint32 asteroids;
+   } RING_DATA_T;
+   
+   RING_DATA_T ringData[] =
+   {
+      {1, 1},
+      {9, 3},
+      {17, 7},
+      {25, 13},
+      {35, 20},
+   };
+   
+   const int MAX_RINGS = sizeof(ringData)/sizeof(ringData[0]);
+   
+   float32 angleRads = 0;
+   uint32 nameIdx = 0;
+   
+   
+   for(int ring = 0; ring < MAX_RINGS; ring++)
+   {
+      // Inner ring asteroids
+      float32 targetRadius = ringData[ring].radius;
+      uint32 asteroids = ringData[ring].asteroids;
+      
+      for(int idx = 0; idx < asteroids; idx++)
+      {
+         Vec2 offset =  Vec2::FromPolar(targetRadius, angleRads);
+         Vec2 position = center + offset;
+         Asteroid* asteroid = new Asteroid();
+         asteroid->Create(*_world,
+                          names[nameIdx%MAX_NAMES],
+                          position,
+                          9.0 + RanNumGen::RandFloat(-1.0, 1.0));
+         
+         asteroid->GetBody()->SetDebugDraw(false);
+         
+         EntityManager::Instance().RegisterEntity(asteroid);
+         _asteroids.push_back(asteroid);
+         
+         
+         // All asteroids have a distance joint to the anchor
+         // Now create the joint.
+         b2RopeJointDef jointDef;
+         jointDef.bodyA = _anchor;
+         jointDef.bodyB = asteroid->GetBody();
+         jointDef.maxLength = b2Distance(jointDef.bodyA->GetPosition(), jointDef.bodyB->GetPosition());
+         jointDef.collideConnected = true;
+         _world->CreateJoint(&jointDef);
+         
+         nameIdx++;
+         angleRads += (2*M_PI)/asteroids + RanNumGen::RandFloat(-M_PI/(12*asteroids), M_PI/(12*asteroids));
+      }
+   }
+   
+   
+   for(int idx = 0;idx < _asteroids.size(); idx++)
+   {
+      _asteroidLayer->AddSprite(_asteroids[idx]->GetSprite());
+   }
+}
 
 
+void MainScene::UpdateAsteroids()
+{
+   for(int idx = 0; idx < _asteroids.size(); idx++)
+   {
+      _asteroids[idx]->Update();
+   }
+}
 
+void MainScene::CreateAnchor()
+{
+   b2BodyDef bodyDef;
+   bodyDef.position = Vec2(0.0f,0.0f);
+   bodyDef.type = b2_staticBody;
+   _anchor = _world->CreateBody(&bodyDef);
+   assert(_anchor != NULL);
+   
+   b2CircleShape circle;
+   b2FixtureDef fixtureDef;
+   circle.m_radius = 0.25;
+   fixtureDef.shape = &circle;
+   fixtureDef.density = 1.0;
+   fixtureDef.friction = 1.0;
+   fixtureDef.isSensor = true;
+   _anchor->CreateFixture(&fixtureDef);
+   _anchor->SetUserData(NULL);
+}
+
+void MainScene::ViewportChanged()
+{
+   for(int idx = 0; idx < _asteroids.size(); idx++)
+   {
+      Asteroid* asteroid = _asteroids[idx];
+      EntityUtilities::AdjustNodeScale(asteroid->GetSprite(),asteroid,1.01,Viewport::Instance().GetPTMRatio());
+   }
+   
+   EntityUtilities::AdjustNodeScale(_entity->GetSprite(), _entity, 1.01, Viewport::Instance().GetPTMRatio());
+}

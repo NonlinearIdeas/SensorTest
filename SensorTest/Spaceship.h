@@ -1,5 +1,5 @@
 /********************************************************************
- * File   : Snake.h
+ * File   : Spaceship.h
  * Project: SensorTest
  *
  ********************************************************************
@@ -24,38 +24,37 @@
  *    distribution. 
  */
 
-#ifndef __Snake__
-#define __Snake__
+#ifndef __Spaceship__
+#define __Spaceship__
 
 #include "CommonProject.h"
 #include "CommonSTL.h"
 #include "MovingEntity.h"
 
-class Snake : public MovingEntity
+class Spaceship : public MovingEntity
 {
 private:
-   vector<Body*> _segments;
+   CCSprite* _sprite;
+   
+protected:
+   virtual void UpdateDisplay();
    
 public:
-	Snake()
+	Spaceship()
    {
-      SetScale(1);
+      SetScale(3);
    }
    
-	virtual ~Snake()
+	virtual ~Spaceship()
    {
-      for(int idx = 0; idx < _segments.size(); ++idx)
-      {
-         b2Body* body = _segments[idx];
-         body->GetWorld()->DestroyBody(body);
-      }
-      _segments.clear();
    }
+   
+   CCSprite* GetSprite() { return _sprite; }
    
 
 public:
-   virtual void StopBody();
    virtual void CreateBody(b2World& world, const b2Vec2& position, float32 angleRads);
+   virtual void SetupTurnController();
 };
 
-#endif /* defined(__Snake__) */
+#endif /* defined(__Spaceship__) */

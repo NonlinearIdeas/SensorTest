@@ -91,10 +91,10 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    b2Body* pBodyB = NULL;
    b2RevoluteJointDef revJointDef;
    revJointDef.collideConnected = false;
-   revJointDef.lowerAngle = -0.25f * M_PI;
-   revJointDef.upperAngle = 0.25f * M_PI;
+   revJointDef.lowerAngle = -0.5f * M_PI;
+   revJointDef.upperAngle = 0.5f * M_PI;
    revJointDef.enableLimit = true;
-   revJointDef.maxMotorTorque = 10.0f;
+   revJointDef.maxMotorTorque = 5.0f;
    revJointDef.motorSpeed = 0.0f;
    revJointDef.enableMotor = true;
    
@@ -134,7 +134,7 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    }
    // Make the next bunch of segments get "smaller" each time
    // to make a tail.
-   for(int idx = 0; idx < SNAKE_SEGMENTS*2; idx++)
+   for(int idx = 0; idx < SNAKE_SEGMENTS; idx++)
    {
       // Create a body for the next segment.
       bodyDef.position = pBodyA->GetPosition() + offset;
@@ -150,7 +150,7 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
       for(int vidx = 0; vidx < vertices.size(); vidx++)
       {
          vertices[vidx] += offset;
-         vertices[vidx].y *= 0.9;
+         vertices[vidx].y *= 0.75;
       }
       // and create the fixture.
       polyShape.Set(&vertices[0],vertices.size());

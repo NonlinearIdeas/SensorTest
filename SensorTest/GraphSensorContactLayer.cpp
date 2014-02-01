@@ -86,7 +86,8 @@ void GraphSensorContactLayer::UpdateSensorLabels()
       uint32 id = sensor.GetID();
       CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
       label->setString(buffer);
-      label->setVisible(count != 0);
+      //      label->setVisible(count != 0);
+      sensor.GetBody()->SetDebugDraw(count != 0);
    }
    GraphSensorManager::Instance().ClearChangedSensors();
 }

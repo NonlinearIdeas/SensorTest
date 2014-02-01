@@ -29,10 +29,8 @@
 
 void MovingEntity::StopBody()
 {
-   Vec2 vel0(0,0);
-   
-   GetBody()->SetLinearVelocity(vel0);
-   GetBody()->SetAngularVelocity(0);
+   GetBody()->SetLinearDamping(4.0);
+   GetBody()->SetAngularDamping(2.5);
 }
 
 
@@ -47,8 +45,6 @@ void MovingEntity::SetupTurnController()
    _turnController.SetKProportional(1.0);
    _turnController.SetKIntegral(0.05);
    _turnController.SetKPlant(1.0);
-   // Setup Parameters
-   SetMaxAngularAcceleration(4*M_PI);
 }
 
 void MovingEntity::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads)
@@ -67,7 +63,7 @@ void MovingEntity::CreateBody(b2World& world, const b2Vec2& position, float32 an
    PolygonShape polyShape;
    vector<Vec2> vertices;
    
-   const float32 VERT_SCALE = .5;
+   const float32 VERT_SCALE = GetSizeMeters();
    fixtureDef.shape = &polyShape;
    fixtureDef.density = 1.0;
    fixtureDef.friction = 1.0;
@@ -93,7 +89,9 @@ void MovingEntity::CreateBody(b2World& world, const b2Vec2& position, float32 an
    polyShape.Set(&vertices[0],vertices.size());
    body->CreateFixture(&fixtureDef);
    
-   SetMaxLinearAcceleration(100);
-   SetMaxSpeed(10);
-   SetMinSeekDistance(1.0);
+   // Setup Parameters
+   SetMaxAngularAcceleration(20*M_PI);
+   SetMaxLinearAcceleration(10);
+   SetMaxSpeed(5);
+   SetMinSeekDistance(0.5);
 }

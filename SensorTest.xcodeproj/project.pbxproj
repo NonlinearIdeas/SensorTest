@@ -321,8 +321,15 @@
 		1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1D188AEE57006789B0 /* GridLayer.cpp */; };
 		1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */; };
 		1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */; };
+		1AC478CE189D7ED000A7967E /* EntityUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */; };
+		1AC478D1189D970F00A7967E /* EntitySpriteImages.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AC478CF189D970F00A7967E /* EntitySpriteImages.plist */; };
+		1AC478D2189D970F00A7967E /* EntitySpriteImages.png in Resources */ = {isa = PBXBuildFile; fileRef = 1AC478D0189D970F00A7967E /* EntitySpriteImages.png */; };
+		1AC478D4189D972800A7967E /* Entity.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AC478D3189D972800A7967E /* Entity.plist */; };
+		1AC478D7189D980500A7967E /* Spaceship.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC478D5189D980500A7967E /* Spaceship.cpp */; };
 		1AC9EFA1189D507A00397F34 /* SpriteBatchLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */; };
 		1AC9EFA4189D543900397F34 /* StraightMovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */; };
+		1AC9EFA7189D57F000397F34 /* Asteroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA5189D57F000397F34 /* Asteroid.cpp */; };
+		1AC9EFAA189D580C00397F34 /* RanNumGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */; };
 		1AFC7627188DE1B400A258FB /* EntityManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7625188DE1B400A258FB /* EntityManager.cpp */; };
 		1AFC762A188DE21600A258FB /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7628188DE21600A258FB /* Entity.cpp */; };
 		1AFC762D188DE36A00A258FB /* GraphSensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC762B188DE36A00A258FB /* GraphSensor.cpp */; };
@@ -998,10 +1005,21 @@
 		1A961C24188AEF2E006789B0 /* ViewportCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewportCamera.h; sourceTree = "<group>"; };
 		1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemContactListener.cpp; sourceTree = "<group>"; };
 		1AB7D90C188EA66700D311F2 /* SystemContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemContactListener.h; sourceTree = "<group>"; };
+		1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityUtilities.cpp; sourceTree = "<group>"; };
+		1AC478CD189D7ED000A7967E /* EntityUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityUtilities.h; sourceTree = "<group>"; };
+		1AC478CF189D970F00A7967E /* EntitySpriteImages.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = EntitySpriteImages.plist; sourceTree = "<group>"; };
+		1AC478D0189D970F00A7967E /* EntitySpriteImages.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = EntitySpriteImages.png; sourceTree = "<group>"; };
+		1AC478D3189D972800A7967E /* Entity.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entity.plist; sourceTree = "<group>"; };
+		1AC478D5189D980500A7967E /* Spaceship.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Spaceship.cpp; sourceTree = "<group>"; };
+		1AC478D6189D980500A7967E /* Spaceship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spaceship.h; sourceTree = "<group>"; };
 		1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteBatchLayer.cpp; sourceTree = "<group>"; };
 		1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatchLayer.h; sourceTree = "<group>"; };
 		1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StraightMovingEntity.cpp; sourceTree = "<group>"; };
 		1AC9EFA3189D543900397F34 /* StraightMovingEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StraightMovingEntity.h; sourceTree = "<group>"; };
+		1AC9EFA5189D57F000397F34 /* Asteroid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Asteroid.cpp; sourceTree = "<group>"; };
+		1AC9EFA6189D57F000397F34 /* Asteroid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Asteroid.h; sourceTree = "<group>"; };
+		1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RanNumGen.cpp; sourceTree = "<group>"; };
+		1AC9EFA9189D580C00397F34 /* RanNumGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RanNumGen.h; sourceTree = "<group>"; };
 		1AFC7625188DE1B400A258FB /* EntityManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityManager.cpp; sourceTree = "<group>"; };
 		1AFC7626188DE1B400A258FB /* EntityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityManager.h; sourceTree = "<group>"; };
 		1AFC7628188DE21600A258FB /* Entity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Entity.cpp; sourceTree = "<group>"; };
@@ -1081,6 +1099,9 @@
 		1A961828188AED3F006789B0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1AC478D3189D972800A7967E /* Entity.plist */,
+				1AC478CF189D970F00A7967E /* EntitySpriteImages.plist */,
+				1AC478D0189D970F00A7967E /* EntitySpriteImages.png */,
 				1A81B298189C96320034D1B9 /* Asteroids.plist */,
 				1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */,
 				1A81B29B189C96430034D1B9 /* Asteroids_ImgData.png */,
@@ -2287,6 +2308,8 @@
 				1A961C1A188AEDFD006789B0 /* AppDelegate.cpp */,
 				1A961BF8188AEDB7006789B0 /* Arial_32_Green.fnt */,
 				1A961BF9188AEDB7006789B0 /* Arial_32_Green.png */,
+				1AC9EFA5189D57F000397F34 /* Asteroid.cpp */,
+				1AC9EFA6189D57F000397F34 /* Asteroid.h */,
 				1A961BFA188AEDB7006789B0 /* Box2DDebugDraw.cpp */,
 				1A961BFB188AEDB7006789B0 /* Box2DDebugDraw.h */,
 				1A961BFC188AEDB7006789B0 /* Box2DDebugDrawLayer.cpp */,
@@ -2301,6 +2324,8 @@
 				1AFC7629188DE21600A258FB /* Entity.h */,
 				1AFC7625188DE1B400A258FB /* EntityManager.cpp */,
 				1AFC7626188DE1B400A258FB /* EntityManager.h */,
+				1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */,
+				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
 				1AFC762B188DE36A00A258FB /* GraphSensor.cpp */,
 				1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */,
@@ -2321,10 +2346,14 @@
 				1A961C07188AEDB7006789B0 /* Notifier.h */,
 				1A845798189A838400B4BD66 /* PIDController.cpp */,
 				1A845799189A838400B4BD66 /* PIDController.h */,
+				1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */,
+				1AC9EFA9189D580C00397F34 /* RanNumGen.h */,
 				1A81B2A5189C98E60034D1B9 /* Snake.cpp */,
 				1A81B2A6189C98E60034D1B9 /* Snake.h */,
 				1A961C08188AEDB7006789B0 /* SingletonTemplate.h */,
 				1AC9EF9F189D507A00397F34 /* SpriteBatchLayer.cpp */,
+				1AC478D5189D980500A7967E /* Spaceship.cpp */,
+				1AC478D6189D980500A7967E /* Spaceship.h */,
 				1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */,
 				1A961C09188AEDB7006789B0 /* Stopwatch.cpp */,
 				1A961C0A188AEDB7006789B0 /* Stopwatch.h */,
@@ -2401,11 +2430,14 @@
 				1A96182A188AED3F006789B0 /* CloseNormal.png in Resources */,
 				1A961836188AED3F006789B0 /* Icon-Small.png in Resources */,
 				1A81B29D189C96430034D1B9 /* Asteroids_ImgData.png in Resources */,
+				1AC478D1189D970F00A7967E /* EntitySpriteImages.plist in Resources */,
 				1A81B29F189C96830034D1B9 /* back_01.png in Resources */,
+				1AC478D4189D972800A7967E /* Entity.plist in Resources */,
 				1A961832188AED3F006789B0 /* Icon-72.png in Resources */,
 				1A961830188AED3F006789B0 /* HelloWorld.png in Resources */,
 				1A961834188AED3F006789B0 /* Icon-Small-50.png in Resources */,
 				1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */,
+				1AC478D2189D970F00A7967E /* EntitySpriteImages.png in Resources */,
 				1A96183E188AED3F006789B0 /* iTunesArtwork in Resources */,
 				1A961C0F188AEDB7006789B0 /* Arial_32_Green.fnt in Resources */,
 				1A961838188AED3F006789B0 /* Icon-Small@2x.png in Resources */,
@@ -2441,6 +2473,7 @@
 				1A9618AD188AED40006789B0 /* CCZone.cpp in Sources */,
 				1A961A0A188AED44006789B0 /* CCTextFieldTTF.cpp in Sources */,
 				1A96196E188AED42006789B0 /* CCLock.cpp in Sources */,
+				1AC478CE189D7ED000A7967E /* EntityUtilities.cpp in Sources */,
 				1A961B2D188AED46006789B0 /* CCSkeleton.cpp in Sources */,
 				1A961A1E188AED44006789B0 /* CCParallaxNode.cpp in Sources */,
 				1A96188B188AED40006789B0 /* CCAffineTransform.cpp in Sources */,
@@ -2479,6 +2512,7 @@
 				1A961B42188AED46006789B0 /* SkeletonJson.cpp in Sources */,
 				1A845797189A835600B4BD66 /* MovingEntity.cpp in Sources */,
 				1A961C12188AEDB7006789B0 /* Box2DDebugDrawLayer.cpp in Sources */,
+				1AC9EFAA189D580C00397F34 /* RanNumGen.cpp in Sources */,
 				1A961A70188AED45006789B0 /* CCControlButtonLoader.cpp in Sources */,
 				1A961A2D188AED44006789B0 /* CCTMXXMLParser.cpp in Sources */,
 				1A961A82188AED45006789B0 /* CCLayerGradientLoader.cpp in Sources */,
@@ -2654,6 +2688,7 @@
 				1A96194C188AED42006789B0 /* CCSAXParser.cpp in Sources */,
 				1A961A0E188AED44006789B0 /* CCTexture2D.cpp in Sources */,
 				1A961A79188AED45006789B0 /* CCLabelBMFontLoader.cpp in Sources */,
+				1AC478D7189D980500A7967E /* Spaceship.cpp in Sources */,
 				1A9619B3188AED43006789B0 /* ccShaders.cpp in Sources */,
 				1A9618F5188AED41006789B0 /* vec3.c in Sources */,
 				1A961B89188AED46006789B0 /* b2Timer.cpp in Sources */,
@@ -2688,6 +2723,7 @@
 				1A961AEF188AED45006789B0 /* CCScrollView.cpp in Sources */,
 				1A9619D0188AED44006789B0 /* CCPointExtension.cpp in Sources */,
 				1A961BA1188AED47006789B0 /* b2ChainAndCircleContact.cpp in Sources */,
+				1AC9EFA7189D57F000397F34 /* Asteroid.cpp in Sources */,
 				1A961A9C188AED45006789B0 /* CCScale9SpriteLoader.cpp in Sources */,
 				1A9619D9188AED44006789B0 /* ccUtils.cpp in Sources */,
 				1A961ADC188AED45006789B0 /* CCEditBox.cpp in Sources */,
