@@ -85,12 +85,18 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    // NOW, create several duplicates of the "Main Body" fixture
    // but offset them from the previous one by a fixed amount and
    // overlap them a bit.
-   const uint32 SNAKE_SEGMENTS = 4;
+   const uint32 SNAKE_SEGMENTS = 3;
    Vec2 offset(-4*VERT_SCALE,0*VERT_SCALE);
    b2Body* pBodyA = body;
    b2Body* pBodyB = NULL;
    b2RevoluteJointDef revJointDef;
    revJointDef.collideConnected = false;
+   revJointDef.lowerAngle = -0.25f * M_PI;
+   revJointDef.upperAngle = 0.25f * M_PI;
+   revJointDef.enableLimit = true;
+   revJointDef.maxMotorTorque = 10.0f;
+   revJointDef.motorSpeed = 0.0f;
+   revJointDef.enableMotor = true;
    
    // Add some "regular segments".
    for(int idx = 0; idx < SNAKE_SEGMENTS; idx++)
@@ -110,6 +116,7 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
       for(int vidx = 0; vidx < vertices.size(); vidx++)
       {
          vertices[vidx] += offset;
+         vertices[vidx].y *= 0.9;
       }
       // and create the fixture.
       polyShape.Set(&vertices[0],vertices.size());
@@ -127,7 +134,7 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
    }
    // Make the next bunch of segments get "smaller" each time
    // to make a tail.
-   for(int idx = 0; idx < SNAKE_SEGMENTS; idx++)
+   for(int idx = 0; idx < SNAKE_SEGMENTS*2; idx++)
    {
       // Create a body for the next segment.
       bodyDef.position = pBodyA->GetPosition() + offset;
@@ -143,16 +150,17 @@ void Snake::CreateBody(b2World& world, const b2Vec2& position, float32 angleRads
       for(int vidx = 0; vidx < vertices.size(); vidx++)
       {
          vertices[vidx] += offset;
-         vertices[vidx].y *= 0.75;
+         vertices[vidx].y *= 0.9;
       }
       // and create the fixture.
       polyShape.Set(&vertices[0],vertices.size());
       pBodyB->CreateFixture(&fixtureDef);
       
-      // Create a Revolute Joint at a position half way
-      // between the two bodies.
+      // Create a Revolute Joint at a position half way between the two bodies.
       Vec2 midpoint = (pBodyA->GetPosition() + pBodyB->GetPosition());
       revJointDef.Initialize(pBodyA, pBodyB, midpoint);
+      revJointDef.lowerAngle = -0.5f * M_PI;
+      revJointDef.upperAngle = 0.5f * M_PI;
       world.CreateJoint(&revJointDef);
       // Update so the next time through the loop, we are
       // connecting the next body to the one we just

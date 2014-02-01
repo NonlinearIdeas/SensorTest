@@ -29,7 +29,7 @@
 
 #include "CommonSTL.h"
 #include "CommonProject.h"
-
+#include "EntityManager.h"
 #include "GraphSensor.h"
 
 /* This abstract base class is a generator for the
@@ -42,23 +42,103 @@
  * one so that it may be registered with the EntityManager
  * and placed into the GSM for management.
  *
+ * The generator is also responsible for generating
+ * adjacency information for each sensor.  This is
+ * used in graphs to create edges between graph
+ * nodes.
+ *
  */
 class GraphSensorGenerator
 {
+public:
+   typedef vector<GraphSensor*> SENSORS_T;
+   typedef vector< vector<uint32> > SENSORS_ADJ_T;
 private:
-   vector<GraphSensor*> _sensors;
+   SENSORS_T _sensors;
+   SENSORS_ADJ_T _adjacentSensors;
+   int32 _rows;
+   int32 _cols;
 protected:
-   vector<GraphSensor*>& GetSensors()
+   GraphSensorGenerator() :
+   _rows(0),
+   _cols(0)
+   {
+      
+   }
+   
+   inline int32& Rows() { return _rows; }
+   inline int32& Cols() { return _cols; }
+   
+   SENSORS_T& GetSensors()
    {
       return _sensors;
    }
+
+   SENSORS_ADJ_T& GetAdjacentSensors()
+   {
+      return _adjacentSensors;
+   }
+   
+   /* Registers the sensors with the EntityManager.
+    *
+    */
+   void RegisterSensors()
+   {
+      assert(_sensors.size() > 0);
+      for(int idx = 0; idx < _sensors.size(); ++idx)
+      {
+         EntityManager::Instance().RegisterEntity(_sensors[idx]);
+      }
+   }
+   
+   /* Override this function in derived classes to
+    * create the sensors.
+    *
+    * They are stored in the (internal) list returned
+    * by GetSensors().
+    */
+   virtual void GenerateSensors() = 0;
+   
+   /* Override this function to generate the sensor
+    * adjacency information.  This information is 
+    * stored in the member returned by GetAdjacentSensors().
+    */
+   virtual void GenerateAdjacency() = 0;
+   
+   /* Map a row,col onto a single index into the 
+    * sensor/adjacent vectors.
+    */
+   virtual int32 CalcIndex(int32 row, int32 col) = 0;
+   /* Map an index into the array onto a row, col position for the 
+    * grid.
+    *
+    * NOTE: This DOES NOT MEAN the grid cannot be offse,t cubic, etc.
+    */
+   virtual void CalcIndex(int32 idx, int32& outRow, int32& outCol) = 0;
    
 public:
-   virtual void CreateSensors() = 0;
+   bool Create()
+   {  // This should only be called ONE TIME
+      assert(_sensors.size() == 0);
+      assert(_adjacentSensors.size() == 0);
+      if(_sensors.size() == 0 && _adjacentSensors.size() == 0)
+      {
+         GenerateSensors();
+         GenerateAdjacency();
+         assert(_sensors.size() == _adjacentSensors.size());
+         RegisterSensors();
+      }
+      return _sensors.size() == _adjacentSensors.size();
+   }
    
-   const vector<GraphSensor*>& GetSensorsConst() const
+   const SENSORS_T& GetSensorsConst() const
    {
       return _sensors;
+   }
+
+   const SENSORS_ADJ_T& GetAdjacentSensorsConst() const
+   {
+      return _adjacentSensors;
    }
 };
 

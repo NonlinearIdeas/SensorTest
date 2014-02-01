@@ -49,11 +49,11 @@
  *
  * The size of the world is gleaned from the Viewport.
  */
-class GraphSensorGrid : public GraphSensorGenerator
+class GraphSensorGridCircularSensors : public GraphSensorGenerator
 {
 private:
    // Private constructor.
-   GraphSensorGrid()
+   GraphSensorGridCircularSensors()
    {
       
    
@@ -63,24 +63,21 @@ private:
    float32 _diameter;
    float32 _separation;
    
-public:
-   GraphSensorGrid(b2World* world, float32 diameter = 2.0f, float32 separation = 2.0f) :
-   _world(world),
-   _diameter(diameter),
-   _separation(separation)
-   {
-      
-   }
-   
-   virtual void CreateSensors()
+   virtual void GenerateSensors()
    {
       Viewport& vp = Viewport::Instance();
       CCSize worldSize = vp.GetWorldSizeMeters();
-      vector<GraphSensor*>& sensors = GetSensors();
+      SENSORS_T& sensors = GetSensors();
+
+      // NOTE:  These are REFERENCES to the underlying values.
+      // THESE ARE NOT LOCAL VARIABLES.
+      int32& cols = Cols();
+      int32& rows = Rows();
+      
       // Calculate the rows and columns so that there is at least one gap between each
       // shape.
-      int32 cols = (uint32)ceil(worldSize.width/_separation);
-      int32 rows = (uint32)ceil(worldSize.height/_separation);
+      cols = (uint32)ceil(worldSize.width/_separation);
+      rows = (uint32)ceil(worldSize.height/_separation);
       sensors.clear();
       
       if(cols%2 != 0)
@@ -116,33 +113,100 @@ public:
             fixture = body->CreateFixture(&fixtureDef);
             sensor = new GraphSensor();
             sensor->SetBody(body);
+            sensor->SetIndex(sensors.size());
             fixture->SetUserData(sensor);
             body->SetUserData(sensor);
+            
             // We don't need to draw these in box2d debug
             body->SetDebugDraw(false);
             
             sensors.push_back(sensor);
             
-            int32 calcIdx = row*(cols+1) + col;
-            int32 calcRow = calcIdx/(cols+1);
-            int32 calcCol = calcIdx%(cols+1);
+            /* Just a little unit testing */
             /*
-            CCLOG("AIdx = %04ld, Index = %04d, agrid(%d,%d), grid(%d,%d)",
-                  sensors.size()-1,
-                  calcIdx,
-                  row,
-                  col,
-                  calcRow,
-                  calcCol
-                  );
-             */
+            int32 calcIdx, calcRow, calcCol;
+            
+            calcIdx = CalcIndex(row, col);
+            CalcIndex(calcIdx,calcRow,calcCol);
+            
+             CCLOG("AIdx = %04ld, Index = %04d, agrid(%d,%d), grid(%d,%d)",
+             sensors.size()-1,
+             calcIdx,
+             row,
+             col,
+             calcRow,
+             calcCol
+             );
             assert(calcIdx == sensors.size()-1);
             assert(row == calcRow);
             assert(col == calcCol);
+             */
          }
       }
-      
    }
+   
+   virtual void GenerateAdjacency()
+   {
+      SENSORS_ADJ_T& adj = GetAdjacentSensors();
+      adj.resize(GetSensorsConst().size());
+      const SENSORS_T& sensors = GetSensorsConst();
+      int32 row = 0, col = 0;
+      for(int idx = 0; idx < sensors.size(); idx++)
+      {
+         // Get the row, col for this index.
+         CalcIndex(idx, row,col);
+         // Since this is a "grid", we will look at the
+         // 8 cardinal directions as adjacent.
+         int32 calcIdx;
+         
+         calcIdx = CalcIndex(row+1, col+1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row+1, col);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row+1, col-1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row, col+1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row, col-1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row-1, col+1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row-1, col);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         
+         calcIdx = CalcIndex(row-1, col-1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+      }
+   }
+   
+   virtual int32 CalcIndex(int32 row, int32 col)
+   {
+      return row * (Cols() + 1) + col;
+   }
+   
+   virtual void CalcIndex(int32 idx, int32& outRow, int32& outCol)
+   {
+      outRow = idx / (Cols() + 1);
+      outCol = idx % (Cols() + 1);
+   }
+
+   
+public:
+   GraphSensorGridCircularSensors(b2World* world, float32 diameter = 1.0f, float32 separation = 1.0f) :
+   _world(world),
+   _diameter(diameter),
+   _separation(separation)
+   {
+      assert(_diameter > 0.001);
+      assert(_separation > 0.001);
+   }
+   
 };
 
 
@@ -169,7 +233,7 @@ void MainScene::InitSystem()
    
    // Initialize the Viewport
    Viewport::Instance().Init(worldSizeMeters);
-   Viewport::Instance().SetScale(2.0f);
+   Viewport::Instance().SetScale(1.4f);
    
    EntityManager::Instance().Init();
    GraphSensorManager::Instance().Init();
@@ -192,9 +256,10 @@ void MainScene::CreatePhysics()
 
 void MainScene::CreateSensors()
 {
-   GraphSensorGrid sensorGrid(_world);
+   GraphSensorGridCircularSensors sensorGrid(_world);
+   sensorGrid.Create();
    
-   GraphSensorManager::Instance().CreateSensors(sensorGrid);
+   GraphSensorManager::Instance().LoadSensors(sensorGrid);
 }
 
 bool MainScene::init()
@@ -224,6 +289,9 @@ void MainScene::onEnter()
    // Create physical world
    CreatePhysics();
    
+   // Populate physical world
+   CreateEntity();
+   
    // Create the sensor grid
    CreateSensors();
    
@@ -243,10 +311,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
    
    // Contact Counts
-   addChild(GraphSensorContactLayer::create());
-   
-   // Populate physical world
-   CreateEntity();
+   //addChild(GraphSensorContactLayer::create());
 }
 
 void MainScene::onExit()

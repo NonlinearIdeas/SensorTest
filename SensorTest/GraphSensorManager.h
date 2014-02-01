@@ -96,20 +96,20 @@ public:
       Reset();
    }
    
-   void CreateSensors(GraphSensorGenerator& generator)
+   /* This function will load sensors from the GraphSensorGenerator
+    * container.
+    */
+   void LoadSensors(GraphSensorGenerator& generator)
    {
-      EntityManager& em = EntityManager::Instance();
-      generator.CreateSensors();
       const vector<GraphSensor*> sensors = generator.GetSensorsConst();
+      assert(sensors.size() > 0);
       _sensors.resize(sensors.size());
       for(uint32 idx = 0; idx < sensors.size(); ++idx)
       {
-         em.RegisterEntity(sensors[idx]);
          _sensors[idx] = sensors[idx];
       }
    }
    
-
 
    /* This method is called by the physics engine when a sensor
     * has a beginContact/endContact event.  The call is made
