@@ -46,7 +46,16 @@ public:
    float32 GetTargetRadius() { return _targetRadius; }
    CCSprite* GetSprite() { return _sprite; }
    
-   void Update()
+   
+   void UpdateDisplay()
+   {
+      // Update the sprite position and orientation.
+      CCPoint pixel = Viewport::Instance().Convert(GetBody()->GetPosition());
+      _sprite->setPosition(pixel);
+      _sprite->setRotation(-CC_RADIANS_TO_DEGREES(GetBody()->GetAngle()));
+   }
+   
+   virtual void Update()
    {
       Body* body = GetBody();
       
@@ -68,11 +77,6 @@ public:
       {
          body->SetLinearDamping(0.05);
       }
-      
-      // Update the sprite position and orientation.
-      CCPoint pixel = Viewport::Instance().Convert(body->GetPosition());
-      _sprite->setPosition(pixel);
-      _sprite->setRotation(-CC_RADIANS_TO_DEGREES(body->GetAngle()));
    }
    
    ~Asteroid()

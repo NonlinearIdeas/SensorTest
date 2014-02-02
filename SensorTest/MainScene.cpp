@@ -204,7 +204,7 @@ private:
 
    
 public:
-   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 2.0f, float32 separation = 2.0f) :
+   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 2.50f, float32 separation = 2.50f) :
    _world(world),
    _diameter(diameter),
    _separation(separation)
@@ -314,7 +314,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   //addChild(Box2DDebugDrawLayer::create(_world));
+   addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -339,7 +339,7 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   //addChild(GraphSensorContactLayer::create());
+   addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
@@ -542,6 +542,7 @@ void MainScene::UpdateAsteroids()
    for(int idx = 0; idx < _asteroids.size(); idx++)
    {
       _asteroids[idx]->Update();
+      _asteroids[idx]->UpdateDisplay();
    }
 }
 

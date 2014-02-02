@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */; };
 		1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */; };
 		1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B298189C96320034D1B9 /* Asteroids.plist */; };
 		1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */; };
@@ -337,6 +338,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityScheduler.cpp; sourceTree = "<group>"; };
+		1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityScheduler.h; sourceTree = "<group>"; };
 		1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DShapeCache.cpp; sourceTree = "<group>"; };
 		1A81B296189C96130034D1B9 /* Box2DShapeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DShapeCache.h; sourceTree = "<group>"; };
 		1A81B298189C96320034D1B9 /* Asteroids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids.plist; sourceTree = "<group>"; };
@@ -2324,6 +2327,8 @@
 				1AFC7629188DE21600A258FB /* Entity.h */,
 				1AFC7625188DE1B400A258FB /* EntityManager.cpp */,
 				1AFC7626188DE1B400A258FB /* EntityManager.h */,
+				1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */,
+				1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */,
 				1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */,
 				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
@@ -2636,6 +2641,7 @@
 				1A961B4B188AED46006789B0 /* SlotData.cpp in Sources */,
 				1A961A2A188AED44006789B0 /* CCTMXTiledMap.cpp in Sources */,
 				1A961AD5188AED45006789B0 /* CCInvocation.cpp in Sources */,
+				1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */,
 				1A961B80188AED46006789B0 /* b2Math.cpp in Sources */,
 				1A9618E5188AED40006789B0 /* mat3.c in Sources */,
 				1A961AE1188AED45006789B0 /* CCEditBoxImplIOS.mm in Sources */,

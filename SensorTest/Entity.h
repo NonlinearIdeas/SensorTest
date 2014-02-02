@@ -35,13 +35,31 @@ class Entity
 public:
    enum
    {
-      // Flags 1 << 0 through 1 << 15 are reserved
-      // for the base class.
-      // Flags above this may be used by
-      // derived classes.
-      EF_IS_GRAPH_SENSOR   = 1 << 0,
-      EF_CAN_MOVE          = 1 << 1,
-      EF_FLAG_MAX          = 1 << 31
+      // ---------------------------------
+      // Priority Scheduling Flags
+      // ---------------------------------
+      // Every Frame
+      EF_UPDATE_PRIO_1           = 1 << 0,
+      // Every Other Frame (about 15x per second)
+      EF_UPDATE_PRIO_2           = 1 << 1,
+      // Every 4 Frames (about 7.5x per second)
+      EF_UPDATE_PRIO_3           = 1 << 2,
+      // Every 15 Frames (about 2x per second)
+      EF_UPDATE_PRIO_4           = 1 << 3,
+      // Every 30 Frames (about 1x per second)
+      EF_UPDATE_PRIO_5           = 1 << 4,
+      
+      // ---------------------------------
+      // Flags that reflect "what this is or can do"
+      // ---------------------------------
+      // Is this a graph sensor?
+      EF_IS_GRAPH_SENSOR         = 1 << 0,
+      // Can this entity move at all?
+      EF_CAN_MOVE                = 1 << 1,
+      // Needs to update the diplay regularly.
+      EF_NEEDS_DISPLAY_UPDATE    = 1 << 7,
+      
+      EF_FLAG_MAX                = 1 << 31
    };
    
    enum
@@ -149,6 +167,11 @@ public:
    }
    
    virtual void Update()
+   {
+      
+   }
+   
+   virtual void UpdateDisplay()
    {
       
    }
