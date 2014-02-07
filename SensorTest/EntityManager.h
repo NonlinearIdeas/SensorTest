@@ -109,7 +109,7 @@ public:
       return iter->second;
    }
    
-   void RegisterEntity(Entity* entity)
+   void Register(Entity* entity)
    {
       assert(entity != NULL);
       assert(entity->GetID() == Entity::DEFAULT_ENTITY_ID);
@@ -120,7 +120,7 @@ public:
       _entities[ID] = entity;
    }
    
-   Entity* DeregisterEntity(uint32 ID)
+   Entity* Deregister(uint32 ID)
    {
       ENTITY_MAP_ITER_T iter = _entities.find(ID);
       assert(iter != _entities.end());

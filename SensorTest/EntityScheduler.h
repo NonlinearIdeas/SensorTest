@@ -38,26 +38,53 @@
  * as well as for entities that don't require an update every
  * cycle to automatically do their update periodically but 
  * not tax the system.
+ *
+ * Assumptions:
+ * 1. If an Entity has Update() called each frame (EF_UPDATE_PRIO_1),
+ *    then it also has UpdateDisplay() called each frame.
+ * 2. UpdateDisplay() will be called on every entity that 
+ *    has the EF_NEEDS_DISPLAY_UPDATE set every frame, regardless
+ *    of priority.
+ * 3. Execution of updates is hopefully "optimal".  Removal or
+ *    addition of Entities needing update may not be so fast.
+ * 4. The flags on the entity define how it is handled by the 
+ *    scheduler.  Changing them after creation WILL NOT change
+ *    the schedule.  Only removing, changing, a re-adding will
+ *    change them.  THIS PROBABLY SHOULD NOT HAPPEN AND MAY BE
+ *    A DESIGN FLAW (i.e. why do you need to change the schedule).
  */
 class EntityScheduler : public SingletonDynamic<EntityScheduler>
-{   
+{
+private:
+   typedef vector<Entity*> ENTITY_LIST_T;
+   typedef vector<ENTITY_LIST_T> FRAME_LIST_T;
+   typedef map<Entity*, int32> PHASE_MAP_T;
+   
+   ENTITY_LIST_T _needUpdateDisplay;
+   ENTITY_LIST_T _prio1Updates;
+   FRAME_LIST_T _prio2Updates;
+   FRAME_LIST_T _prio3Updates;
+   FRAME_LIST_T _prio4Updates;
+   FRAME_LIST_T _prio5Updates;
+   PHASE_MAP_T _phaseMap;
+   
+   uint32 _frame;
+   
+   void RegisterPrio(Entity* entity, uint32 skip, FRAME_LIST_T& frameList);
+
+   void UpdateEntityList(ENTITY_LIST_T& entList);
+   void RemoveEntity(Entity* entity, FRAME_LIST_T& frameList, uint32 skip);
+   void RemoveEntity(Entity* entity, ENTITY_LIST_T& entityList);
+   
 public:
    
-   virtual bool Init()
-   {
-      Reset();
-      return true;
-   }
-   
-   virtual void Reset()
-   {
-   }
-   
-   virtual void Shutdown()
-   {
-      Reset();
-   }
-   
+   virtual bool Init();
+   virtual void Reset();
+   virtual void Shutdown();
+
+   void Register(Entity* entity);
+   void DeRegister(Entity* entity);
+   void Update();
    
 };
 

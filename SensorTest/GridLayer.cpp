@@ -28,8 +28,8 @@
 #include "Viewport.h"
 
 #define DRAW_GRID
-#define DRAW_GRID_LABELS
-#define DRAW_SCALE_LABEL
+//#define DRAW_GRID_LABELS
+//#define DRAW_SCALE_LABEL
 #define TAG_LABEL_SCALE (1000)
 #define TAG_LABEL_GRID_BASE (2000)
 

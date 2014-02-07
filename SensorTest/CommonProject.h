@@ -32,8 +32,8 @@
 #include "Box2D.h"
 
 
-#define TICKS_PER_SECOND (30)
-#define SECONDS_PER_TICK (1.0/30)
+#define TICKS_PER_SECOND (60)
+#define SECONDS_PER_TICK (1.0/TICKS_PER_SECOND)
 
 
 // Some convenient shortcuts.

@@ -29,25 +29,31 @@
 #include "Viewport.h"
 
 #define LABEL_SCALE 0.5
+#define SHOW_LABELS
+
+void GraphSensorContactLayer::UpdateSensorLabelsAfterViewportChanged()
+{
+   vector<GraphSensor*> sensors = GraphSensorManager::Instance().GetSensors();
+   for(int idx = 0; idx < sensors.size(); ++idx)
+   {
+      GraphSensor& sensor = *sensors[idx];
+      uint32 id = sensor.GetID();
+      
+      b2Vec2 wPos = sensor.GetBody()->GetWorldCenter();
+      CCPoint pPos = Viewport::Instance().Convert(wPos);
+      CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
+      label->setPosition(pPos);
+   }
+   _viewportChanged = false;
+   setVisible(true);
+}
 
 void GraphSensorContactLayer::update(float dt)
 {
    UpdateSensorLabels();
    if(_viewportChanged && _stopWatch.GetSeconds() > 0.5f)
    {
-      vector<GraphSensor*> sensors = GraphSensorManager::Instance().GetSensors();
-      for(int idx = 0; idx < sensors.size(); ++idx)
-      {
-         GraphSensor& sensor = *sensors[idx];
-         uint32 id = sensor.GetID();
-         
-         b2Vec2 wPos = sensor.GetBody()->GetWorldCenter();
-         CCPoint pPos = Viewport::Instance().Convert(wPos);
-         CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
-         label->setPosition(pPos);
-      }
-      _viewportChanged = false;
-      setVisible(true);
+      UpdateSensorLabelsAfterViewportChanged();
    }
 }
 
@@ -86,8 +92,7 @@ void GraphSensorContactLayer::UpdateSensorLabels()
       uint32 id = sensor.GetID();
       CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
       label->setString(buffer);
-      //      label->setVisible(count != 0);
-      sensor.GetBody()->SetDebugDraw(count != 0);
+      label->setVisible(count != 0);
    }
    GraphSensorManager::Instance().ClearChangedSensors();
 }

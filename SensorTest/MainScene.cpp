@@ -41,6 +41,7 @@
 #include "SunBackgroundLayer.h"
 #include "SpriteBatchLayer.h"
 #include "EntityUtilities.h"
+#include "EntityScheduler.h"
 #include "Spaceship.h"
 
 /* This class generates a graph sensor array on a rectangular
@@ -204,7 +205,7 @@ private:
 
    
 public:
-   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 2.50f, float32 separation = 2.50f) :
+   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 1.0f, float32 separation = 2.5f) :
    _world(world),
    _diameter(diameter),
    _separation(separation)
@@ -232,7 +233,7 @@ void MainScene::CreateEntity()
    _entity = new Spaceship();
    _entity->Create(*_world,position, 0);
    _shipLayer->AddSprite(_entity->GetSprite());
-   EntityManager::Instance().RegisterEntity(_entity);
+   EntityManager::Instance().Register(_entity);
 }
 
 void MainScene::InitSystem()
@@ -247,6 +248,9 @@ void MainScene::InitSystem()
    EntityManager::Instance().Init();
    GraphSensorManager::Instance().Init();
    SystemContactListener::Instance().Init();
+   EntityScheduler::Instance().Init();
+   
+   
    Box2DShapeCache::instance().addShapesWithFile("Asteroids.plist");
    Box2DShapeCache::instance().addShapesWithFile("Entity.plist");
    
@@ -314,7 +318,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   addChild(Box2DDebugDrawLayer::create(_world));
+   //addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -339,7 +343,7 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   addChild(GraphSensorContactLayer::create());
+   //addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
@@ -392,7 +396,8 @@ void MainScene::update(float dt)
 {
    UpdatePhysics();
    UpdateEntity();
-   UpdateAsteroids();
+   EntityScheduler::Instance().Update();
+   //   UpdateAsteroids();
 }
 
 
@@ -511,7 +516,7 @@ void MainScene::CreateAsteroids()
          
          asteroid->GetBody()->SetDebugDraw(false);
          
-         EntityManager::Instance().RegisterEntity(asteroid);
+         EntityManager::Instance().Register(asteroid);
          _asteroids.push_back(asteroid);
          
          
@@ -533,6 +538,9 @@ void MainScene::CreateAsteroids()
    for(int idx = 0;idx < _asteroids.size(); idx++)
    {
       _asteroidLayer->AddSprite(_asteroids[idx]->GetSprite());
+      EntityScheduler::Instance().Register(_asteroids[idx]);
+      // Give it at least one update to start.
+      _asteroids[idx]->Update();
    }
 }
 

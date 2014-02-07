@@ -56,8 +56,8 @@ public:
       EF_IS_GRAPH_SENSOR         = 1 << 0,
       // Can this entity move at all?
       EF_CAN_MOVE                = 1 << 1,
-      // Needs to update the diplay regularly.
-      EF_NEEDS_DISPLAY_UPDATE    = 1 << 7,
+      // Does not need to update the diplay regularly.
+      EF_NO_DISPLAY_UPDATE    = 1 << 7,
       
       EF_FLAG_MAX                = 1 << 31
    };

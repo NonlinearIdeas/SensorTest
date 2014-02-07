@@ -85,7 +85,7 @@ public:
    }
    
    Asteroid() :
-   Entity(EF_CAN_MOVE,50)
+   Entity(EF_CAN_MOVE | EF_UPDATE_PRIO_5,50)
    {
       
    }

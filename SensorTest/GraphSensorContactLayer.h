@@ -36,6 +36,7 @@ class GraphSensorContactLayer : public CCLayer, Notified
 {
 private:
    void UpdateSensorLabels();
+   void UpdateSensorLabelsAfterViewportChanged();
    void InitSensorLabels();
    void ViewportChanged();
    StopWatch _stopWatch;

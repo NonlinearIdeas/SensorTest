@@ -34,6 +34,8 @@
 #include "GraphSensorGenerator.h"
 #include "EntityManager.h"
 
+#define SHOW_SENSOR_BODIES
+
 
 /* This class is a container and manager for
  * GraphSensor objects.  It creates them and
@@ -53,14 +55,9 @@ private:
    vector<GraphSensor*> _sensors;
    SENSOR_SET_T _changedSensors;
    
-   void DestroySensors()
+   void RemoveSensors()
    {
-      EntityManager& em = EntityManager::Instance();
       _changedSensors.clear();
-      for(int idx = 0; idx < _sensors.size(); ++idx)
-      {
-         delete em.DeregisterEntity(_sensors[idx]->GetID());
-      }
       _sensors.clear();
    }
    
@@ -88,7 +85,7 @@ public:
    
    virtual void Reset()
    {
-      DestroySensors();
+      RemoveSensors();
    }
    
    virtual void Shutdown()
@@ -126,6 +123,9 @@ public:
    void UpdateGraphSensorState(GraphSensor* sensor)
    {
       _changedSensors.insert(sensor);
+#ifdef SHOW_SENSOR_BODIES
+      sensor->GetBody()->SetDebugDraw(sensor->GetContactCount() != 0);
+#endif
    }
    
    GraphSensorManager()

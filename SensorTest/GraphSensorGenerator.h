@@ -87,7 +87,7 @@ protected:
       assert(_sensors.size() > 0);
       for(int idx = 0; idx < _sensors.size(); ++idx)
       {
-         EntityManager::Instance().RegisterEntity(_sensors[idx]);
+         EntityManager::Instance().Register(_sensors[idx]);
       }
    }
    
