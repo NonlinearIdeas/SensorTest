@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */; };
+		1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A30C3EC18A675A800195E50 /* GraphCommon.cpp */; };
 		1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */; };
 		1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B298189C96320034D1B9 /* Asteroids.plist */; };
 		1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */; };
@@ -340,6 +341,8 @@
 /* Begin PBXFileReference section */
 		1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityScheduler.cpp; sourceTree = "<group>"; };
 		1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityScheduler.h; sourceTree = "<group>"; };
+		1A30C3EC18A675A800195E50 /* GraphCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GraphCommon.cpp; path = ../GraphCommon.cpp; sourceTree = "<group>"; };
+		1A30C3ED18A675A800195E50 /* GraphCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GraphCommon.h; path = ../GraphCommon.h; sourceTree = "<group>"; };
 		1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DShapeCache.cpp; sourceTree = "<group>"; };
 		1A81B296189C96130034D1B9 /* Box2DShapeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DShapeCache.h; sourceTree = "<group>"; };
 		1A81B298189C96320034D1B9 /* Asteroids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids.plist; sourceTree = "<group>"; };
@@ -2331,6 +2334,8 @@
 				1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */,
 				1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */,
 				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
+				1A30C3ED18A675A800195E50 /* GraphCommon.h */,
+				1A30C3EC18A675A800195E50 /* GraphCommon.cpp */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
 				1AFC762B188DE36A00A258FB /* GraphSensor.cpp */,
 				1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */,
@@ -2569,6 +2574,7 @@
 				1A9619ED188AED44006789B0 /* TGAlib.cpp in Sources */,
 				1A96187E188AED40006789B0 /* CCConfiguration.cpp in Sources */,
 				1A961868188AED40006789B0 /* CCActionPageTurn3D.cpp in Sources */,
+				1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */,
 				1A961B27188AED46006789B0 /* Bone.cpp in Sources */,
 				1A9618FD188AED41006789B0 /* CCKeypadDispatcher.cpp in Sources */,
 				1A9619F9188AED44006789B0 /* CCUserDefault.mm in Sources */,

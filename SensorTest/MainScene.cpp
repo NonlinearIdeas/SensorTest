@@ -44,6 +44,8 @@
 #include "EntityScheduler.h"
 #include "Spaceship.h"
 
+#include "GraphCommon.h"
+
 /* This class generates a graph sensor array on a rectangular
  * grid.
  *
@@ -407,6 +409,7 @@ void MainScene::update(float dt)
 void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 {
    _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
+   TestDFS();
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
 {

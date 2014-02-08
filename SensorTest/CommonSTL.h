@@ -34,10 +34,13 @@
 #include <map>
 #include <set>
 #include <queue>
+#include <stack>
 #include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <stdexcept>
+#include <ostream>
+#include <fstream>
 
 using namespace std;
 
