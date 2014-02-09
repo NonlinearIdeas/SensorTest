@@ -34,7 +34,7 @@ void TestDFS()
     * 0 ==> 1, 2
     * 1 ==> 0, 4
     * 2 ==> 0, 3
-    * 3 ==> 2, 4
+    * 3 ==> 2, 4, 5
     * 4 ==> 1, 3, 5
     * 5 ==> 3, 4
     */
@@ -57,14 +57,23 @@ void TestDFS()
    graph.AddEdge(GraphEdge(2,3));
    graph.AddEdge(GraphEdge(3,2));
    graph.AddEdge(GraphEdge(3,4));
+   graph.AddEdge(GraphEdge(3,5));
    graph.AddEdge(GraphEdge(4,5));
    graph.AddEdge(GraphEdge(4,3));
    graph.AddEdge(GraphEdge(4,1));
    graph.AddEdge(GraphEdge(5,3));
    graph.AddEdge(GraphEdge(5,4));
    
+   // Disable a node
+   //graph.EnableNode(4, false);
+   //graph.EnableEdge(1, 0, false);
+   graph.EnableEdge(4, 1, false);
+   graph.EnableEdge(4, 3, false);
    // Perform the search.
    GraphSearchDFS search(graph,4,2);
+   
+   
+   
    GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
    
    switch(sstate)
@@ -92,7 +101,7 @@ void TestBFS()
     * 0 ==> 1, 2
     * 1 ==> 0, 4
     * 2 ==> 0, 3
-    * 3 ==> 2, 4
+    * 3 ==> 2, 4. 5
     * 4 ==> 1, 3, 5
     * 5 ==> 3, 4
     */
@@ -115,6 +124,7 @@ void TestBFS()
    graph.AddEdge(GraphEdge(2,3));
    graph.AddEdge(GraphEdge(3,2));
    graph.AddEdge(GraphEdge(3,4));
+   graph.AddEdge(GraphEdge(3,5));
    graph.AddEdge(GraphEdge(4,5));
    graph.AddEdge(GraphEdge(4,3));
    graph.AddEdge(GraphEdge(4,1));
@@ -123,6 +133,11 @@ void TestBFS()
    
    // Perform the search.
    GraphSearchBFS search(graph,0,5);
+   
+   //   graph.EnableNode(5, false);
+   graph.EnableEdge(0, 2, false);
+   graph.EnableEdge(4, 5, false);
+   
    GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
    
    switch(sstate)

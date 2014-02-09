@@ -126,7 +126,7 @@ public:
    
    void Dump()
    {
-      cout << "Node(" << _index+1 << ")" << endl;
+      cout << "Node(" << _index << ")" << endl;
    }
 };
 
@@ -200,7 +200,7 @@ public:
    
    inline void Dump()
    {
-      cout << "Edge: " << _src+1 << "-->" << _des+1 << endl;
+      cout << "Edge: " << _src << "-->" << _des << endl;
    }
 };
 /* This class manages a sparse DIRECTED ACYCLIC GRAPH (DAG).
@@ -330,13 +330,34 @@ public:
       if(src < _nodes.size())
       {
          Node* node = FindNode(src);
+         if(node != NULL)
+         {
+            if(enable)
+            {
+               node->SetFlag(Node::GNF_IS_CONNECTED);
+            }
+            else
+            {
+               node->ClearFlag(Node::GNF_IS_CONNECTED);
+            }
+         }
+      }
+   }
+   
+   void EnableEdge(uint32 src, uint32 des, bool enable)
+   {
+      assert(src < _edges.size());
+      assert(des < _edges.size());
+      Edge* edge = FindEdge(src,des);
+      if(edge != NULL)
+      {
          if(enable)
          {
-            node->SetFlag(Node::GNF_IS_CONNECTED);
+            edge->SetFlag(Edge::GEF_IS_CONNECTED);
          }
          else
          {
-            node->ClearFlag(Node::GNF_IS_CONNECTED);
+            edge->ClearFlag(Edge::GEF_IS_CONNECTED);
          }
       }
    }
@@ -417,6 +438,7 @@ protected:
    inline const Graph& Graph() { return _graph; }
    virtual SEARCH_STATE_T SearchCycle() = 0;
    
+   typedef Graph::Node Node;
    typedef Graph::Edge Edge;
    typedef Graph::EDGES_T EDGES_T;
    
@@ -433,27 +455,60 @@ public:
       _visited(_graph.GetNodeCount(),NS_NOT_VISITED),
       _route(_graph.GetNodeCount(),NS_NO_PARENT)
    {
-      
+      // Special case...if the start/target node has already
+      // been disconnected, then fail immediately.
+      if(graph.GetNode(_startNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      {
+         _searchState = SS_NOT_FOUND;
+      }
+      if(graph.GetNode(_targetNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      {
+         _searchState = SS_NOT_FOUND;
+      }
    }
    
    
    SEARCH_STATE_T SearchGraph()
    {
-      while(SearchState() == SS_STILL_WORKING)
+      while(_searchState == SS_STILL_WORKING)
       {
-         SearchState() = SearchCycle();
+         // Special case...if the start/target node has been disabled
+         if(_graph.GetNode(_startNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         {
+            _searchState = SS_NOT_FOUND;
+         }
+         else if(_graph.GetNode(_targetNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         {
+            _searchState = SS_NOT_FOUND;
+         }
+         else
+         {
+            _searchState = SearchCycle();
+         }
       }
-      return SearchState();
+      return _searchState;
    }
 
    SEARCH_STATE_T SearchGraph(uint32 cycles)
    {
-      while(SearchState() == SS_STILL_WORKING && cycles > 0)
+      while(_searchState == SS_STILL_WORKING && cycles > 0)
       {
-         SearchState() = SearchCycle();
+         // Special case...if the start/target node has been disabled
+         if(_graph.GetNode(_startNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         {
+            _searchState = SS_NOT_FOUND;
+         }
+         else if(_graph.GetNode(_targetNode).IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         {
+            _searchState = SS_NOT_FOUND;
+         }
+         else
+         {
+            _searchState = SearchCycle();
+         }
          --cycles;
       }
-      return SearchState();
+      return _searchState;
    }
    
    
@@ -528,21 +583,27 @@ protected:
       {  // Yes.  We are done.
          return SS_FOUND;
       }
-      // No.  Push all the edges that lead from the
+      // No.  Push all the edges that lead to the des
       // node onto the stack IFF we have not already
-      // visited that destination.
-      const EDGES_T& edges = Graph().GetEdges(des);
-      for(EDGES_T::const_iterator iter = edges.begin();
-          iter != edges.end();
-          ++iter)
-      {  // If the destination node has not been visited,
-         // then add it.
-         if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
-         {
-            _stack.push(&(*iter));
+      // visited that destination and if it is available.
+      const Node& node = Graph().GetNode(des);
+      if(node.IsFlagSet(GraphNode::GNF_IS_CONNECTED))
+      {
+         const EDGES_T& edges = Graph().GetEdges(des);
+         for(EDGES_T::const_iterator iter = edges.begin();
+             iter != edges.end();
+             ++iter)
+         {  // If the destination node has not been visited,
+            // then add it.
+            if(iter->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            {
+               if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
+               {
+                  _stack.push(&(*iter));
+               }
+            }
          }
       }
-      
       return SS_STILL_WORKING;
    }
 
@@ -591,15 +652,22 @@ protected:
       // No.  Push all the edges that lead from the
       // node onto the stack IFF we have not already
       // visited that destination.
-      const EDGES_T& edges = Graph().GetEdges(des);
-      for(EDGES_T::const_iterator iter = edges.begin();
-          iter != edges.end();
-          ++iter)
-      {  // If the destination node has not been visited,
-         // then add it.
-         if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
-         {
-            _queue.push(&(*iter));
+      const Node& node = Graph().GetNode(des);
+      if(node.IsFlagSet(GraphNode::GNF_IS_CONNECTED))
+      {
+         const EDGES_T& edges = Graph().GetEdges(des);
+         for(EDGES_T::const_iterator iter = edges.begin();
+             iter != edges.end();
+             ++iter)
+         {  // If the destination node has not been visited,
+            // and edge is available, then add it.
+            if(iter->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            {
+               if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
+               {
+                  _queue.push(&(*iter));
+               }
+            }
          }
       }
       
