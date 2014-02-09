@@ -27,6 +27,22 @@
 
 #include "GraphCommon.h"
 
+class NavGraphNode : public GraphNode
+{
+private:
+   Vec2 _pos;
+   
+public:
+   const Vec2& GetPos() { return _pos; }
+   void SetPos(const Vec2& pos) { _pos = pos; }
+   
+   NavGraphNode(uint32 ID) :
+      GraphNode(ID)
+   {
+      
+   }
+};
+
 void TestDFS()
 {
    /* A Simple Graph with 6 nodes:
@@ -39,14 +55,14 @@ void TestDFS()
     * 5 ==> 3, 4
     */
    
-   Graph graph;
+   Graph<NavGraphNode,GraphEdge> graph;
    // Add Nodes
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
+   graph.AddNode(NavGraphNode(1));
+   graph.AddNode(NavGraphNode(2));
+   graph.AddNode(NavGraphNode(3));
+   graph.AddNode(NavGraphNode(4));
+   graph.AddNode(NavGraphNode(5));
+   graph.AddNode(NavGraphNode(6));
 
    // Add Edges
    graph.AddEdge(GraphEdge(0,1));
@@ -67,31 +83,13 @@ void TestDFS()
    // Disable a node
    //graph.EnableNode(4, false);
    //graph.EnableEdge(1, 0, false);
-   graph.EnableEdge(4, 1, false);
-   graph.EnableEdge(4, 3, false);
+   graph.EnableEdges(4, 1, false);
+   graph.EnableEdges(4, 3, false);
    // Perform the search.
-   GraphSearchDFS search(graph,4,2);
+   GraphSearchDFS<NavGraphNode,GraphEdge> search(graph,4,2);
    
-   
-   
-   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
-   
-   switch(sstate)
-   {
-      case GraphSearchAlgorithm::SS_STILL_WORKING:
-         cout << "YIKES...STILL WORKING" << endl;
-         break;
-      case GraphSearchAlgorithm::SS_NOT_FOUND:
-         cout << "YIKES...NO RESULT FOUND" << endl;
-         break;
-      case GraphSearchAlgorithm::SS_FOUND:
-      {
-         list<uint32> nodeList = search.GetPathNodes();
-         list<Graph::Edge> edgeList = search.GetPathEdges();
-         Dump(edgeList);
-      }
-         break;
-   }
+   search.SearchGraph();
+   search.Dump();
 }
 
 void TestBFS()
@@ -106,14 +104,14 @@ void TestBFS()
     * 5 ==> 3, 4
     */
    
-   Graph graph;
+   Graph<NavGraphNode,GraphEdge> graph;
    // Add Nodes
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
-   graph.AddNode(GraphNode());
+   graph.AddNode(NavGraphNode(1));
+   graph.AddNode(NavGraphNode(2));
+   graph.AddNode(NavGraphNode(3));
+   graph.AddNode(NavGraphNode(4));
+   graph.AddNode(NavGraphNode(5));
+   graph.AddNode(NavGraphNode(6));
    
    // Add Edges
    graph.AddEdge(GraphEdge(0,1));
@@ -132,30 +130,14 @@ void TestBFS()
    graph.AddEdge(GraphEdge(5,4));
    
    // Perform the search.
-   GraphSearchBFS search(graph,0,5);
+   GraphSearchBFS<NavGraphNode,GraphEdge> search(graph,0,5);
    
    //   graph.EnableNode(5, false);
    graph.EnableEdge(0, 2, false);
    graph.EnableEdge(4, 5, false);
    
-   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
-   
-   switch(sstate)
-   {
-      case GraphSearchAlgorithm::SS_STILL_WORKING:
-         cout << "YIKES...STILL WORKING" << endl;
-         break;
-      case GraphSearchAlgorithm::SS_NOT_FOUND:
-         cout << "YIKES...NO RESULT FOUND" << endl;
-         break;
-      case GraphSearchAlgorithm::SS_FOUND:
-      {
-         list<uint32> nodeList = search.GetPathNodes();
-         list<Graph::Edge> edgeList = search.GetPathEdges();
-         Dump(edgeList);
-      }
-         break;
-   }
+   search.SearchGraph();
+   search.Dump();
 }
 
 
@@ -170,13 +152,4 @@ void Dump(list<uint32>& nodeList)
    }
 }
 
-void Dump(list<Graph::Edge>& edgeList)
-{
-   cout << "Edge List:" << endl;
-   for(list<Graph::Edge>::iterator iter = edgeList.begin();
-       iter != edgeList.end();
-       ++iter)
-   {
-      iter->Dump();
-   }
-}
+

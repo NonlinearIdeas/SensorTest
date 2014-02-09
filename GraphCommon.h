@@ -96,7 +96,8 @@ public:
 class GraphNode : public HasFlags
 {
 private:
-   uint32 _index;
+   uint32 _graphIndex;
+   uint32 _ID;
 public:
    // Flags used for the edge.  These
    // can be state flags or may indicate
@@ -109,24 +110,36 @@ public:
    
    GraphNode() :
       HasFlags(GNF_IS_CONNECTED),
-      _index(INVALID_NODE_INDEX)
+      _graphIndex(INVALID_NODE_INDEX),
+      _ID(0)
    {
       
    }
    
-   GraphNode(uint32 flags) :
+   GraphNode(uint32 ID,uint32 flags) :
       HasFlags(flags),
-      _index(INVALID_NODE_INDEX)
+      _graphIndex(INVALID_NODE_INDEX),
+      _ID(ID)
    {
       
    }
    
-   inline void SetIndex(uint32 index) { _index = index; }
-   inline uint32 GetIndex() const { return _index; }
+   GraphNode(uint32 ID) :
+      HasFlags(GNF_IS_CONNECTED),
+      _graphIndex(INVALID_NODE_INDEX),
+      _ID(ID)
+   {
+      
+   }
+   
+   inline void SetGraphIndex(uint32 index) { _graphIndex = index; }
+   inline uint32 GetGraphIndex() const { return _graphIndex; }
+   inline void SetID(uint32 ID) { _ID = ID; }
+   inline uint32 GetID() const { return _ID; }
    
    void Dump()
    {
-      cout << "Node(" << _index << ")" << endl;
+      cout << "Node(" << _ID << ")" << endl;
    }
 };
 
@@ -207,15 +220,16 @@ public:
  * It will NOT automatically add connections for both directions
  * for an edge from a node.
  */
+template <class NODE_TYPE, class EDGE_TYPE>
 class Graph
 {
 public:
-   typedef GraphNode Node;
-   typedef GraphEdge Edge;
+   typedef NODE_TYPE Node;
+   typedef EDGE_TYPE Edge;
    
-   typedef vector<GraphNode>   NODES_T;
-   typedef vector<GraphEdge>     EDGES_T;
-   typedef vector< vector<GraphEdge> >    NODE_EDGES_T;
+   typedef vector<NODE_TYPE>   NODES_T;
+   typedef vector<EDGE_TYPE>     EDGES_T;
+   typedef vector< vector<EDGE_TYPE> >    NODE_EDGES_T;
    
 private:
    // A vector of the nodes in this graph.  Keeping them as a
@@ -241,11 +255,11 @@ private:
    {
       assert(src < _edges.size());
       EDGES_T& edges = _edges[src];
-      for(EDGES_T::iterator iter = edges.begin(); iter != edges.end(); ++iter)
+      for(int idx = 0; idx < edges.size(); ++idx)
       {
-         if(iter->GetDes() == des)
+         if(edges[idx].GetDes() == des)
          {
-            return &(*iter);
+            return &(edges[idx]);
          }
       }
       return NULL;
@@ -309,10 +323,10 @@ public:
    
    uint32 AddNode(const Node& node)
    {
-      assert(node.GetIndex() == INVALID_NODE_INDEX);
+      assert(node.GetGraphIndex() == INVALID_NODE_INDEX);
       uint32 index = _nodes.size();
       _nodes.push_back(node);
-      _nodes[index].SetIndex(index);
+      _nodes[index].SetGraphIndex(index);
       _edges.push_back(EDGES_T());
       return index;
    }
@@ -361,6 +375,12 @@ public:
          }
       }
    }
+
+   void EnableEdges(uint32 src, uint32 des, bool enable)
+   {
+      EnableEdge(src,des,enable);
+      EnableEdge(des,src,enable);
+   }   
    
    void AddEdge(const Edge& edge)
    {
@@ -403,26 +423,32 @@ public:
  * overloads the methods as needed to implement
  * the graph search.
  */
+
+typedef enum
+{
+   NS_VISITED,
+   NS_NOT_VISITED,
+   NS_NO_PARENT
+} NODE_STATE_T;
+
+typedef enum
+{
+   SS_FOUND,
+   SS_NOT_FOUND,
+   SS_STILL_WORKING,
+} SEARCH_STATE_T;
+
+template <class NODE_TYPE, class EDGE_TYPE>
 class GraphSearchAlgorithm
 {
 protected:
-   typedef enum
-   {
-      NS_VISITED,
-      NS_NOT_VISITED,
-      NS_NO_PARENT
-   } NODE_STATE_T;
+   
+   typedef Graph<NODE_TYPE,EDGE_TYPE> GRAPH_TYPE;
    
 public:
-   typedef enum
-   {
-      SS_FOUND,
-      SS_NOT_FOUND,
-      SS_STILL_WORKING,
-   } SEARCH_STATE_T;
    
 private:
-   const Graph& _graph;
+   const GRAPH_TYPE& _graph;
    vector<NODE_STATE_T> _visited;
    vector<uint32> _route;
    uint32 _startNode;
@@ -435,17 +461,17 @@ protected:
    inline vector<uint32>& Route() { return _route; }
    inline const uint32& StartNode() const { return _startNode; }
    inline const uint32& TargetNode() const { return _targetNode; }
-   inline const Graph& Graph() { return _graph; }
+   inline const Graph<NODE_TYPE,EDGE_TYPE>& Graph() { return _graph; }
    virtual SEARCH_STATE_T SearchCycle() = 0;
    
-   typedef Graph::Node Node;
-   typedef Graph::Edge Edge;
-   typedef Graph::EDGES_T EDGES_T;
+   typedef typename GRAPH_TYPE::Node Node;
+   typedef typename GRAPH_TYPE::Edge Edge;
+   typedef typename GRAPH_TYPE::EDGES_T EDGES_T;
    
 public:
    SEARCH_STATE_T GetSearchState() { return _searchState; }
    
-   GraphSearchAlgorithm(const class Graph& graph,
+   GraphSearchAlgorithm(const GRAPH_TYPE& graph,
                         uint32 start,
                         uint32 target) :
       _graph(graph),
@@ -552,11 +578,42 @@ public:
    
       return path;
    }
+   
+   void Dump()
+   {
+      switch(_searchState)
+      {
+         case SS_STILL_WORKING:
+            cout << "YIKES...STILL WORKING" << endl;
+            break;
+         case SS_NOT_FOUND:
+            cout << "YIKES...NO RESULT FOUND" << endl;
+            break;
+         case SS_FOUND:
+         {
+            list<Edge> edgeList = GetPathEdges();
+            while(edgeList.size() > 0)
+            {
+               edgeList.begin()->Dump();
+               edgeList.erase(edgeList.begin());
+            }
+         }
+            break;
+      }
+      
+   }
+   
 };
 
-class GraphSearchDFS : public GraphSearchAlgorithm
+template <class NODE_TYPE, class EDGE_TYPE>
+class GraphSearchDFS : public GraphSearchAlgorithm<NODE_TYPE,EDGE_TYPE>
 {
 private:
+   typedef Graph<NODE_TYPE,EDGE_TYPE> GRAPH_TYPE;
+   typedef typename GRAPH_TYPE::Node Node;
+   typedef typename GRAPH_TYPE::Edge Edge;
+   typedef typename GRAPH_TYPE::EDGES_T EDGES_T;
+   
    stack<const Edge*> _stack;
    Edge _firstEdge;
 protected:
@@ -575,31 +632,29 @@ protected:
       uint32 src = edge->GetSrc();
       uint32 des = edge->GetDes();
       // Update the route for the path we are following.
-      Route()[des] = src;
+      this->Route()[des] = src;
       // Mark that we have visited this node.
-      Visited()[des] = NS_VISITED;
+      this->Visited()[des] = NS_VISITED;
       // Is this the node we are looking for?
-      if(des == TargetNode())
+      if(des == this->TargetNode())
       {  // Yes.  We are done.
          return SS_FOUND;
       }
       // No.  Push all the edges that lead to the des
       // node onto the stack IFF we have not already
       // visited that destination and if it is available.
-      const Node& node = Graph().GetNode(des);
+      const Node& node = this->Graph().GetNode(des);
       if(node.IsFlagSet(GraphNode::GNF_IS_CONNECTED))
       {
-         const EDGES_T& edges = Graph().GetEdges(des);
-         for(EDGES_T::const_iterator iter = edges.begin();
-             iter != edges.end();
-             ++iter)
+         const EDGES_T& edges = this->Graph().GetEdges(des);
+         for(int idx = 0; idx < edges.size(); ++idx)
          {  // If the destination node has not been visited,
             // then add it.
-            if(iter->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            if(edges[idx].IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
             {
-               if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
+               if(this->Visited()[edges[idx].GetDes()] == NS_NOT_VISITED)
                {
-                  _stack.push(&(*iter));
+                  _stack.push(&(edges[idx]));
                }
             }
          }
@@ -608,10 +663,10 @@ protected:
    }
 
 public:
-   GraphSearchDFS(const class Graph& graph,
+   GraphSearchDFS(const GRAPH_TYPE& graph,
                   uint32 start,
                   uint32 target) :
-   GraphSearchAlgorithm(graph,start,target)
+   GraphSearchAlgorithm<NODE_TYPE,EDGE_TYPE>(graph,start,target)
    {
       _firstEdge.SetDes(start);
       _firstEdge.SetSrc(start);
@@ -620,9 +675,15 @@ public:
 };
 
 
-class GraphSearchBFS : public GraphSearchAlgorithm
+template <class NODE_TYPE, class EDGE_TYPE>
+class GraphSearchBFS : public GraphSearchAlgorithm<NODE_TYPE,EDGE_TYPE>
 {
 private:
+   typedef Graph<NODE_TYPE,EDGE_TYPE> GRAPH_TYPE;
+   typedef typename GRAPH_TYPE::Node Node;
+   typedef typename GRAPH_TYPE::Edge Edge;
+   typedef typename GRAPH_TYPE::EDGES_T EDGES_T;
+   
    queue<const Edge*> _queue;
    Edge _firstEdge;
 protected:
@@ -641,44 +702,41 @@ protected:
       uint32 src = edge->GetSrc();
       uint32 des = edge->GetDes();
       // Update the route for the path we are following.
-      Route()[des] = src;
+      this->Route()[des] = src;
       // Mark that we have visited this node.
-      Visited()[des] = NS_VISITED;
+      this->Visited()[des] = NS_VISITED;
       // Is this the node we are looking for?
-      if(des == TargetNode())
+      if(des == this->TargetNode())
       {  // Yes.  We are done.
          return SS_FOUND;
       }
-      // No.  Push all the edges that lead from the
+      // No.  Push all the edges that lead to the des
       // node onto the stack IFF we have not already
-      // visited that destination.
-      const Node& node = Graph().GetNode(des);
+      // visited that destination and if it is available.
+      const Node& node = this->Graph().GetNode(des);
       if(node.IsFlagSet(GraphNode::GNF_IS_CONNECTED))
       {
-         const EDGES_T& edges = Graph().GetEdges(des);
-         for(EDGES_T::const_iterator iter = edges.begin();
-             iter != edges.end();
-             ++iter)
+         const EDGES_T& edges = this->Graph().GetEdges(des);
+         for(int idx = 0; idx < edges.size(); ++idx)
          {  // If the destination node has not been visited,
-            // and edge is available, then add it.
-            if(iter->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            // then add it.
+            if(edges[idx].IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
             {
-               if(Visited()[iter->GetDes()] == NS_NOT_VISITED)
+               if(this->Visited()[edges[idx].GetDes()] == NS_NOT_VISITED)
                {
-                  _queue.push(&(*iter));
+                  _queue.push(&(edges[idx]));
                }
             }
          }
       }
-      
       return SS_STILL_WORKING;
    }
    
 public:
-   GraphSearchBFS(const class Graph& graph,
+   GraphSearchBFS(const GRAPH_TYPE& graph,
                   uint32 start,
                   uint32 target) :
-   GraphSearchAlgorithm(graph,start,target)
+   GraphSearchAlgorithm<NODE_TYPE,EDGE_TYPE>(graph,start,target)
    {
       _firstEdge.SetDes(start);
       _firstEdge.SetSrc(start);
@@ -686,12 +744,9 @@ public:
    }
 };
 
-
 // A small Test Program for the DFS search
 void TestDFS();
 void TestBFS();
-void Dump(list<uint32>& nodeList);
-void Dump(list<Graph::Edge>& edgeList);
 
 
 #endif /* defined(__GraphCommon__) */
