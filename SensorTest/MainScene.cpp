@@ -409,7 +409,7 @@ void MainScene::update(float dt)
 void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 {
    _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
-   TestBFS();
+   TestDFS();
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
 {

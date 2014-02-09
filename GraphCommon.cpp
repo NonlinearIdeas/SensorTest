@@ -39,7 +39,14 @@ public:
    NavGraphNode(uint32 ID) :
       GraphNode(ID)
    {
-      
+      _pos.x = ID;
+      _pos.y = 2*ID;
+   }
+   
+   virtual void Dump() const
+   {
+      GraphNode::Dump();
+      cout << "- NavGraphNode(" << _pos.x << "," << _pos.y << ")" << endl;
    }
 };
 
@@ -55,30 +62,30 @@ void TestDFS()
     * 5 ==> 3, 4
     */
    
-   Graph<NavGraphNode,GraphEdge> graph;
+   Graph graph;
    // Add Nodes
-   graph.AddNode(NavGraphNode(1));
-   graph.AddNode(NavGraphNode(2));
-   graph.AddNode(NavGraphNode(3));
-   graph.AddNode(NavGraphNode(4));
-   graph.AddNode(NavGraphNode(5));
-   graph.AddNode(NavGraphNode(6));
+   graph.AddNode(new NavGraphNode(1));
+   graph.AddNode(new NavGraphNode(2));
+   graph.AddNode(new NavGraphNode(3));
+   graph.AddNode(new NavGraphNode(4));
+   graph.AddNode(new NavGraphNode(5));
+   graph.AddNode(new NavGraphNode(6));
 
    // Add Edges
-   graph.AddEdge(GraphEdge(0,1));
-   graph.AddEdge(GraphEdge(0,2));
-   graph.AddEdge(GraphEdge(1,0));
-   graph.AddEdge(GraphEdge(1,4));
-   graph.AddEdge(GraphEdge(2,0));
-   graph.AddEdge(GraphEdge(2,3));
-   graph.AddEdge(GraphEdge(3,2));
-   graph.AddEdge(GraphEdge(3,4));
-   graph.AddEdge(GraphEdge(3,5));
-   graph.AddEdge(GraphEdge(4,5));
-   graph.AddEdge(GraphEdge(4,3));
-   graph.AddEdge(GraphEdge(4,1));
-   graph.AddEdge(GraphEdge(5,3));
-   graph.AddEdge(GraphEdge(5,4));
+   graph.AddEdge(new GraphEdge(0,1));
+   graph.AddEdge(new GraphEdge(0,2));
+   graph.AddEdge(new GraphEdge(1,0));
+   graph.AddEdge(new GraphEdge(1,4));
+   graph.AddEdge(new GraphEdge(2,0));
+   graph.AddEdge(new GraphEdge(2,3));
+   graph.AddEdge(new GraphEdge(3,2));
+   graph.AddEdge(new GraphEdge(3,4));
+   graph.AddEdge(new GraphEdge(3,5));
+   graph.AddEdge(new GraphEdge(4,5));
+   graph.AddEdge(new GraphEdge(4,3));
+   graph.AddEdge(new GraphEdge(4,1));
+   graph.AddEdge(new GraphEdge(5,3));
+   graph.AddEdge(new GraphEdge(5,4));
    
    // Disable a node
    //graph.EnableNode(4, false);
@@ -86,7 +93,7 @@ void TestDFS()
    graph.EnableEdges(4, 1, false);
    graph.EnableEdges(4, 3, false);
    // Perform the search.
-   GraphSearchDFS<NavGraphNode,GraphEdge> search(graph,4,2);
+   GraphSearchDFS search(graph,4,2);
    
    search.SearchGraph();
    search.Dump();
@@ -104,33 +111,33 @@ void TestBFS()
     * 5 ==> 3, 4
     */
    
-   Graph<NavGraphNode,GraphEdge> graph;
+   Graph graph;
    // Add Nodes
-   graph.AddNode(NavGraphNode(1));
-   graph.AddNode(NavGraphNode(2));
-   graph.AddNode(NavGraphNode(3));
-   graph.AddNode(NavGraphNode(4));
-   graph.AddNode(NavGraphNode(5));
-   graph.AddNode(NavGraphNode(6));
+   graph.AddNode(new NavGraphNode(1));
+   graph.AddNode(new NavGraphNode(2));
+   graph.AddNode(new NavGraphNode(3));
+   graph.AddNode(new NavGraphNode(4));
+   graph.AddNode(new NavGraphNode(5));
+   graph.AddNode(new NavGraphNode(6));
    
    // Add Edges
-   graph.AddEdge(GraphEdge(0,1));
-   graph.AddEdge(GraphEdge(0,2));
-   graph.AddEdge(GraphEdge(1,0));
-   graph.AddEdge(GraphEdge(1,4));
-   graph.AddEdge(GraphEdge(2,0));
-   graph.AddEdge(GraphEdge(2,3));
-   graph.AddEdge(GraphEdge(3,2));
-   graph.AddEdge(GraphEdge(3,4));
-   graph.AddEdge(GraphEdge(3,5));
-   graph.AddEdge(GraphEdge(4,5));
-   graph.AddEdge(GraphEdge(4,3));
-   graph.AddEdge(GraphEdge(4,1));
-   graph.AddEdge(GraphEdge(5,3));
-   graph.AddEdge(GraphEdge(5,4));
+   graph.AddEdge(new GraphEdge(0,1));
+   graph.AddEdge(new GraphEdge(0,2));
+   graph.AddEdge(new GraphEdge(1,0));
+   graph.AddEdge(new GraphEdge(1,4));
+   graph.AddEdge(new GraphEdge(2,0));
+   graph.AddEdge(new GraphEdge(2,3));
+   graph.AddEdge(new GraphEdge(3,2));
+   graph.AddEdge(new GraphEdge(3,4));
+   graph.AddEdge(new GraphEdge(3,5));
+   graph.AddEdge(new GraphEdge(4,5));
+   graph.AddEdge(new GraphEdge(4,3));
+   graph.AddEdge(new GraphEdge(4,1));
+   graph.AddEdge(new GraphEdge(5,3));
+   graph.AddEdge(new GraphEdge(5,4));
    
    // Perform the search.
-   GraphSearchBFS<NavGraphNode,GraphEdge> search(graph,0,5);
+   GraphSearchBFS search(graph,0,5);
    
    //   graph.EnableNode(5, false);
    graph.EnableEdge(0, 2, false);
