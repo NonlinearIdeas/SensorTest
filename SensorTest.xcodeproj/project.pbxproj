@@ -322,6 +322,7 @@
 		1A961C1B188AEDFD006789B0 /* AppDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1A188AEDFD006789B0 /* AppDelegate.cpp */; };
 		1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1D188AEE57006789B0 /* GridLayer.cpp */; };
 		1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */; };
+		1AB6EABF18A82173005C2A19 /* GridCalculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */; };
 		1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */; };
 		1AC478CE189D7ED000A7967E /* EntityUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */; };
 		1AC478D1189D970F00A7967E /* EntitySpriteImages.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1AC478CF189D970F00A7967E /* EntitySpriteImages.plist */; };
@@ -1009,6 +1010,8 @@
 		1A961C1E188AEE57006789B0 /* GridLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridLayer.h; sourceTree = "<group>"; };
 		1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ViewportCamera.cpp; sourceTree = "<group>"; };
 		1A961C24188AEF2E006789B0 /* ViewportCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewportCamera.h; sourceTree = "<group>"; };
+		1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridCalculator.cpp; sourceTree = "<group>"; };
+		1AB6EABE18A82173005C2A19 /* GridCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridCalculator.h; sourceTree = "<group>"; };
 		1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemContactListener.cpp; sourceTree = "<group>"; };
 		1AB7D90C188EA66700D311F2 /* SystemContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemContactListener.h; sourceTree = "<group>"; };
 		1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityUtilities.cpp; sourceTree = "<group>"; };
@@ -2345,6 +2348,8 @@
 				1AFC762F188DE3AC00A258FB /* GraphSensorManager.h */,
 				1AFC762E188DE3AC00A258FB /* GraphSensorManager.cpp */,
 				1A961C1D188AEE57006789B0 /* GridLayer.cpp */,
+				1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */,
+				1AB6EABE18A82173005C2A19 /* GridCalculator.h */,
 				1A961C1E188AEE57006789B0 /* GridLayer.h */,
 				1A961C02188AEDB7006789B0 /* MainScene.cpp */,
 				1A961C03188AEDB7006789B0 /* MainScene.h */,
@@ -2637,6 +2642,7 @@
 				1A9619D3188AED44006789B0 /* CCProfiling.cpp in Sources */,
 				1A961955188AED42006789B0 /* CCAccelerometer.mm in Sources */,
 				1A961ACC188AED45006789B0 /* CCControlStepper.cpp in Sources */,
+				1AB6EABF18A82173005C2A19 /* GridCalculator.cpp in Sources */,
 				1A96199A188AED43006789B0 /* CCGLProgram.cpp in Sources */,
 				1A961871188AED40006789B0 /* CCActionTween.cpp in Sources */,
 				1A961A99188AED45006789B0 /* CCParticleSystemQuadLoader.cpp in Sources */,

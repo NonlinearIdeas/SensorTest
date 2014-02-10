@@ -38,6 +38,8 @@
 #include "SpriteBatchLayer.h"
 #include "Asteroid.h"
 #include "Spaceship.h"
+#include "GraphCommon.h"
+#include "GridCalculator.h"
 
 class MovingEntityIFace;
 
@@ -56,7 +58,9 @@ private:
    SpriteBatchLayer* _shipLayer;
    vector<Asteroid*> _asteroids;
    b2Body* _anchor;
-
+   Graph _sensorGraph;
+   GraphSearchAlgorithm* _graphSearch;
+   GridCalculator _gridCalculator;
    
 protected:
    // This is protected so that derived classes can call it
@@ -75,6 +79,7 @@ private:
    void UpdatePhysics();
    void UpdateAsteroids();
    void ViewportChanged();
+   void NavigateToPosition(Vec2 pos);
 public:
    
    static MainScene* create();

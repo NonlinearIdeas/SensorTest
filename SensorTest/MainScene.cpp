@@ -44,7 +44,13 @@
 #include "EntityScheduler.h"
 #include "Spaceship.h"
 
-#include "GraphCommon.h"
+
+#define SENSOR_DIAMETER (1.0f)
+#define SENSOR_SEPARATION (2.50f)
+
+
+
+
 
 /* This class generates a graph sensor array on a rectangular
  * grid.
@@ -207,7 +213,7 @@ private:
 
    
 public:
-   GraphSensorGridSquareSensors(b2World* world, float32 diameter = 1.0f, float32 separation = 2.5f) :
+   GraphSensorGridSquareSensors(b2World* world, float32 diameter, float32 separation) :
    _world(world),
    _diameter(diameter),
    _separation(separation)
@@ -220,7 +226,8 @@ public:
 
 
 MainScene::MainScene() :
-   _entity(NULL)
+   _entity(NULL),
+   _graphSearch(NULL)
 {
 }
 
@@ -274,10 +281,38 @@ void MainScene::CreatePhysics()
 
 void MainScene::CreateSensors()
 {
-   GraphSensorGridSquareSensors sensorGrid(_world);
+   GraphSensorGridSquareSensors sensorGrid(_world,SENSOR_DIAMETER,SENSOR_SEPARATION);
    sensorGrid.Create();
    
    GraphSensorManager::Instance().LoadSensors(sensorGrid);
+   
+   // Load the nodes into the graph
+   _sensorGraph.Reset();
+   const GraphSensorGenerator::SENSORS_T& sensors = sensorGrid.GetSensorsConst();
+   const GraphSensorGenerator::SENSORS_ADJ_T& adj = sensorGrid.GetAdjacentSensorsConst();
+
+   // Add the nodes in first.
+   for(int idx = 0; idx < sensors.size(); ++idx)
+   {
+      // Get the raw sensor from the generator
+      const GraphSensor* sensor = sensors[idx];
+      NavGraphNode* node = new NavGraphNode(idx);
+      node->SetPos(sensor->GetBody()->GetWorldCenter());
+      _sensorGraph.AddNode(node);
+   }
+   // Now fill in the adjacdency lists.
+   for(int idx = 0; idx < sensors.size(); ++idx)
+   {
+      const vector<uint32>& adjVec = adj[idx];
+      Vec2 srcPos = sensors[idx]->GetBody()->GetWorldCenter();
+      for(uint32 adjIdx = 0; adjIdx < adjVec.size(); ++adjIdx)
+      {
+         uint32 adjNodeIdx = adjVec[adjIdx];
+         Vec2 desPos = sensors[adjNodeIdx]->GetBody()->GetWorldCenter();
+         NavGraphEdge* edge = new NavGraphEdge(idx,adjNodeIdx,srcPos,desPos);
+         _sensorGraph.AddEdge(edge);
+      }
+   }
 }
 
 bool MainScene::init()
@@ -350,6 +385,10 @@ void MainScene::onEnter()
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
    
+   // Initialize the grid
+   CCSize size = Viewport::Instance().GetWorldSizeMeters();
+   _gridCalculator.Init(size.width, size.height, SENSOR_SEPARATION);
+   
    // Kickstart all sizes
    ViewportChanged();
 }
@@ -376,11 +415,64 @@ void MainScene::onExitTransitionDidStart()
 
 void MainScene::UpdateEntity()
 {
+   static int32 lastIndex = -1;
    if(_entity != NULL)
    {
       _entity->Update();
+      Vec2 pos = _entity->GetBody()->GetWorldCenter();
+      int32 index = _gridCalculator.CalcIndex(pos);
+      if(index != lastIndex)
+      {
+         int32 col = _gridCalculator.CalcCol(index);
+         int32 row = _gridCalculator.CalcRow(index);
+         CCLOG("Entity moved to index %d (%d,%d)",
+               index,col,row);
+         lastIndex = index;
+      }
    }
 }
+
+static void DrawPathList(const list<const GraphEdge*>& edges)
+{
+   Notifier& no = Notifier::Instance();
+   
+   no.Notify(NE_RESET_DRAW_CYCLE);
+   for(list<const GraphEdge*>::const_iterator iter = edges.begin();
+       iter != edges.end();
+       ++iter)
+   {
+      NavGraphEdge* gEdge = (NavGraphEdge*)*iter;
+      LINE_METERS_DATA_T lmd;
+      lmd.start = gEdge->GetSrcPos();
+      lmd.end = gEdge->GetDesPos();
+      no.Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
+   }
+}
+
+void MainScene::NavigateToPosition(Vec2 pos)
+{
+   //   _entity->CommandSeek(pos);
+   int32 startIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
+   int32 targetIdx = _gridCalculator.CalcIndex(pos);
+   CCLOG("Plotting path from %d -> %d",
+         startIdx,targetIdx);
+   GraphSearchBFS search(_sensorGraph,startIdx,targetIdx);
+   search.SearchGraph();
+   list<const GraphEdge*> edges = search.GetPathEdges();
+   CCLOG("There are %ld edges in the path.",edges.size());
+   DrawPathList(edges);
+   list<const GraphNode*> nodes = search.GetPathNodes();
+   list<Vec2> points;
+   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
+       iter != nodes.end();
+       ++iter)
+   {
+      const NavGraphNode* gNode = (NavGraphNode*)*iter;
+      points.push_back(gNode->GetPos());
+   }
+   _entity->CommandFollowPath(points);
+}
+
 
 void MainScene::UpdatePhysics()
 {
@@ -408,8 +500,7 @@ void MainScene::update(float dt)
 // Handler for Tap/Drag/Pinch Events
 void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 {
-   _entity->CommandSeek(Viewport::Instance().Convert(point.pos));
-   TestDFS();
+   NavigateToPosition(Viewport::Instance().Convert(point.pos));
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
 {

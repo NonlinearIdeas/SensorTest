@@ -27,6 +27,7 @@
 #ifndef __Notifier__
 #define __Notifier__
 
+#include "CommonProject.h"
 #include "CommonSTL.h"
 #include "SingletonTemplate.h"
 
@@ -67,7 +68,7 @@ typedef enum
 {
    NE_MIN = 0,
    NE_DEBUG_BUTTON_PRESSED = NE_MIN,
-   NE_DEBUG_LINE_DRAW_ADD_LINE_PIXELS,
+   NE_DEBUG_LINE_DRAW_ADD_LINE,
    NE_DEBUG_TOGGLE_VISIBILITY,
    NE_DEBUG_MESSAGE,
    NE_RESET_DRAW_CYCLE,
@@ -80,6 +81,10 @@ class Notified
 {
 public:
    virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
+   { return false; };
+   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_METERS_DATA_T& value)
+   { return false; };
+   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_PIXELS_DATA_T& value)
    { return false; };
    virtual ~Notified();
    

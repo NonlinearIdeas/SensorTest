@@ -27,29 +27,6 @@
 
 #include "GraphCommon.h"
 
-class NavGraphNode : public GraphNode
-{
-private:
-   Vec2 _pos;
-   
-public:
-   const Vec2& GetPos() { return _pos; }
-   void SetPos(const Vec2& pos) { _pos = pos; }
-   
-   NavGraphNode(uint32 ID) :
-      GraphNode(ID)
-   {
-      _pos.x = ID;
-      _pos.y = 2*ID;
-   }
-   
-   virtual void Dump() const
-   {
-      GraphNode::Dump();
-      cout << "- NavGraphNode(" << _pos.x << "," << _pos.y << ")" << endl;
-   }
-};
-
 void TestDFS()
 {
    /* A Simple Graph with 6 nodes:

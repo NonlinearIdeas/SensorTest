@@ -144,6 +144,29 @@ public:
 };
 
 
+class NavGraphNode : public GraphNode
+{
+private:
+   Vec2 _pos;
+   
+public:
+   const Vec2& GetPos() const { return _pos; }
+   void SetPos(const Vec2& pos) { _pos = pos; }
+   
+   NavGraphNode(uint32 ID) :
+   GraphNode(ID)
+   {
+      _pos.x = ID;
+      _pos.y = 2*ID;
+   }
+   
+   virtual void Dump() const
+   {
+      GraphNode::Dump();
+      cout << "- NavGraphNode(" << _pos.x << "," << _pos.y << ")" << endl;
+   }
+};
+
 /* This base class is used for ALL derived EDGE types.
  * It contains the most basic information that needs to 
  * be used by all search algorithms to search a graph.
@@ -214,6 +237,34 @@ public:
    virtual void Dump() const
    {
       cout << "GraphEdge: " << _src << "-->" << _des << endl;
+   }
+};
+
+class NavGraphEdge : public GraphEdge
+{
+private:
+   Vec2 _srcPos;
+   Vec2 _desPos;
+   
+public:
+   const Vec2& GetSrcPos() { return _srcPos; }
+   void SetSrcPos(const Vec2& pos) { _srcPos = pos; }
+   const Vec2& GetDesPos() { return _desPos; }
+   void SetDesPos(const Vec2& pos) { _desPos = pos; }
+   
+   virtual void Dump() const
+   {
+      GraphEdge::Dump();
+      cout << " - NavGraphEdge: (" << _srcPos.x << "," << _srcPos.y << ")"
+      << "-->(" << _desPos.x << "," << _desPos.y << ")" << endl;
+   }
+   
+   NavGraphEdge(uint32 src, uint32 des, const Vec2& srcPos, const Vec2& desPos) :
+      GraphEdge(src,des),
+      _srcPos(srcPos),
+      _desPos(desPos)
+   {
+      
    }
 };
 
