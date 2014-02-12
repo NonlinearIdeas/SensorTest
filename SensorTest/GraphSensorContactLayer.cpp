@@ -68,20 +68,21 @@ void GraphSensorContactLayer::InitSensorLabels()
       GraphSensor& sensor = *sensors[idx];
       uint32 id = sensor.GetID();
       
-      sprintf(buffer,"%d",sensor.GetContactCount());
+      sprintf(buffer,"%d",idx);
       b2Vec2 wPos = sensor.GetBody()->GetWorldCenter();
       CCPoint pPos = Viewport::Instance().Convert(wPos);
       CCLabelBMFont* label = CCLabelBMFont::create(buffer, "Arial_32_Green.fnt",100,kCCTextAlignmentCenter);
       label->setPosition(pPos);
       label->setTag(id);
       label->setScale(LABEL_SCALE);
-      label->setVisible(false);
+      label->setVisible(true);
       addChild(label);
    }
 }
 
 void GraphSensorContactLayer::UpdateSensorLabels()
 {
+   /*
    set<GraphSensor*> sensors = GraphSensorManager::Instance().GetChangedSensors();
    char buffer[32];
    for(set<GraphSensor*>::iterator iter = sensors.begin(); iter != sensors.end(); ++iter)
@@ -94,6 +95,7 @@ void GraphSensorContactLayer::UpdateSensorLabels()
       label->setString(buffer);
       label->setVisible(count != 0);
    }
+    */
    GraphSensorManager::Instance().ClearChangedSensors();
 }
 

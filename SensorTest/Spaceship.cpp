@@ -67,9 +67,9 @@ void Spaceship::CreateBody(b2World& world, const b2Vec2& position, float32 angle
    
    // Setup Parameters
    SetMaxAngularAcceleration(40*M_PI);
-   SetMaxLinearAcceleration(0.5);
+   SetMaxLinearAcceleration(5);
    SetMaxSpeed(4);
-   SetMinSeekDistance(0.25);
+   SetMinSeekDistance(0.5);
    EntityUtilities::AdjustNodeScale(_sprite, this, 1.0, Viewport::Instance().GetPTMRatio());
 }
 

@@ -67,8 +67,8 @@ void TestDFS()
    // Disable a node
    //graph.EnableNode(4, false);
    //graph.EnableEdge(1, 0, false);
-   graph.EnableEdges(4, 1, false);
-   graph.EnableEdges(4, 3, false);
+   //graph.EnableEdges(4, 1, false);
+   //graph.EnableEdges(4, 3, false);
    // Perform the search.
    GraphSearchDFS search(graph,4,2);
    
@@ -114,11 +114,11 @@ void TestBFS()
    graph.AddEdge(new GraphEdge(5,4));
    
    // Perform the search.
-   GraphSearchBFS search(graph,0,5);
+   GraphSearchBFS search(graph,4,2);
    
    //   graph.EnableNode(5, false);
-   graph.EnableEdge(0, 2, false);
-   graph.EnableEdge(4, 5, false);
+   //   graph.EnableEdge(0, 2, false);
+   //   graph.EnableEdge(4, 5, false);
    
    search.SearchGraph();
    search.Dump();

@@ -47,11 +47,24 @@ bool DebugLinesLayer::init()
    Reset();
    
    
+   Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
    Notifier::Instance().Attach(this, NE_RESET_DRAW_CYCLE);
    Notifier::Instance().Attach(this, NE_DEBUG_LINE_DRAW_ADD_LINE);
    Notifier::Instance().Attach(this, NE_DEBUG_TOGGLE_VISIBILITY);
    
    return true;
+}
+
+void DebugLinesLayer::ViewportChanged()
+{
+   _renderTexture->clear(0.0, 0, 0, 0.0);
+   _linePixelsData.clear();
+   for(list<LINE_METERS_DATA_T>::iterator iter = _lineMetersData.begin();
+       iter != _lineMetersData.end();
+       ++iter)
+   {
+      AddLine(*iter);
+   }
 }
 
 void DebugLinesLayer::AddLine(const LINE_METERS_DATA_T& lmd)
@@ -60,18 +73,16 @@ void DebugLinesLayer::AddLine(const LINE_METERS_DATA_T& lmd)
    
    lpd.start = Viewport::Instance().Convert(lmd.start);
    lpd.end = Viewport::Instance().Convert(lmd.end);
+   lpd.color = lmd.color;
+   lpd.markerRadius = lmd.markerRadius;
    
-   _lineData.push_back(lpd);
-}
-
-void DebugLinesLayer::AddLine(const LINE_PIXELS_DATA_T& lpd)
-{
-   _lineData.push_back(lpd);
+   _linePixelsData.push_back(lpd);
 }
 
 void DebugLinesLayer::Reset()
 {
-   _lineData.clear();
+   _lineMetersData.clear();
+   _linePixelsData.clear();
    _renderTexture->clear(0.0, 0, 0, 0.0);
    _enabled = true;
 }
@@ -80,38 +91,27 @@ void DebugLinesLayer::Reset()
 void DebugLinesLayer::draw()
 {
    CCLayer::draw();
-   if(_enabled)
+   if(_enabled && _linePixelsData.size() > 0)
    {
+      list<LINE_PIXELS_DATA_T>::iterator iter;
       _renderTexture->begin();
-      for(int idx = 0; idx < _lineData.size(); idx++)
+      for(iter = _linePixelsData.begin();
+          iter != _linePixelsData.end();
+          ++iter)
       {
-         LINE_PIXELS_DATA_T& ld = _lineData[idx];
+         LINE_PIXELS_DATA_T& ld = *iter;
          ccDrawColor4F(ld.color.r, ld.color.g, ld.color.b, ld.color.a);
          if(ld.markerRadius > 0.0)
          {
             ccDrawCircle(ccp(ld.start.x,ld.start.y), ld.markerRadius, 0, 20, false);
+            ccDrawCircle(ccp(ld.end.x,ld.end.y), ld.markerRadius, 0, 20, false);
          }
          ccDrawLine(ccp(ld.start.x,ld.start.y), ccp(ld.end.x,ld.end.y));
       }
-      _lineData.clear();
+      
       _renderTexture->end();
+      _linePixelsData.clear();
    }
-}
-
-bool DebugLinesLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_PIXELS_DATA_T& value)
-{
-   bool result = true;
-   switch(eventType)
-   {
-      case NE_DEBUG_LINE_DRAW_ADD_LINE:
-         AddLine(value);
-         break;
-      default:
-         result = false;
-         assert(false);
-         break;
-   }
-   return result;
 }
 
 bool DebugLinesLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_METERS_DATA_T& value)
@@ -141,6 +141,9 @@ bool DebugLinesLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
          break;
       case NE_DEBUG_TOGGLE_VISIBILITY:
          setVisible(!isVisible());
+         break;
+      case NE_VIEWPORT_CHANGED:
+         ViewportChanged();
          break;
       default:
          result = false;

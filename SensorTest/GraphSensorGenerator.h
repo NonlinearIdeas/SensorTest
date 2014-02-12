@@ -56,18 +56,11 @@ public:
 private:
    SENSORS_T _sensors;
    SENSORS_ADJ_T _adjacentSensors;
-   int32 _rows;
-   int32 _cols;
 protected:
-   GraphSensorGenerator() :
-   _rows(0),
-   _cols(0)
+   GraphSensorGenerator()
    {
       
    }
-   
-   inline int32& Rows() { return _rows; }
-   inline int32& Cols() { return _cols; }
    
    SENSORS_T& GetSensors()
    {
@@ -105,16 +98,6 @@ protected:
     */
    virtual void GenerateAdjacency() = 0;
    
-   /* Map a row,col onto a single index into the 
-    * sensor/adjacent vectors.
-    */
-   virtual int32 CalcIndex(int32 row, int32 col) = 0;
-   /* Map an index into the array onto a row, col position for the 
-    * grid.
-    *
-    * NOTE: This DOES NOT MEAN the grid cannot be offse,t cubic, etc.
-    */
-   virtual void CalcIndex(int32 idx, int32& outRow, int32& outCol) = 0;
    
 public:
    bool Create()

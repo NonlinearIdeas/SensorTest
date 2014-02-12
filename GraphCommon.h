@@ -132,7 +132,7 @@ public:
       
    }
    
-   inline void SetGraphIndex(uint32 index) { _graphIndex = index; }
+   inline void SetGraphIndex(uint32 index) { assert(index >= 0); _graphIndex = index; }
    inline uint32 GetGraphIndex() const { return _graphIndex; }
    inline void SetID(uint32 ID) { _ID = ID; }
    inline uint32 GetID() const { return _ID; }
@@ -174,8 +174,8 @@ public:
 class GraphEdge : public HasFlags
 {
 private:
-   uint32 _src;
-   uint32 _des;
+   int32 _src;
+   int32 _des;
    double _cost;
    
 public:
@@ -203,16 +203,17 @@ public:
       _des(des),
       _cost(1.0)
    {
-      
+      assert(src >= 0);
+      assert(des >= 0);
    }
    
    inline double GetCost() const { return _cost; }
    inline uint32 GetSrc() const { return _src; }
    inline uint32 GetDes() const { return _des; }
    
-   inline void SetCost(double cost) { _cost = cost; }
-   inline void SetSrc(uint32 src) { _src = src; }
-   inline void SetDes(uint32 des) { _des = des; }
+   inline void SetCost(double cost) { assert(cost >= 0.0); _cost = cost; }
+   inline void SetSrc(uint32 src) { assert(src >= 0); _src = src; }
+   inline void SetDes(uint32 des) { assert(des >= 0); _des = des; }
    
    inline bool operator==(const GraphEdge& other) const
    {
@@ -510,6 +511,7 @@ public:
       SS_FOUND,
       SS_NOT_FOUND,
       SS_STILL_WORKING,
+      SS_NOT_STARTED,
    } SEARCH_STATE_T;
    
 protected:
@@ -529,6 +531,21 @@ private:
    uint32 _startNode;
    uint32 _targetNode;
    SEARCH_STATE_T _searchState;
+   GraphEdge _firstEdge;
+
+   bool IsPathPossible()
+   {
+      if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      {
+         return false;
+      }
+      if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      {
+         return false;
+      }
+      return true;
+   }
+   
    
 protected:
    inline vector<NODE_STATE_T>& GetVisited() { return _visited; }
@@ -536,6 +553,18 @@ protected:
    inline const uint32& GetStartNode() const { return _startNode; }
    inline const uint32& GetTargetNode() const { return _targetNode; }
    inline const Graph& GetGraph() { return _graph; }
+   inline const GraphEdge* GetFirstEdge() { return &_firstEdge; }
+   
+   /* These two virtual functions are overloaded by 
+    * derived classes.
+    *
+    * The first function is called whenever a search is 
+    * started to load the first node and do any special
+    * operations (such as checking if the path is even 
+    * possible.
+    *
+    */
+   virtual SEARCH_STATE_T SearchCycleStart() = 0;
    virtual SEARCH_STATE_T SearchCycle() = 0;
    
 public:
@@ -547,44 +576,37 @@ public:
       _graph(graph),
       _startNode(start),
       _targetNode(target),
-      _searchState(SS_STILL_WORKING),
+      _searchState(SS_NOT_STARTED),
       _visited(_graph.GetNodeCount(),NS_NOT_VISITED),
       _route(_graph.GetNodeCount(),NS_NO_PARENT)
    {
-      // Special case...if the start/target node has already
-      // been disconnected, then fail immediately.
-      if(graph.GetNode(_startNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
-      {
-         _searchState = SS_NOT_FOUND;
-      }
-      if(graph.GetNode(_targetNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
-      {
-         _searchState = SS_NOT_FOUND;
-      }
+      _firstEdge.SetSrc(start);
+      _firstEdge.SetDes(start);
    }
    
-   /* These few methods will allow reuse of this class after a search has
+   /* This will allow reuse of this class after a search has
     * been run (so it can be used mulitple times).
     */
-   void SetStart(uint32 start) { _startNode = start; }
-   void SetTarget(uint32 target) { _targetNode = target; }
-   void Reset()
+
+   void Init(uint32 start, uint32 target)
    {
       _visited.assign(_visited.size(),NS_NOT_VISITED);
       _route.assign(_route.size(),NS_NO_PARENT);
+      _searchState = SS_NOT_STARTED;
+      _firstEdge.SetSrc(start);
+      _firstEdge.SetDes(start);
    }
-   
-   
+
    SEARCH_STATE_T SearchGraph()
    {
+      if(_searchState == SS_NOT_STARTED)
+      {
+         _searchState = SearchCycleStart();
+      }
       while(_searchState == SS_STILL_WORKING)
       {
          // Special case...if the start/target node has been disabled
-         if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
-         {
-            _searchState = SS_NOT_FOUND;
-         }
-         else if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         if(!IsPathPossible())
          {
             _searchState = SS_NOT_FOUND;
          }
@@ -598,14 +620,14 @@ public:
 
    SEARCH_STATE_T SearchGraph(uint32 cycles)
    {
+      if(_searchState == SS_NOT_STARTED)
+      {
+         _searchState = SearchCycleStart();
+      }
       while(_searchState == SS_STILL_WORKING && cycles > 0)
       {
          // Special case...if the start/target node has been disabled
-         if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
-         {
-            _searchState = SS_NOT_FOUND;
-         }
-         else if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+         if(!IsPathPossible())
          {
             _searchState = SS_NOT_FOUND;
          }
@@ -664,6 +686,9 @@ public:
    {
       switch(_searchState)
       {
+         case SS_NOT_STARTED:
+            cout << "YIKES...NOT EVEN STARTED YET!!" << endl;
+            break;
          case SS_STILL_WORKING:
             cout << "YIKES...STILL WORKING" << endl;
             break;
@@ -679,15 +704,6 @@ public:
             {
                (*iter)->Dump();
             }
-            /*
-            list<const GraphEdge*> edgeList = GetPathEdges();
-            for(list<const GraphEdge*>::iterator iter = edgeList.begin();
-                iter != edgeList.end();
-                ++iter)
-            {
-               (*iter)->Dump();
-            }
-             */
          }
             break;
       }
@@ -700,8 +716,13 @@ class GraphSearchDFS : public GraphSearchAlgorithm
 private:
    
    stack<const GraphEdge*> _stack;
-   GraphEdge _firstEdge;
 protected:
+   virtual SEARCH_STATE_T SearchCycleStart()
+   {
+      _stack.push(GetFirstEdge());
+      return SS_STILL_WORKING;
+   }
+   
    virtual SEARCH_STATE_T SearchCycle()
    {
       if(_stack.empty())
@@ -713,25 +734,22 @@ protected:
       // Remove it, we are processing it now.
       _stack.pop();
       
-      // For convenience
-      uint32 src = edge->GetSrc();
-      uint32 des = edge->GetDes();
       // Update the route for the path we are following.
-      GetRoute()[des] = src;
+      GetRoute()[edge->GetDes()] = edge->GetSrc();
       // Mark that we have visited this node.
-      GetVisited()[des] = NS_VISITED;
+      GetVisited()[edge->GetDes()] = NS_VISITED;
       // Is this the node we are looking for?
-      if(des == GetTargetNode())
+      if(edge->GetDes() == GetTargetNode())
       {  // Yes.  We are done.
          return SS_FOUND;
       }
       // No.  Push all the edges that lead to the des
       // node onto the stack IFF we have not already
       // visited that destination and if it is available.
-      const GraphNode* node = GetGraph().GetNode(des);
+      const GraphNode* node = GetGraph().GetNode(edge->GetDes());
       if(node->IsFlagSet(GraphNode::GNF_IS_CONNECTED))
       {
-         const GraphEdges& edges = GetGraph().GetEdges(des);
+         const GraphEdges& edges = GetGraph().GetEdges(edge->GetDes());
          for(int idx = 0; idx < edges.size(); ++idx)
          {  // If the destination node has not been visited,
             // then add it.
@@ -753,9 +771,6 @@ public:
                   uint32 target) :
    GraphSearchAlgorithm(graph,start,target)
    {
-      _firstEdge.SetDes(start);
-      _firstEdge.SetSrc(start);
-      _stack.push(&_firstEdge);
    }
 };
 
@@ -764,11 +779,33 @@ class GraphSearchBFS : public GraphSearchAlgorithm
 {
 private:
    
-   queue<const GraphEdge*> _queue;
-   GraphEdge _firstEdge;
+   list<const GraphEdge*> _queue;
+   void DumpQueue()
+   {
+      cout << "Queue Size: " << _queue.size() << endl;
+      cout << "-------------------------------" << endl;
+      cout << "- Elements" << endl;
+      for(list<const GraphEdge*>::const_iterator iter = _queue.begin();
+          iter != _queue.end();
+          ++iter)
+      {
+         (*iter)->Dump();
+      }
+      cout << endl;
+   }
+   
 protected:
+   virtual SEARCH_STATE_T SearchCycleStart()
+   {
+      _queue.push_back(GetFirstEdge());
+      GetVisited()[GetStartNode()] = NS_VISITED;
+      return SS_STILL_WORKING;
+   }
+   
+   
    virtual SEARCH_STATE_T SearchCycle()
    {
+      //      DumpQueue();
       if(_queue.empty())
       {
          return SS_NOT_FOUND;
@@ -776,35 +813,30 @@ protected:
       // Start with the edge at the top of the stack.
       const GraphEdge * edge = _queue.front();
       // Remove it, we are processing it now.
-      _queue.pop();
+      _queue.erase(_queue.begin());
       
-      // For convenience
-      uint32 src = edge->GetSrc();
-      uint32 des = edge->GetDes();
       // Update the route for the path we are following.
-      GetRoute()[des] = src;
-      // Mark that we have visited this node.
-      GetVisited()[des] = NS_VISITED;
+      GetRoute()[edge->GetDes()] = edge->GetSrc();
       // Is this the node we are looking for?
-      if(des == GetTargetNode())
+      if(edge->GetDes() == GetTargetNode())
       {  // Yes.  We are done.
          return SS_FOUND;
       }
       // No.  Push all the edges that lead to the des
-      // node onto the stack IFF we have not already
+      // node into the queue IFF we have not already
       // visited that destination and if it is available.
-      const GraphNode* node = GetGraph().GetNode(des);
-      if(node->IsFlagSet(GraphNode::GNF_IS_CONNECTED))
+      if(GetGraph().GetNode(edge->GetDes())->IsFlagSet(GraphNode::GNF_IS_CONNECTED))
       {
-         const GraphEdges& edges = GetGraph().GetEdges(des);
+         const GraphEdges& edges = GetGraph().GetEdges(edge->GetDes());
          for(int idx = 0; idx < edges.size(); ++idx)
          {  // If the destination node has not been visited,
             // then add it.
-            if(edges[idx]->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            if(GetVisited()[edges[idx]->GetDes()] == NS_NOT_VISITED)
             {
-               if(GetVisited()[edges[idx]->GetDes()] == NS_NOT_VISITED)
+               if(edges[idx]->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
                {
-                  _queue.push(edges[idx]);
+                  _queue.push_back(edges[idx]);
+                  GetVisited()[edges[idx]->GetDes()] = NS_VISITED;
                }
             }
          }
@@ -818,13 +850,10 @@ public:
                   uint32 target) :
    GraphSearchAlgorithm(graph,start,target)
    {
-      _firstEdge.SetDes(start);
-      _firstEdge.SetSrc(start);
-      _queue.push(&_firstEdge);
    }
 };
 
 void TestDFS();
-void TEstBFS();
+void TestBFS();
 
 #endif /* defined(__GraphCommon__) */

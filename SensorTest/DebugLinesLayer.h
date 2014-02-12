@@ -36,13 +36,15 @@ class DebugLinesLayer : public CCLayer, public Notified
 {
 private:
    
-   vector<LINE_PIXELS_DATA_T> _lineData;
+   list<LINE_METERS_DATA_T> _lineMetersData;
+   list<LINE_PIXELS_DATA_T> _linePixelsData;
    bool _enabled;
    CCRenderTexture* _renderTexture;
    
    bool init();
    DebugLinesLayer();
    ~DebugLinesLayer();
+   void ViewportChanged();
    
    
 public:
@@ -50,11 +52,9 @@ public:
    void Reset();
    void SetEnabled(bool enabled) { _enabled = enabled; }
    bool GetEnabled() { return _enabled; }
-   void AddLine(const LINE_PIXELS_DATA_T& lpd);
    void AddLine(const LINE_METERS_DATA_T& lmd);
 
    virtual void draw();
-   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_PIXELS_DATA_T& value);
    virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const LINE_METERS_DATA_T& value);
    virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value);
    

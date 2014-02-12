@@ -46,7 +46,7 @@
 
 
 #define SENSOR_DIAMETER (1.0f)
-#define SENSOR_SEPARATION (2.50f)
+#define SENSOR_SEPARATION (2.5f)
 
 
 
@@ -79,22 +79,16 @@ private:
       Viewport& vp = Viewport::Instance();
       CCSize worldSize = vp.GetWorldSizeMeters();
       SENSORS_T& sensors = GetSensors();
-
-      // NOTE:  These are REFERENCES to the underlying values.
-      // THESE ARE NOT LOCAL VARIABLES.
-      int32& cols = Cols();
-      int32& rows = Rows();
+      GridCalculator gridCalc;
       
+      gridCalc.Init(worldSize.width, worldSize.height, _separation);
+
       // Calculate the rows and columns so that there is at least one gap between each
       // shape.
-      cols = (uint32)ceil(worldSize.width/_separation);
-      rows = (uint32)ceil(worldSize.height/_separation);
-      sensors.clear();
+      int32 cols = gridCalc.GetCols();
+      int32 rows = gridCalc.GetRows();
+      int32 count = gridCalc.GetCount();
       
-      if(cols%2 != 0)
-         cols++;
-      if(rows%2 != 0)
-         rows++;
       
       b2BodyDef bodyDef;
       bodyDef.type = b2_staticBody;
@@ -116,99 +110,71 @@ private:
       b2Body* body = NULL;
       b2Fixture* fixture = NULL;
       
-      //CCLOG("Rows = %d, Cols = %d",rows,cols);
+      CCLOG("Rows = %d, Cols = %d",rows,cols);
       
-      for(int32 row = 0; row <= rows; ++row)
+      for(int32 idx = 0; idx < count; ++idx)
       {
-         for(int32 col = 0; col <= cols; ++col)
-         {
-            b2Vec2 pos((col-cols/2) * _separation, (row-rows/2) * _separation);
-            bodyDef.position = pos;
-            
-            body = _world->CreateBody(&bodyDef);
-            fixture = body->CreateFixture(&fixtureDef);
-            
-            sensor = new GraphSensor();
-            sensor->SetBody(body);
-            sensor->SetIndex(sensors.size());
-            
-            // We don't need to draw these in box2d debug
-            body->SetDebugDraw(false);
-            
-            sensors.push_back(sensor);
-            
-            /* Just a little unit testing */
-            /*
-            int32 calcIdx, calcRow, calcCol;
-            
-            calcIdx = CalcIndex(row, col);
-            CalcIndex(calcIdx,calcRow,calcCol);
-            
-             CCLOG("AIdx = %04ld, Index = %04d, agrid(%d,%d), grid(%d,%d)",
-             sensors.size()-1,
-             calcIdx,
-             row,
-             col,
-             calcRow,
-             calcCol
-             );
-            assert(calcIdx == sensors.size()-1);
-            assert(row == calcRow);
-            assert(col == calcCol);
-             */
-         }
+         Vec2 pos = gridCalc.CalcPosition(idx);
+         bodyDef.position = pos;
+         
+         body = _world->CreateBody(&bodyDef);
+         fixture = body->CreateFixture(&fixtureDef);
+         
+         sensor = new GraphSensor();
+         sensor->SetBody(body);
+         sensor->SetIndex(sensors.size());
+         
+         // We don't need to draw these in box2d debug
+         body->SetDebugDraw(false);
+         
+         sensors.push_back(sensor);
       }
    }
-   
+
    virtual void GenerateAdjacency()
    {
+      Viewport& vp = Viewport::Instance();
+      CCSize worldSize = vp.GetWorldSizeMeters();
+      SENSORS_T& sensors = GetSensors();
       SENSORS_ADJ_T& adj = GetAdjacentSensors();
-      adj.resize(GetSensorsConst().size());
-      const SENSORS_T& sensors = GetSensorsConst();
+      GridCalculator gridCalc;
+      
+      gridCalc.Init(worldSize.width, worldSize.height, _separation);
+      adj.resize(sensors.size());
+      
       int32 row = 0, col = 0;
       for(int idx = 0; idx < sensors.size(); idx++)
       {
-         // Get the row, col for this index.
-         CalcIndex(idx, row,col);
+         row = gridCalc.CalcRow(idx);
+         col = gridCalc.CalcCol(idx);
          // Since this is a "grid", we will look at the
          // 8 cardinal directions as adjacent.
          int32 calcIdx;
          
-         calcIdx = CalcIndex(row+1, col+1);
+         calcIdx = gridCalc.CalcIndex(row-1, col);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row+1, col);
+         calcIdx = gridCalc.CalcIndex(row+1, col);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row+1, col-1);
+         calcIdx = gridCalc.CalcIndex(row, col+1);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row, col+1);
+         calcIdx = gridCalc.CalcIndex(row, col-1);
+         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+
+         calcIdx = gridCalc.CalcIndex(row+1, col+1);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row, col-1);
+         calcIdx = gridCalc.CalcIndex(row+1, col-1);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row-1, col+1);
+         calcIdx = gridCalc.CalcIndex(row-1, col+1);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
          
-         calcIdx = CalcIndex(row-1, col);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
-         
-         calcIdx = CalcIndex(row-1, col-1);
+         calcIdx = gridCalc.CalcIndex(row-1, col-1);
          if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
       }
-   }
-   
-   virtual int32 CalcIndex(int32 row, int32 col)
-   {
-      return row * (Cols() + 1) + col;
-   }
-   
-   virtual void CalcIndex(int32 idx, int32& outRow, int32& outCol)
-   {
-      outRow = idx / (Cols() + 1);
-      outCol = idx % (Cols() + 1);
    }
 
    
@@ -313,6 +279,7 @@ void MainScene::CreateSensors()
          _sensorGraph.AddEdge(edge);
       }
    }
+   //   _sensorGraph.Dump();
 }
 
 bool MainScene::init()
@@ -355,7 +322,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   //addChild(Box2DDebugDrawLayer::create(_world));
+   // addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -415,20 +382,17 @@ void MainScene::onExitTransitionDidStart()
 
 void MainScene::UpdateEntity()
 {
-   static int32 lastIndex = -1;
    if(_entity != NULL)
    {
       _entity->Update();
-      Vec2 pos = _entity->GetBody()->GetWorldCenter();
-      int32 index = _gridCalculator.CalcIndex(pos);
-      if(index != lastIndex)
-      {
-         int32 col = _gridCalculator.CalcCol(index);
-         int32 row = _gridCalculator.CalcRow(index);
-         CCLOG("Entity moved to index %d (%d,%d)",
-               index,col,row);
-         lastIndex = index;
-      }
+   }
+   
+   static int32 entCellIdxLast = -1;
+   int32 entCellIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
+   if(entCellIdx != entCellIdxLast)
+   {
+      CCLOG("Entity now in cell %d.",entCellIdx);
+      entCellIdxLast = entCellIdx;
    }
 }
 
@@ -451,7 +415,9 @@ static void DrawPathList(const list<const GraphEdge*>& edges)
 
 void MainScene::NavigateToPosition(Vec2 pos)
 {
-   //   _entity->CommandSeek(pos);
+   //   TestBFS();
+   //_entity->CommandSeek(pos);
+   
    int32 startIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
    int32 targetIdx = _gridCalculator.CalcIndex(pos);
    CCLOG("Plotting path from %d -> %d",
@@ -462,6 +428,7 @@ void MainScene::NavigateToPosition(Vec2 pos)
    CCLOG("There are %ld edges in the path.",edges.size());
    DrawPathList(edges);
    list<const GraphNode*> nodes = search.GetPathNodes();
+   CCLOG("There are %ld nodes in the path.",nodes.size());
    list<Vec2> points;
    for(list<const GraphNode*>::const_iterator iter = nodes.begin();
        iter != nodes.end();
@@ -469,7 +436,10 @@ void MainScene::NavigateToPosition(Vec2 pos)
    {
       const NavGraphNode* gNode = (NavGraphNode*)*iter;
       points.push_back(gNode->GetPos());
+      CCLOG(" -> NODE: %d",(*iter)->GetGraphIndex());
    }
+   // Go to the point we wanted to be at.
+   points.push_back(pos);
    _entity->CommandFollowPath(points);
 }
 
@@ -520,16 +490,12 @@ void MainScene::TapDragPinchInputPinchEnd(const TOUCH_DATA_T& point0, const TOUC
 }
 void MainScene::TapDragPinchInputDragBegin(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
-   _entity->CommandSeek(Viewport::Instance().Convert(point0.pos));
 }
 void MainScene::TapDragPinchInputDragContinue(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
-   _entity->CommandSeek(Viewport::Instance().Convert(point1.pos));
-   Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE);
 }
 void MainScene::TapDragPinchInputDragEnd(const TOUCH_DATA_T& point0, const TOUCH_DATA_T& point1)
 {
-   Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE);
 }
 
 bool MainScene::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)

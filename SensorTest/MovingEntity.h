@@ -150,36 +150,19 @@ private:
       ApplyTurnTorque();
    }
    
-   void UpdatePathTarget()
-   {
-      list<Vec2>& path = GetPath();
-      Vec2& targetPos = GetTargetPos();
-      
-      if(path.size() > 0)
-      {
-         targetPos = *path.begin();
-         while(path.size() > 0 && IsNearTarget())
-         {
-            targetPos = *path.begin();
-            path.pop_front();
-         }
-      }
-      else
-      {
-         targetPos = GetBody()->GetPosition();
-      }
-   }
-   
+  
    void EnterFollowPath()
    {
       // If there are any points to follow,
       // then pop the first as the target
       // and follow it.  Otherwise, go idle.
-      UpdatePathTarget();
-      if(GetPath().size() > 0)
+      list<Vec2>& path = GetPath();
+      if(path.size() > 0)
       {
          PrepareForMotion();
          GetTurnController().ResetHistory();
+         GetTargetPos() = *(path.begin());
+         path.erase(path.begin());
       }
       else
       {
@@ -189,15 +172,23 @@ private:
    
    void ExecuteFollowPath()
    {
-      UpdatePathTarget();
-      if(GetPath().size() > 0)
-      {
+      list<Vec2>& path = GetPath();
+      bool isNearTarget = IsNearTarget();
+      if(path.size() == 0 && isNearTarget)
+      {  // Done.
+         ChangeState(ST_IDLE);
+      }
+      else if(isNearTarget)
+      {  // Still more points to go.
+         GetTargetPos() = *(path.begin());
+         path.erase(path.begin());
          ApplyThrust();
          ApplyTurnTorque();
       }
       else
-      {
-         ChangeState(ST_IDLE);
+      {  // Just keep moving along..
+         ApplyThrust();
+         ApplyTurnTorque();
       }
    }
    
@@ -300,7 +291,7 @@ public:
    
    // Commands - Use thse to change the state
    // of the missile.
-   void CommandFollowPath(const list<Vec2> path)
+   void CommandFollowPath(const list<Vec2>& path)
    {
       GetPath() = path;
       ChangeState(ST_FOLLOW_PATH);

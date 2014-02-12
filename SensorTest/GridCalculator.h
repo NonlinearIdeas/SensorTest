@@ -35,6 +35,7 @@ class GridCalculator
 private:
    int32 _cols;
    int32 _rows;
+   int32 _count;
    float32 _width;
    float32 _height;
    float32 _separation;
@@ -52,12 +53,13 @@ public:
          _width = width;
          _height = height;
          _separation = separation;
-         _cols = (uint32)ceil(_width/_separation);
-         _rows = (uint32)ceil(_height/_separation);
-         if(_cols%2 != 0)
+         _cols = (int32)ceil(_width/_separation);
+         _rows = (int32)ceil(_height/_separation);
+         if(_cols%2 == 0)
             _cols++;
-         if(_rows%2 != 0)
+         if(_rows%2 == 0)
             _rows++;
+         _count = _rows * _cols;
       }
    }
    
@@ -71,52 +73,83 @@ public:
       Init(100.0f,100.0f,1.0f);
    }
    
-   int32 CalcIndex(int32 row, int32 col)
+   inline int32 GetCols() { return _cols; }
+   inline int32 GetRows() { return _rows; }
+   inline int32 GetCount() { return _count; }
+
+   
+   inline int32 CalcRow(int32 idx)
+   {
+      int32 result = idx / (_cols);
+      if(result < 0)
+         result = 0;
+      if(result >= _rows)
+         result = _rows-1;
+      return result;
+   }
+   
+   inline int32 CalcCol(int32 idx)
+   {
+      int32 result =  idx % (_cols);
+      if(result < 0)
+         result = 0;
+      if(result >= _rows)
+         result = _rows -1;
+      return result;
+   }
+
+   inline int32 CalcIndex(int32 row, int32 col)
    {
       if(row < 0)
-         row = 0;
+         return -1;
+      if(col < 0)
+         return -1;
       if(row >= _rows)
-         row = _rows -1;
+         return -1;
+      if(col >= _cols)
+         return -1;
+      int32 result = row * (_cols) + col;
+      return result;
+   }
+   
+   inline int32 CalcIndex(const Vec2& pos)
+   {
+      int32 col = (int32)(pos.x+_separation/2)/_separation + _cols/2;
       if(col < 0)
          col = 0;
       if(col >= _cols)
-         col = _cols -1;
-      int32 result = row * (_cols + 1) + col;
-      return result;
+         col = _cols-1;
+      int32 row = (int32)(pos.y+_separation/2)/_separation + _rows/2;
+      if(row < 0)
+         row = 0;
+      if(row >= _rows)
+         row = _rows-1;
+      int32 idx = CalcIndex(row,col);
+      /*
+      CCLOG("Position (%4.1f,%4.1f) => idx = %d, (%d,%d)",
+            pos.x,pos.y,idx,col,row);
+       */
+      return idx;
    }
    
-   int32 CalcRow(int32 idx)
+   inline Vec2 CalcPosition(int32 row, int32 col)
    {
-      int32 result = idx / (_cols + 1);
-      if(result < 0)
-         return 0;
-      if(result > _rows-1)
-         return _rows-1;
-      return result;
-   }
-   
-   int32 CalcCol(int32 idx)
-   {
-      int32 result =  idx % (_cols + 1);
-      if(result < 0)
-         return 0;
-      if(result > _cols-1)
-         return _cols-1;
-      return result;
-   }
-   
-   int32 CalcIndex(const Vec2& pos)
-   {
-      int32 col = (int32)(pos.x/_separation) + _cols/2;
-      int32 row = (int32)(pos.y/_separation) + _rows/2;
-      return CalcIndex(row, col);
-   }
-   
-   Vec2 CalcPosition(int32 row, int32 col)
-   {
-      Vec2 pos((col-_cols/2) * _separation, (row-_rows/2) * _separation);
+      Vec2 pos;
+      pos.x = (col-_cols/2)*_separation;
+      pos.y = (row-_rows/2)*_separation;
       return pos;
    }
+   
+   inline Vec2 CalcPosition(int32 idx)
+   {
+      int32 row = CalcRow(idx);
+      int32 col = CalcCol(idx);
+      Vec2 pos = CalcPosition(row, col);
+      //      int32 idx2 = CalcIndex(row, col);
+      //      CCLOG("Position for idx = %d (%d) (%d,%d) = (%4.1f,%4.1f)",idx,idx2,col,row,pos.x,pos.y);
+      return pos;
+   }
+
 };
 
 #endif /* defined(__GridCalculator__) */
