@@ -77,7 +77,6 @@ private:
    void SetZoom(float zoom);
    void UpdateEntity();
    void UpdatePhysics();
-   void UpdateAsteroids();
    void ViewportChanged();
    void NavigateToPosition(Vec2 pos);
 public:

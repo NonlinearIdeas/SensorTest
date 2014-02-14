@@ -50,7 +50,6 @@ void GraphSensorContactLayer::UpdateSensorLabelsAfterViewportChanged()
 
 void GraphSensorContactLayer::update(float dt)
 {
-   UpdateSensorLabels();
    if(_viewportChanged && _stopWatch.GetSeconds() > 0.5f)
    {
       UpdateSensorLabelsAfterViewportChanged();
@@ -75,28 +74,32 @@ void GraphSensorContactLayer::InitSensorLabels()
       label->setPosition(pPos);
       label->setTag(id);
       label->setScale(LABEL_SCALE);
-      label->setVisible(true);
+      label->setVisible(false);
       addChild(label);
    }
 }
 
 void GraphSensorContactLayer::UpdateSensorLabels()
 {
-   /*
    set<GraphSensor*> sensors = GraphSensorManager::Instance().GetChangedSensors();
    char buffer[32];
    for(set<GraphSensor*>::iterator iter = sensors.begin(); iter != sensors.end(); ++iter)
    {
       GraphSensor& sensor = *(*iter);
       int32 count = sensor.GetContactCount();
-      sprintf(buffer,"%d",count);
       uint32 id = sensor.GetID();
       CCLabelBMFont* label = (CCLabelBMFont*)getChildByTag(id);
-      label->setString(buffer);
-      label->setVisible(count != 0);
+      if(count != 0)
+      {
+         sprintf(buffer,"%d",count);
+         label->setString(buffer);
+         label->setVisible(true);
+      }
+      else
+      {
+         label->setVisible(false);
+      }
    }
-    */
-   GraphSensorManager::Instance().ClearChangedSensors();
 }
 
 void GraphSensorContactLayer::ViewportChanged()
@@ -108,8 +111,8 @@ void GraphSensorContactLayer::ViewportChanged()
 
 void GraphSensorContactLayer::onEnterTransitionDidFinish()
 {
-   scheduleUpdate();
    InitSensorLabels();
+   scheduleUpdate();
 }
 
 void GraphSensorContactLayer::onExitTransitionDidStart()
@@ -122,6 +125,7 @@ bool GraphSensorContactLayer::init()
 {
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
    Notifier::Instance().Attach(this, NE_DEBUG_TOGGLE_VISIBILITY);
+   Notifier::Instance().Attach(this, NE_UPDATE_DEBUG_INFO);
    return true;
 }
 
@@ -150,6 +154,9 @@ bool GraphSensorContactLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool
          break;
       case NE_DEBUG_TOGGLE_VISIBILITY:
          setVisible(!isVisible());
+         break;
+      case NE_UPDATE_DEBUG_INFO:
+         UpdateSensorLabels();
          break;
       default:
          assert(false);

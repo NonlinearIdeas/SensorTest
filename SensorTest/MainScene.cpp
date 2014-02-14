@@ -47,7 +47,8 @@
 
 #define SENSOR_DIAMETER (1.0f)
 #define SENSOR_SEPARATION (2.5f)
-
+//#define TRACK_ENTITY_CELL_INDEX
+//#define DUMP_PATH_INFO
 
 
 
@@ -315,14 +316,11 @@ void MainScene::onEnter()
    // Adding the debug lines so that we can draw the path followed.
    addChild(DebugLinesLayer::create());
    
-   // Touch Input
-   addChild(TapDragPinchInput::create(this));
-   
    // Grid
    addChild(GridLayer::create());
 
    // Box2d Debug
-   // addChild(Box2DDebugDrawLayer::create(_world));
+   addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -347,7 +345,7 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   //addChild(GraphSensorContactLayer::create());
+   addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
@@ -355,6 +353,9 @@ void MainScene::onEnter()
    // Initialize the grid
    CCSize size = Viewport::Instance().GetWorldSizeMeters();
    _gridCalculator.Init(size.width, size.height, SENSOR_SEPARATION);
+   
+   // Touch Input
+   addChild(TapDragPinchInput::create(this));
    
    // Kickstart all sizes
    ViewportChanged();
@@ -386,7 +387,7 @@ void MainScene::UpdateEntity()
    {
       _entity->Update();
    }
-   
+#ifdef TRACK_ENTITY_CELL_INDEX
    static int32 entCellIdxLast = -1;
    int32 entCellIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
    if(entCellIdx != entCellIdxLast)
@@ -394,6 +395,7 @@ void MainScene::UpdateEntity()
       CCLOG("Entity now in cell %d.",entCellIdx);
       entCellIdxLast = entCellIdx;
    }
+#endif
 }
 
 static void DrawPathList(const list<const GraphEdge*>& edges)
@@ -420,23 +422,28 @@ void MainScene::NavigateToPosition(Vec2 pos)
    
    int32 startIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
    int32 targetIdx = _gridCalculator.CalcIndex(pos);
-   CCLOG("Plotting path from %d -> %d",
-         startIdx,targetIdx);
+#ifdef DUMP_PATH_INFO
+   CCLOG("Plotting path from %d -> %d",startIdx,targetIdx);
+#endif
    GraphSearchBFS search(_sensorGraph,startIdx,targetIdx);
    search.SearchGraph();
    list<const GraphEdge*> edges = search.GetPathEdges();
-   CCLOG("There are %ld edges in the path.",edges.size());
    DrawPathList(edges);
    list<const GraphNode*> nodes = search.GetPathNodes();
-   CCLOG("There are %ld nodes in the path.",nodes.size());
    list<Vec2> points;
+#ifdef DUMP_PATH_INFO
+   CCLOG("There are %ld edges in the path.",edges.size());
+   CCLOG("There are %ld nodes in the path.",nodes.size());
+#endif
    for(list<const GraphNode*>::const_iterator iter = nodes.begin();
        iter != nodes.end();
        ++iter)
    {
       const NavGraphNode* gNode = (NavGraphNode*)*iter;
       points.push_back(gNode->GetPos());
+#ifdef DUMP_PATH_INFO
       CCLOG(" -> NODE: %d",(*iter)->GetGraphIndex());
+#endif
    }
    // Go to the point we wanted to be at.
    points.push_back(pos);
@@ -461,7 +468,10 @@ void MainScene::update(float dt)
    UpdatePhysics();
    UpdateEntity();
    EntityScheduler::Instance().Update();
-   //   UpdateAsteroids();
+   // Update all the debug info
+   Notifier::Instance().Notify(NE_UPDATE_DEBUG_INFO,true);
+   // Clear out any old information
+   GraphSensorManager::Instance().ClearChangedSensors();
 }
 
 
@@ -604,15 +614,6 @@ void MainScene::CreateAsteroids()
    }
 }
 
-
-void MainScene::UpdateAsteroids()
-{
-   for(int idx = 0; idx < _asteroids.size(); idx++)
-   {
-      _asteroids[idx]->Update();
-      _asteroids[idx]->UpdateDisplay();
-   }
-}
 
 void MainScene::CreateAnchor()
 {
