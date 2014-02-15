@@ -1,9 +1,9 @@
 /********************************************************************
- * File   : GraphSensor.h
+ * File   : HasFlags.cpp
  * Project: SensorTest
  *
  ********************************************************************
- * Created on 1/20/14 By Nonlinear Ideas Inc.
+ * Created on 2/15/14 By Nonlinear Ideas Inc.
  * Copyright (c) 2014 Nonlinear Ideas Inc. All rights reserved.
  ********************************************************************
  * This software is provided 'as-is', without any express or implied
@@ -24,58 +24,6 @@
  *    distribution. 
  */
 
-#ifndef __GraphSensor__
-#define __GraphSensor__
 
-#include "Entity.h"
+#include "HasFlags.h"
 
-class GraphSensor : public Entity
-{
-private:
-   int32 _contactCount;
-   int32 _index;
-   
-public:
-   
-   inline void ResetContactCount()
-   {
-      _contactCount = 0;
-   }
-   
-   inline bool IsClear()
-   {
-      return (_contactCount == 0);
-   }
-   
-   inline void UpdateContactCount(int32 count)
-   {
-      _contactCount+= count;
-   }
-   
-   inline int32 GetContactCount()
-   {
-      return _contactCount;
-   }
-   
-   inline int32 GetIndex()
-   {
-      return _index;
-   }
-   
-   inline void SetIndex(int32 index)
-   {
-      _index = index;
-   }
-      
-   GraphSensor() :
-   _contactCount(0)
-   {
-      SetFlag(HF_IS_GRAPH_SENSOR);
-   }
-   
-   ~GraphSensor()
-   {
-   }
-};
-
-#endif /* defined(__GraphSensor__) */

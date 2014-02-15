@@ -40,54 +40,9 @@
 
 #include "CommonProject.h"
 #include "CommonSTL.h"
+#include "HasFlags.h"
 
 const uint32 INVALID_NODE_INDEX = (uint32)-1;
-
-class HasFlags
-{
-private:
-   uint32 _flags;
-public:
-   HasFlags(uint32 flags) : _flags(flags)
-   {
-      
-   }
-   
-   HasFlags() : _flags(0)
-   {
-      
-   }
-   
-   inline void SetFlags(uint32 value)
-   {
-      _flags = value;
-   }
-   
-   inline uint32 GetFlags() const
-   {
-      return _flags;
-   }
-   
-   inline void SetFlag(uint32 flag)
-   {
-      _flags |= flag;
-   }
-   
-   inline void ClearFlag(uint32 flag)
-   {
-      _flags &= ~flag;
-   }
-   
-   inline bool IsFlagSet(uint32 flag) const
-   {
-      return (_flags & flag) > 0;
-   }
-   
-   inline bool IsFlagClear(uint32 flag) const
-   {
-      return (_flags & flag) == 0;
-   }
-};
 
 /* This base class is used for ALL derived NODE types.
  * It contains the most basic information a node needs in

@@ -127,13 +127,13 @@ public:
          GraphSensor* sensor = NULL;
          Entity* entA = cp.entA;
          Entity* entB = cp.entB;
-         if(entA->IsFlagSet(Entity::EF_IS_GRAPH_SENSOR))
+         if(entA->IsFlagSet(Entity::HF_IS_GRAPH_SENSOR))
          {
             sensor = (GraphSensor*)entA;
             sensor->UpdateContactCount(cp.contactCount);
             gsm.UpdateGraphSensorState(sensor);
          }
-         else if(entB->IsFlagSet(Entity::EF_IS_GRAPH_SENSOR))
+         else if(entB->IsFlagSet(Entity::HF_IS_GRAPH_SENSOR))
          {
             sensor = (GraphSensor*)entB;
             sensor->UpdateContactCount(cp.contactCount);

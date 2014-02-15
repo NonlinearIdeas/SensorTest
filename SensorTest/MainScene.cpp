@@ -45,7 +45,7 @@
 #include "Spaceship.h"
 
 
-#define SENSOR_DIAMETER (1.0f)
+#define SENSOR_DIAMETER (2.0f)
 #define SENSOR_SEPARATION (2.5f)
 //#define TRACK_ENTITY_CELL_INDEX
 //#define DUMP_PATH_INFO
@@ -345,7 +345,7 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   addChild(GraphSensorContactLayer::create());
+   //   addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);

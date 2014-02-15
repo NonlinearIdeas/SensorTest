@@ -91,7 +91,7 @@ void EntityScheduler::RegisterPrio(Entity* entity, uint32 skip, FRAME_LIST_T& fr
    {
       frameList[idx].push_back(entity);
    }
-   if(entity->IsFlagClear(Entity::EF_NO_DISPLAY_UPDATE))
+   if(entity->IsFlagClear(Entity::HF_NO_DISPLAY_UPDATE))
    {
       _needUpdateDisplay.push_back(entity);
    }
@@ -133,11 +133,11 @@ void EntityScheduler::RemoveEntity(Entity* entity, FRAME_LIST_T& frameList, uint
       }
       // If this item needed a display update, remove
       // that as well.
-      if(entity->IsFlagClear(Entity::EF_NO_DISPLAY_UPDATE))
+      if(entity->IsFlagClear(Entity::HF_NO_DISPLAY_UPDATE))
       {
          RemoveEntity(entity, _needUpdateDisplay);
       }
-      if(entity->IsFlagClear(Entity::EF_NO_DISPLAY_UPDATE))
+      if(entity->IsFlagClear(Entity::HF_NO_DISPLAY_UPDATE))
       {
          RemoveEntity(entity, _needUpdateDisplay);
       }
@@ -146,23 +146,23 @@ void EntityScheduler::RemoveEntity(Entity* entity, FRAME_LIST_T& frameList, uint
 
 void EntityScheduler::Register(Entity* entity)
 {
-   if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_1))
+   if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_1))
    {
       _prio1Updates.push_back(entity);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_2))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_2))
    {
       RegisterPrio(entity, 2, _prio2Updates);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_3))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_3))
    {
       RegisterPrio(entity, 3, _prio3Updates);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_4))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_4))
    {
       RegisterPrio(entity, 10, _prio4Updates);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_5))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_5))
    {
       RegisterPrio(entity, 30, _prio5Updates);
    }
@@ -170,23 +170,23 @@ void EntityScheduler::Register(Entity* entity)
 
 void EntityScheduler::DeRegister(Entity* entity)
 {
-   if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_1))
+   if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_1))
    {
       RemoveEntity(entity, _prio1Updates);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_2))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_2))
    {
       RemoveEntity(entity, _prio2Updates, 2);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_3))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_3))
    {
       RemoveEntity(entity, _prio2Updates, 3);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_4))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_4))
    {
       RemoveEntity(entity, _prio2Updates, 10);
    }
-   else if(entity->IsFlagSet(Entity::EF_UPDATE_PRIO_5))
+   else if(entity->IsFlagSet(Entity::HF_UPDATE_PRIO_5))
    {
       RemoveEntity(entity, _prio2Updates, 30);
    }

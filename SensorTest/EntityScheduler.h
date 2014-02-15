@@ -40,10 +40,10 @@
  * not tax the system.
  *
  * Assumptions:
- * 1. If an Entity has Update() called each frame (EF_UPDATE_PRIO_1),
+ * 1. If an Entity has Update() called each frame (HF_UPDATE_PRIO_1),
  *    then it also has UpdateDisplay() called each frame.
  * 2. UpdateDisplay() will be called on every entity that 
- *    has the EF_NEEDS_DISPLAY_UPDATE set every frame, regardless
+ *    has the HF_NEEDS_DISPLAY_UPDATE set every frame, regardless
  *    of priority.
  * 3. Execution of updates is hopefully "optimal".  Removal or
  *    addition of Entities needing update may not be so fast.

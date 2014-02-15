@@ -95,3 +95,235 @@ void MovingEntity::CreateBody(b2World& world, const b2Vec2& position, float32 an
    SetMaxSpeed(5);
    SetMinSeekDistance(0.5);
 }
+
+bool MovingEntity::IsNearTarget()
+{
+   Vec2 toTarget = GetTargetPos() - GetBody()->GetPosition();
+   
+   if(toTarget.LengthSquared() < GetMinSeekDistance()*GetMinSeekDistance())
+   {
+      return true;
+   }
+   return false;
+}
+
+void MovingEntity::ApplyTurnTorque()
+{
+   Vec2 toTarget = GetTargetPos() - GetBody()->GetPosition();
+   
+   float32 angleBodyRads = MathUtilities::AdjustAngle(GetBody()->GetAngle());
+   float32 angleTargetRads = MathUtilities::AdjustAngle(atan2f(toTarget.y, toTarget.x));
+   float32 angleError = MathUtilities::AdjustAngle(angleBodyRads - angleTargetRads);
+   _turnController.AddSample(angleError);
+   
+   // Negative Feedback
+   float32 angAcc = -_turnController.GetLastOutput();
+   
+   // This is as much turn acceleration as this
+   // "motor" can generate.
+   if(angAcc > GetMaxAngularAcceleration())
+      angAcc = GetMaxAngularAcceleration();
+   if(angAcc < -GetMaxAngularAcceleration())
+      angAcc = -GetMaxAngularAcceleration();
+   
+   float32 torque = angAcc * GetBody()->GetInertia();
+   GetBody()->ApplyTorque(torque);
+}
+
+void MovingEntity::ApplyThrust()
+{
+   // Get the distance to the target.
+   Vec2 toTarget = GetTargetPos() - GetBody()->GetWorldCenter();
+   toTarget.Normalize();
+   Vec2 desiredVel = GetMaxSpeed()*toTarget;
+   Vec2 currentVel = GetBody()->GetLinearVelocity();
+   Vec2 thrust = GetMaxLinearAcceleration()*(desiredVel - currentVel);
+   GetBody()->ApplyForceToCenter(thrust);
+}
+
+void MovingEntity::PrepareForMotion()
+{
+   GetBody()->SetLinearDamping(0.0f);
+   GetBody()->SetAngularDamping(0.0f);
+}
+
+void MovingEntity::EnterSeek()
+{
+   PrepareForMotion();
+   GetTurnController().ResetHistory();
+}
+
+void MovingEntity::ExecuteSeek()
+{
+   if(IsNearTarget())
+   {
+      StopBody();
+      ChangeState(ST_IDLE);
+   }
+   else
+   {
+      ApplyTurnTorque();
+      ApplyThrust();
+   }
+}
+
+
+void MovingEntity::EnterIdle()
+{
+   StopBody();
+}
+
+void MovingEntity::ExecuteIdle()
+{
+}
+
+void MovingEntity::EnterTurnTowards()
+{
+   PrepareForMotion();
+   GetTurnController().ResetHistory();
+}
+
+void MovingEntity::ExecuteTurnTowards()
+{
+   ApplyTurnTorque();
+}
+
+
+void MovingEntity::EnterFollowPath()
+{
+   // If there are any points to follow,
+   // then pop the first as the target
+   // and follow it.  Otherwise, go idle.
+   list<Vec2>& path = GetPath();
+   if(path.size() > 0)
+   {
+      PrepareForMotion();
+      GetTurnController().ResetHistory();
+      GetTargetPos() = *(path.begin());
+      path.erase(path.begin());
+   }
+   else
+   {
+      ChangeState(ST_IDLE);
+   }
+}
+
+void MovingEntity::ExecuteFollowPath()
+{
+   list<Vec2>& path = GetPath();
+   bool isNearTarget = IsNearTarget();
+   if(path.size() == 0 && isNearTarget)
+   {  // Done.
+      ChangeState(ST_IDLE);
+   }
+   else if(isNearTarget)
+   {  // Still more points to go.
+      GetTargetPos() = *(path.begin());
+      path.erase(path.begin());
+      ApplyThrust();
+      ApplyTurnTorque();
+   }
+   else
+   {  // Just keep moving along..
+      ApplyThrust();
+      ApplyTurnTorque();
+   }
+}
+
+void MovingEntity::ExecuteState(STATE_T state)
+{
+   switch(state)
+   {
+      case ST_IDLE:
+         ExecuteIdle();
+         break;
+      case ST_TURN_TOWARDS:
+         ExecuteTurnTowards();
+         break;
+      case ST_SEEK:
+         ExecuteSeek();
+         break;
+      case ST_FOLLOW_PATH:
+         ExecuteFollowPath();
+         break;
+      default:
+         assert(false);
+   }
+}
+
+void MovingEntity::EnterState(STATE_T state)
+{
+   switch(state)
+   {
+      case ST_IDLE:
+         EnterIdle();
+         break;
+      case ST_TURN_TOWARDS:
+         EnterTurnTowards();
+         break;
+      case ST_SEEK:
+         EnterSeek();
+         break;
+      case ST_FOLLOW_PATH:
+         EnterFollowPath();
+         break;
+      default:
+         assert(false);
+   }
+}
+
+void MovingEntity::ChangeState(STATE_T state)
+{
+   EnterState(state);
+   _state = state;
+}
+
+MovingEntity::MovingEntity() :
+Entity(HF_CAN_MOVE,2),
+_state(ST_IDLE)
+{
+}
+
+MovingEntity::~MovingEntity()
+{
+   
+}
+
+bool MovingEntity::Create(b2World& world,const Vec2& position, float32 angleRads)
+{
+   CreateBody(world,position,angleRads);
+   SetupTurnController();
+   return true;
+}
+
+// Commands - Use thse to change the state
+// of the missile.
+void MovingEntity::CommandFollowPath(const list<Vec2>& path)
+{
+   GetPath() = path;
+   ChangeState(ST_FOLLOW_PATH);
+}
+
+
+void MovingEntity::CommandTurnTowards(const Vec2& position)
+{
+   GetTargetPos() = position;
+   ChangeState(ST_TURN_TOWARDS);
+}
+
+void MovingEntity::CommandSeek(const Vec2& position)
+{
+   GetTargetPos() = position;
+   ChangeState(ST_SEEK);
+}
+
+void MovingEntity::CommandIdle()
+{
+   ChangeState(ST_IDLE);
+}
+
+void MovingEntity::Update()
+{
+   ExecuteState(_state);
+   UpdateDisplay();
+}

@@ -333,6 +333,7 @@
 		1AC9EFA4189D543900397F34 /* StraightMovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */; };
 		1AC9EFA7189D57F000397F34 /* Asteroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA5189D57F000397F34 /* Asteroid.cpp */; };
 		1AC9EFAA189D580C00397F34 /* RanNumGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */; };
+		1ADB500B18AFAFAD00CED623 /* HasFlags.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ADB500918AFAFAD00CED623 /* HasFlags.cpp */; };
 		1AFC7627188DE1B400A258FB /* EntityManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7625188DE1B400A258FB /* EntityManager.cpp */; };
 		1AFC762A188DE21600A258FB /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC7628188DE21600A258FB /* Entity.cpp */; };
 		1AFC762D188DE36A00A258FB /* GraphSensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AFC762B188DE36A00A258FB /* GraphSensor.cpp */; };
@@ -1029,6 +1030,8 @@
 		1AC9EFA6189D57F000397F34 /* Asteroid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Asteroid.h; sourceTree = "<group>"; };
 		1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RanNumGen.cpp; sourceTree = "<group>"; };
 		1AC9EFA9189D580C00397F34 /* RanNumGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RanNumGen.h; sourceTree = "<group>"; };
+		1ADB500918AFAFAD00CED623 /* HasFlags.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HasFlags.cpp; sourceTree = "<group>"; };
+		1ADB500A18AFAFAD00CED623 /* HasFlags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HasFlags.h; sourceTree = "<group>"; };
 		1AFC7625188DE1B400A258FB /* EntityManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityManager.cpp; sourceTree = "<group>"; };
 		1AFC7626188DE1B400A258FB /* EntityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityManager.h; sourceTree = "<group>"; };
 		1AFC7628188DE21600A258FB /* Entity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Entity.cpp; sourceTree = "<group>"; };
@@ -2352,6 +2355,8 @@
 				1AB6EABE18A82173005C2A19 /* GridCalculator.h */,
 				1A961C1E188AEE57006789B0 /* GridLayer.h */,
 				1A961C02188AEDB7006789B0 /* MainScene.cpp */,
+				1ADB500918AFAFAD00CED623 /* HasFlags.cpp */,
+				1ADB500A18AFAFAD00CED623 /* HasFlags.h */,
 				1A961C03188AEDB7006789B0 /* MainScene.h */,
 				1A961C04188AEDB7006789B0 /* MathUtilities.cpp */,
 				1A961C05188AEDB7006789B0 /* MathUtilities.h */,
@@ -2548,6 +2553,7 @@
 				1A961948188AED41006789B0 /* CCImageCommonWebp.cpp in Sources */,
 				1A9618BA188AED40006789B0 /* CCGrabber.cpp in Sources */,
 				1A96186E188AED40006789B0 /* CCActionTiledGrid.cpp in Sources */,
+				1ADB500B18AFAFAD00CED623 /* HasFlags.cpp in Sources */,
 				1A961C19188AEDB7006789B0 /* Viewport.cpp in Sources */,
 				1A961B18188AED46006789B0 /* AnimationStateData.cpp in Sources */,
 				1A9619C0188AED44006789B0 /* CCSpriteBatchNode.cpp in Sources */,

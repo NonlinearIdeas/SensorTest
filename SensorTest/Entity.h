@@ -29,38 +29,11 @@
 
 #include "CommonSTL.h"
 #include "CommonProject.h"
+#include "HasFlags.h"
 
-class Entity
+class Entity : public HasFlags
 {
 public:
-   enum
-   {
-      // ---------------------------------
-      // Priority Scheduling Flags
-      // ---------------------------------
-      // Every Frame
-      EF_UPDATE_PRIO_1           = 1 << 0,
-      // Every Other Frame (about 15x per second)
-      EF_UPDATE_PRIO_2           = 1 << 1,
-      // Every 4 Frames (about 7.5x per second)
-      EF_UPDATE_PRIO_3           = 1 << 2,
-      // Every 15 Frames (about 2x per second)
-      EF_UPDATE_PRIO_4           = 1 << 3,
-      // Every 30 Frames (about 1x per second)
-      EF_UPDATE_PRIO_5           = 1 << 4,
-      
-      // ---------------------------------
-      // Flags that reflect "what this is or can do"
-      // ---------------------------------
-      // Is this a graph sensor?
-      EF_IS_GRAPH_SENSOR         = 1 << 0,
-      // Can this entity move at all?
-      EF_CAN_MOVE                = 1 << 1,
-      // Does not need to update the diplay regularly.
-      EF_NO_DISPLAY_UPDATE    = 1 << 7,
-      
-      EF_FLAG_MAX                = 1 << 31
-   };
    
    enum
    {
@@ -68,7 +41,6 @@ public:
    };
 private:
    uint32 _ID;
-   uint32 _flags;
    // Every entity has one "main" body which it
    // controls in some way.  Or not.
    b2Body* _body;
@@ -108,26 +80,7 @@ public:
    }
    
    
-   inline void SetFlag(uint32 flag)
-   {
-      _flags |= flag;
-   }
-   
-   inline void ClearFlag(uint32 flag)
-   {
-      _flags &= ~flag;
-   }
-   
-   inline bool IsFlagSet(uint32 flag) const
-   {
-      return (_flags & flag) > 0;
-   }
-   
-   inline bool IsFlagClear(uint32 flag) const
-   {
-      return (_flags & flag) == 0;
-   }
-   
+  
    inline void SetID(uint32 ID)
    {
       _ID = ID;
@@ -143,7 +96,7 @@ public:
       string descr = "ID: ";
       descr += _ID;
       descr += "Flags: ";
-      if(IsFlagSet(EF_IS_GRAPH_SENSOR))
+      if(IsFlagSet(HF_IS_GRAPH_SENSOR))
          descr += "IS_FLAG_SENSOR ";
       return descr;
    }
@@ -151,15 +104,14 @@ public:
    
    Entity() :
    _ID(DEFAULT_ENTITY_ID),
-   _flags(0),
    _body(NULL),
    _scale(1)
    {
    }
    
    Entity(uint32 flags, uint32 scale) :
+   HasFlags(flags),
    _ID(DEFAULT_ENTITY_ID),
-   _flags(flags),
    _body(NULL),
    _scale(scale)
    {

@@ -58,187 +58,21 @@ private:
    PIDController _turnController;
    
    
-   bool IsNearTarget()
-   {
-      Vec2 toTarget = GetTargetPos() - GetBody()->GetPosition();
-      
-      if(toTarget.LengthSquared() < GetMinSeekDistance()*GetMinSeekDistance())
-      {
-         return true;
-      }
-      return false;
-   }
-   
-   void ApplyTurnTorque()
-   {
-      Vec2 toTarget = GetTargetPos() - GetBody()->GetPosition();
-      
-      float32 angleBodyRads = MathUtilities::AdjustAngle(GetBody()->GetAngle());
-      float32 angleTargetRads = MathUtilities::AdjustAngle(atan2f(toTarget.y, toTarget.x));
-      float32 angleError = MathUtilities::AdjustAngle(angleBodyRads - angleTargetRads);
-      _turnController.AddSample(angleError);
-      
-      // Negative Feedback
-      float32 angAcc = -_turnController.GetLastOutput();
-      
-      // This is as much turn acceleration as this
-      // "motor" can generate.
-      if(angAcc > GetMaxAngularAcceleration())
-         angAcc = GetMaxAngularAcceleration();
-      if(angAcc < -GetMaxAngularAcceleration())
-         angAcc = -GetMaxAngularAcceleration();
-      
-      float32 torque = angAcc * GetBody()->GetInertia();
-      GetBody()->ApplyTorque(torque);
-   }
-   
-   virtual void ApplyThrust()
-   {
-      // Get the distance to the target.
-      Vec2 toTarget = GetTargetPos() - GetBody()->GetWorldCenter();
-      toTarget.Normalize();
-      Vec2 desiredVel = GetMaxSpeed()*toTarget;
-      Vec2 currentVel = GetBody()->GetLinearVelocity();
-      Vec2 thrust = GetMaxLinearAcceleration()*(desiredVel - currentVel);
-      GetBody()->ApplyForceToCenter(thrust);
-   }
-   
-   void PrepareForMotion()
-   {
-      GetBody()->SetLinearDamping(0.0f);
-      GetBody()->SetAngularDamping(0.0f);
-   }
-   
-   void EnterSeek()
-   {
-      PrepareForMotion();
-      GetTurnController().ResetHistory();
-   }
-   
-   void ExecuteSeek()
-   {
-      if(IsNearTarget())
-      {
-         StopBody();
-         ChangeState(ST_IDLE);
-      }
-      else
-      {
-         ApplyTurnTorque();
-         ApplyThrust();
-      }
-   }
-   
-   
-   void EnterIdle()
-   {
-      StopBody();
-   }
-   
-   void ExecuteIdle()
-   {
-   }
-   
-   void EnterTurnTowards()
-   {
-      PrepareForMotion();
-      GetTurnController().ResetHistory();
-   }
-   
-   void ExecuteTurnTowards()
-   {
-      ApplyTurnTorque();
-   }
-   
-  
-   void EnterFollowPath()
-   {
-      // If there are any points to follow,
-      // then pop the first as the target
-      // and follow it.  Otherwise, go idle.
-      list<Vec2>& path = GetPath();
-      if(path.size() > 0)
-      {
-         PrepareForMotion();
-         GetTurnController().ResetHistory();
-         GetTargetPos() = *(path.begin());
-         path.erase(path.begin());
-      }
-      else
-      {
-         ChangeState(ST_IDLE);
-      }
-   }
-   
-   void ExecuteFollowPath()
-   {
-      list<Vec2>& path = GetPath();
-      bool isNearTarget = IsNearTarget();
-      if(path.size() == 0 && isNearTarget)
-      {  // Done.
-         ChangeState(ST_IDLE);
-      }
-      else if(isNearTarget)
-      {  // Still more points to go.
-         GetTargetPos() = *(path.begin());
-         path.erase(path.begin());
-         ApplyThrust();
-         ApplyTurnTorque();
-      }
-      else
-      {  // Just keep moving along..
-         ApplyThrust();
-         ApplyTurnTorque();
-      }
-   }
-   
-   void ExecuteState(STATE_T state)
-   {
-      switch(state)
-      {
-         case ST_IDLE:
-            ExecuteIdle();
-            break;
-         case ST_TURN_TOWARDS:
-            ExecuteTurnTowards();
-            break;
-         case ST_SEEK:
-            ExecuteSeek();
-            break;
-         case ST_FOLLOW_PATH:
-            ExecuteFollowPath();
-            break;
-         default:
-            assert(false);
-      }
-   }
-   
-   void EnterState(STATE_T state)
-   {
-      switch(state)
-      {
-         case ST_IDLE:
-            EnterIdle();
-            break;
-         case ST_TURN_TOWARDS:
-            EnterTurnTowards();
-            break;
-         case ST_SEEK:
-            EnterSeek();
-            break;
-         case ST_FOLLOW_PATH:
-            EnterFollowPath();
-            break;
-         default:
-            assert(false);
-      }
-   }
-   
-   void ChangeState(STATE_T state)
-   {
-      EnterState(state);
-      _state = state;
-   }
+   bool IsNearTarget();
+   void ApplyTurnTorque();
+   void ApplyThrust();
+   void PrepareForMotion();
+   void EnterSeek();
+   void ExecuteSeek();
+   void EnterIdle();
+   void ExecuteIdle();
+   void EnterTurnTowards();
+   void ExecuteTurnTowards();
+   void EnterFollowPath();
+   void ExecuteFollowPath();
+   void ExecuteState(STATE_T state);
+   void EnterState(STATE_T state);
+   void ChangeState(STATE_T state);
    
 protected:
    Vec2& GetTargetPos() { return _targetPos; }
@@ -248,18 +82,6 @@ protected:
    {
       return _turnController;
    }
-   
-   virtual void UpdateDisplay()
-   {
-   }
-   
-
-   
-public:
-   virtual void StopBody();
-   virtual void SetupTurnController();
-   virtual void CreateBody(b2World& world, const b2Vec2& position, float32 angleRads);
-   
    
    inline float32 GetMaxLinearAcceleration() { return _maxLinearAcceleration; }
    inline void SetMaxLinearAcceleration(float32 maxLinearAcceleration) { _maxLinearAcceleration = maxLinearAcceleration; }
@@ -273,58 +95,29 @@ public:
    inline float32 GetMaxSpeed() { return _maxSpeed; }
    inline void SetMaxSpeed(float32 maxSpeed) { _maxSpeed = maxSpeed; }
    
+   virtual void CreateBody(b2World& world, const b2Vec2& position, float32 angleRads);
+   virtual void StopBody();
+   virtual void UpdateDisplay() { }
+   virtual void SetupTurnController();
    
+   
+public:
+   
+
    // Constructor
-	MovingEntity() :
-   Entity(EF_CAN_MOVE,2),
-   _state(ST_IDLE)
-   {
-   }
+	MovingEntity();
+   ~MovingEntity();
    
    
-   bool Create(b2World& world,const Vec2& position, float32 angleRads)
-   {
-      CreateBody(world,position,angleRads);
-      SetupTurnController();
-      return true;
-   }
+   bool Create(b2World& world,const Vec2& position, float32 angleRads);
    
    // Commands - Use thse to change the state
    // of the missile.
-   void CommandFollowPath(const list<Vec2>& path)
-   {
-      GetPath() = path;
-      ChangeState(ST_FOLLOW_PATH);
-   }
-   
-   
-   void CommandTurnTowards(const Vec2& position)
-   {
-      GetTargetPos() = position;
-      ChangeState(ST_TURN_TOWARDS);
-   }
-   
-   void CommandSeek(const Vec2& position)
-   {
-      GetTargetPos() = position;
-      ChangeState(ST_SEEK);
-   }
-   
-   void SetTargetPosition(const Vec2& position)
-   {
-      GetTargetPos() = position;
-   }
-   
-   void CommandIdle()
-   {
-      ChangeState(ST_IDLE);
-   }
-   
-   virtual void Update()
-   {
-      ExecuteState(_state);
-      UpdateDisplay();
-   }
+   void CommandFollowPath(const list<Vec2>& path);
+   void CommandTurnTowards(const Vec2& position);
+   void CommandSeek(const Vec2& position);
+   void CommandIdle();
+   void Update();
 };
 
 #endif /* defined(__MovingEntity__) */
