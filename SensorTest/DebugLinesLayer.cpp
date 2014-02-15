@@ -58,31 +58,23 @@ bool DebugLinesLayer::init()
 void DebugLinesLayer::ViewportChanged()
 {
    _renderTexture->clear(0.0, 0, 0, 0.0);
-   _linePixelsData.clear();
-   for(list<LINE_METERS_DATA_T>::iterator iter = _lineMetersData.begin();
-       iter != _lineMetersData.end();
-       ++iter)
-   {
-      AddLine(*iter);
-   }
+   _lineMetersDataToDraw.clear();
+   _lineMetersDataToDraw.insert(_lineMetersDataToDraw.end(), _lineMetersData.begin(),_lineMetersData.end());
 }
 
 void DebugLinesLayer::AddLine(const LINE_METERS_DATA_T& lmd)
 {
-   LINE_PIXELS_DATA_T lpd;
-   
-   lpd.start = Viewport::Instance().Convert(lmd.start);
-   lpd.end = Viewport::Instance().Convert(lmd.end);
-   lpd.color = lmd.color;
-   lpd.markerRadius = lmd.markerRadius;
-   
-   _linePixelsData.push_back(lpd);
+   if(_enabled)
+   {
+      _lineMetersDataToDraw.push_back(lmd);
+      _lineMetersData.push_back(lmd);
+   }
 }
 
 void DebugLinesLayer::Reset()
 {
    _lineMetersData.clear();
-   _linePixelsData.clear();
+   _lineMetersDataToDraw.clear();
    _renderTexture->clear(0.0, 0, 0, 0.0);
    _enabled = true;
 }
@@ -91,26 +83,28 @@ void DebugLinesLayer::Reset()
 void DebugLinesLayer::draw()
 {
    CCLayer::draw();
-   if(_enabled && _linePixelsData.size() > 0)
+   if(_lineMetersDataToDraw.size() > 0 && _enabled)
    {
-      list<LINE_PIXELS_DATA_T>::iterator iter;
+      list<LINE_METERS_DATA>::iterator iter;
       _renderTexture->begin();
-      for(iter = _linePixelsData.begin();
-          iter != _linePixelsData.end();
+      Viewport& vp = Viewport::Instance();
+      
+      for(list<LINE_METERS_DATA>::iterator iter = _lineMetersDataToDraw.begin();
+          iter != _lineMetersDataToDraw.end();
           ++iter)
       {
-         LINE_PIXELS_DATA_T& ld = *iter;
-         ccDrawColor4F(ld.color.r, ld.color.g, ld.color.b, ld.color.a);
-         if(ld.markerRadius > 0.0)
+         CCPoint start = vp.Convert(iter->start);
+         CCPoint end = vp.Convert(iter->end);
+         ccDrawColor4F(iter->color.r, iter->color.g, iter->color.b, iter->color.a);
+         if(iter->markerRadius > 0.0)
          {
-            ccDrawCircle(ccp(ld.start.x,ld.start.y), ld.markerRadius, 0, 20, false);
-            ccDrawCircle(ccp(ld.end.x,ld.end.y), ld.markerRadius, 0, 20, false);
+            ccDrawCircle(start, iter->markerRadius, 0, 20, false);
+            ccDrawCircle(end, iter->markerRadius, 0, 20, false);
          }
-         ccDrawLine(ccp(ld.start.x,ld.start.y), ccp(ld.end.x,ld.end.y));
+         ccDrawLine(start,end);
       }
-      
       _renderTexture->end();
-      _linePixelsData.clear();
+      _lineMetersDataToDraw.clear();
    }
 }
 

@@ -44,6 +44,8 @@ public:
       HF_IS_GRAPH_SENSOR         = 1 << 0,
       // Can this entity move at all?
       HF_CAN_MOVE                = 1 << 1,
+      // Is this a connected node?
+      HF_IS_CONNECTED            = 1 << 2,
       // ---------------------------------
       // Priority Scheduling Flags
       // ---------------------------------

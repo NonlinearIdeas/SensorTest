@@ -62,15 +62,7 @@ protected:
       
    }
    
-   SENSORS_T& GetSensors()
-   {
-      return _sensors;
-   }
 
-   SENSORS_ADJ_T& GetAdjacentSensors()
-   {
-      return _adjacentSensors;
-   }
    
    /* Registers the sensors with the EntityManager.
     *
@@ -114,12 +106,12 @@ public:
       return _sensors.size() == _adjacentSensors.size();
    }
    
-   const SENSORS_T& GetSensorsConst() const
+   SENSORS_T& GetSensors()
    {
       return _sensors;
    }
-
-   const SENSORS_ADJ_T& GetAdjacentSensorsConst() const
+   
+   SENSORS_ADJ_T& GetAdjacentSensors()
    {
       return _adjacentSensors;
    }

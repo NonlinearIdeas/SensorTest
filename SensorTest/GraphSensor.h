@@ -28,14 +28,26 @@
 #define __GraphSensor__
 
 #include "Entity.h"
+#include "GraphCommon.h"
 
 class GraphSensor : public Entity
 {
 private:
    int32 _contactCount;
    int32 _index;
+   GraphNode* _graphNode;
    
 public:
+   
+   /* This is not terribly efficient, but for now,
+    * the GraphSensor is "twinned" with a GraphNode.
+    * This allows the sensor to update the node based
+    * on its occupancy.
+    */
+   inline void SetGraphNode(GraphNode* graphNode)
+   {
+      _graphNode = graphNode;
+   }
    
    inline void ResetContactCount()
    {
@@ -47,10 +59,7 @@ public:
       return (_contactCount == 0);
    }
    
-   inline void UpdateContactCount(int32 count)
-   {
-      _contactCount+= count;
-   }
+   void UpdateContactCount(int32 count);
    
    inline int32 GetContactCount()
    {
@@ -68,7 +77,8 @@ public:
    }
       
    GraphSensor() :
-   _contactCount(0)
+   _contactCount(0),
+   _graphNode(NULL)
    {
       SetFlag(HF_IS_GRAPH_SENSOR);
    }

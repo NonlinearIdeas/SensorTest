@@ -26,3 +26,20 @@
 
 
 #include "GraphSensor.h"
+
+
+void GraphSensor::UpdateContactCount(int32 count)
+{
+   _contactCount+= count;
+   if(_graphNode != NULL)
+   {
+      if(_contactCount == 0)
+      {  // Just went to 0
+         _graphNode->SetFlag(HF_IS_CONNECTED);
+      }
+      else
+      {
+         _graphNode->ClearFlag(HF_IS_CONNECTED);
+      }
+   }
+}

@@ -98,7 +98,7 @@ public:
     */
    void LoadSensors(GraphSensorGenerator& generator)
    {
-      const vector<GraphSensor*> sensors = generator.GetSensorsConst();
+      const vector<GraphSensor*> sensors = generator.GetSensors();
       assert(sensors.size() > 0);
       _sensors.resize(sensors.size());
       for(uint32 idx = 0; idx < sensors.size(); ++idx)

@@ -37,7 +37,7 @@ class DebugLinesLayer : public CCLayer, public Notified
 private:
    
    list<LINE_METERS_DATA_T> _lineMetersData;
-   list<LINE_PIXELS_DATA_T> _linePixelsData;
+   list<LINE_METERS_DATA_T> _lineMetersDataToDraw;
    bool _enabled;
    CCRenderTexture* _renderTexture;
    

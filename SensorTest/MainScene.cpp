@@ -255,16 +255,17 @@ void MainScene::CreateSensors()
    
    // Load the nodes into the graph
    _sensorGraph.Reset();
-   const GraphSensorGenerator::SENSORS_T& sensors = sensorGrid.GetSensorsConst();
-   const GraphSensorGenerator::SENSORS_ADJ_T& adj = sensorGrid.GetAdjacentSensorsConst();
+   GraphSensorGenerator::SENSORS_T& sensors = sensorGrid.GetSensors();
+   GraphSensorGenerator::SENSORS_ADJ_T& adj = sensorGrid.GetAdjacentSensors();
 
    // Add the nodes in first.
    for(int idx = 0; idx < sensors.size(); ++idx)
    {
       // Get the raw sensor from the generator
-      const GraphSensor* sensor = sensors[idx];
+      GraphSensor* sensor = sensors[idx];
       NavGraphNode* node = new NavGraphNode(idx);
       node->SetPos(sensor->GetBody()->GetWorldCenter());
+      sensor->SetGraphNode(node);
       _sensorGraph.AddNode(node);
    }
    // Now fill in the adjacdency lists.
@@ -401,7 +402,7 @@ void MainScene::UpdateEntity()
 static void DrawPathList(const list<const GraphEdge*>& edges)
 {
    Notifier& no = Notifier::Instance();
-   
+   CCLOG("Drawing Path List (%ld edges)",edges.size());
    no.Notify(NE_RESET_DRAW_CYCLE);
    for(list<const GraphEdge*>::const_iterator iter = edges.begin();
        iter != edges.end();
@@ -426,28 +427,46 @@ void MainScene::NavigateToPosition(Vec2 pos)
    CCLOG("Plotting path from %d -> %d",startIdx,targetIdx);
 #endif
    GraphSearchBFS search(_sensorGraph,startIdx,targetIdx);
-   search.SearchGraph();
-   list<const GraphEdge*> edges = search.GetPathEdges();
-   DrawPathList(edges);
-   list<const GraphNode*> nodes = search.GetPathNodes();
-   list<Vec2> points;
-#ifdef DUMP_PATH_INFO
-   CCLOG("There are %ld edges in the path.",edges.size());
-   CCLOG("There are %ld nodes in the path.",nodes.size());
-#endif
-   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
-       iter != nodes.end();
-       ++iter)
+   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
+   switch(sstate)
    {
-      const NavGraphNode* gNode = (NavGraphNode*)*iter;
-      points.push_back(gNode->GetPos());
+      case GraphSearchAlgorithm::SS_FOUND:
+      {
+         CCLOG("Found Path");
+         list<const GraphEdge*> edges = search.GetPathEdges();
+         DrawPathList(edges);
+         list<const GraphNode*> nodes = search.GetPathNodes();
+         list<Vec2> points;
+         //#ifdef DUMP_PATH_INFO
+         CCLOG("There are %ld edges in the path.",edges.size());
+         CCLOG("There are %ld nodes in the path.",nodes.size());
+         //#endif
+         for(list<const GraphNode*>::const_iterator iter = nodes.begin();
+             iter != nodes.end();
+             ++iter)
+         {
+            const NavGraphNode* gNode = (NavGraphNode*)*iter;
+            points.push_back(gNode->GetPos());
 #ifdef DUMP_PATH_INFO
-      CCLOG(" -> NODE: %d",(*iter)->GetGraphIndex());
+            CCLOG(" -> NODE: %d",(*iter)->GetGraphIndex());
 #endif
+         }
+         // Go to the point we wanted to be at.
+         points.push_back(pos);
+         _entity->CommandFollowPath(points);
+         
+      }
+         break;
+      case GraphSearchAlgorithm::SS_NOT_FOUND:
+         CCLOG("No Path Found!!!");
+         break;
+      case GraphSearchAlgorithm::SS_NOT_STARTED:
+         assert(false);
+         break;
+      case GraphSearchAlgorithm::SS_STILL_WORKING:
+         assert(false);
+         break;
    }
-   // Go to the point we wanted to be at.
-   points.push_back(pos);
-   _entity->CommandFollowPath(points);
 }
 
 

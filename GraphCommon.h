@@ -54,17 +54,8 @@ private:
    uint32 _graphIndex;
    uint32 _ID;
 public:
-   // Flags used for the edge.  These
-   // can be state flags or may indicate
-   // the edge type (fly, swim, etc.), etc.
-   enum
-   {
-      GNF_IS_CONNECTED = 0x00000001,
-   };
-
-   
    GraphNode() :
-      HasFlags(GNF_IS_CONNECTED),
+      HasFlags(HF_IS_CONNECTED),
       _graphIndex(INVALID_NODE_INDEX),
       _ID(0)
    {
@@ -80,7 +71,7 @@ public:
    }
    
    GraphNode(uint32 ID) :
-      HasFlags(GNF_IS_CONNECTED),
+      HasFlags(HF_IS_CONNECTED),
       _graphIndex(INVALID_NODE_INDEX),
       _ID(ID)
    {
@@ -134,17 +125,10 @@ private:
    double _cost;
    
 public:
-   // Flags used for the edge.  These
-   // can be state flags or may indicate
-   // the edge type (fly, swim, etc.), etc.
-   enum
-   {
-      GEF_IS_CONNECTED = 0x00000001,
-   };
 
    
    GraphEdge() :
-      HasFlags(GEF_IS_CONNECTED),
+      HasFlags(HF_IS_CONNECTED),
       _src(INVALID_NODE_INDEX),
       _des(INVALID_NODE_INDEX),
       _cost(1.0)
@@ -153,7 +137,7 @@ public:
    }
    
    GraphEdge(uint32 src, uint32 des) :
-      HasFlags(GEF_IS_CONNECTED),
+      HasFlags(HF_IS_CONNECTED),
       _src(src),
       _des(des),
       _cost(1.0)
@@ -363,7 +347,7 @@ public:
    }
    
    /* This method enables/disables a node by 
-    * marking the GNF_IS_CONNECTED flag for it.
+    * marking the HF_IS_CONNECTED flag for it.
     *
     * Search Algorithms use this for handling
     * dynamic nodes without adding/removing them
@@ -379,11 +363,11 @@ public:
          {
             if(enable)
             {
-               node->SetFlag(GraphNode::GNF_IS_CONNECTED);
+               node->SetFlag(GraphNode::HF_IS_CONNECTED);
             }
             else
             {
-               node->ClearFlag(GraphNode::GNF_IS_CONNECTED);
+               node->ClearFlag(GraphNode::HF_IS_CONNECTED);
             }
          }
       }
@@ -398,11 +382,11 @@ public:
       {
          if(enable)
          {
-            edge->SetFlag(GraphEdge::GEF_IS_CONNECTED);
+            edge->SetFlag(HasFlags::HF_IS_CONNECTED);
          }
          else
          {
-            edge->ClearFlag(GraphEdge::GEF_IS_CONNECTED);
+            edge->ClearFlag(HasFlags::HF_IS_CONNECTED);
          }
       }
    }
@@ -487,15 +471,19 @@ private:
    uint32 _targetNode;
    SEARCH_STATE_T _searchState;
    GraphEdge _firstEdge;
+   bool _allowDisconnectedStartNode;
 
    bool IsPathPossible()
    {
-      if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::HF_IS_CONNECTED) &&
+         !_allowDisconnectedStartNode)
       {
+         CCLOG("Start Node %d NOT CONNECTED",_startNode);
          return false;
       }
-      if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::GNF_IS_CONNECTED))
+      if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::HF_IS_CONNECTED))
       {
+         CCLOG("Target Node %d NOT CONNECTED",_targetNode);
          return false;
       }
       return true;
@@ -533,11 +521,15 @@ public:
       _targetNode(target),
       _searchState(SS_NOT_STARTED),
       _visited(_graph.GetNodeCount(),NS_NOT_VISITED),
-      _route(_graph.GetNodeCount(),NS_NO_PARENT)
+      _route(_graph.GetNodeCount(),NS_NO_PARENT),
+      _allowDisconnectedStartNode(true)
    {
       _firstEdge.SetSrc(start);
       _firstEdge.SetDes(start);
    }
+   
+   void SetAllowDisconnectedStartNode(bool allow) { _allowDisconnectedStartNode = allow; }
+   bool GetAllowDisconnectedStartNode() { return _allowDisconnectedStartNode; }
    
    /* This will allow reuse of this class after a search has
     * been run (so it can be used mulitple times).
@@ -702,13 +694,13 @@ protected:
       // node onto the stack IFF we have not already
       // visited that destination and if it is available.
       const GraphNode* node = GetGraph().GetNode(edge->GetDes());
-      if(node->IsFlagSet(GraphNode::GNF_IS_CONNECTED))
+      if(node->IsFlagSet(HasFlags::HF_IS_CONNECTED))
       {
          const GraphEdges& edges = GetGraph().GetEdges(edge->GetDes());
          for(int idx = 0; idx < edges.size(); ++idx)
          {  // If the destination node has not been visited,
             // then add it.
-            if(edges[idx]->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+            if(edges[idx]->IsFlagSet(HasFlags::HF_IS_CONNECTED))
             {
                if(GetVisited()[edges[idx]->GetDes()] == NS_NOT_VISITED)
                {
@@ -780,7 +772,8 @@ protected:
       // No.  Push all the edges that lead to the des
       // node into the queue IFF we have not already
       // visited that destination and if it is available.
-      if(GetGraph().GetNode(edge->GetDes())->IsFlagSet(GraphNode::GNF_IS_CONNECTED))
+      if(GetGraph().GetNode(edge->GetDes())->IsFlagSet(HasFlags::HF_IS_CONNECTED) ||
+         (edge->GetDes() == GetStartNode() && GetAllowDisconnectedStartNode()))
       {
          const GraphEdges& edges = GetGraph().GetEdges(edge->GetDes());
          for(int idx = 0; idx < edges.size(); ++idx)
@@ -788,7 +781,7 @@ protected:
             // then add it.
             if(GetVisited()[edges[idx]->GetDes()] == NS_NOT_VISITED)
             {
-               if(edges[idx]->IsFlagSet(GraphEdge::GEF_IS_CONNECTED))
+               if(edges[idx]->IsFlagSet(HasFlags::HF_IS_CONNECTED))
                {
                   _queue.push_back(edges[idx]);
                   GetVisited()[edges[idx]->GetDes()] = NS_VISITED;
