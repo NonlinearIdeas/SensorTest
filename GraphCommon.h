@@ -24,7 +24,7 @@
  *    distribution. 
  */
 
-/* This set of code is derived largely from the work by Matt Buckland in 
+/* This set of code is derived largely from the work by Mat Buckland in 
  * the book "Programming Game AI By Example".  
  * ISBN-10: 1-55622-078-2
  * ISBN-13: 978-1-55622-078-4
@@ -41,6 +41,8 @@
 #include "CommonProject.h"
 #include "CommonSTL.h"
 #include "HasFlags.h"
+
+#define DEBUG_FLOODING
 
 const uint32 INVALID_NODE_INDEX = (uint32)-1;
 
@@ -466,6 +468,7 @@ public:
 private:
    const Graph& _graph;
    vector<NODE_STATE_T> _visited;
+   vector<uint32> _flood;
    vector<uint32> _route;
    uint32 _startNode;
    uint32 _targetNode;
@@ -497,6 +500,7 @@ protected:
    inline const uint32& GetTargetNode() const { return _targetNode; }
    inline const Graph& GetGraph() { return _graph; }
    inline const GraphEdge* GetFirstEdge() { return &_firstEdge; }
+   inline void AddToFlood(uint32 nodeID) { _flood.push_back(nodeID); }
    
    /* These two virtual functions are overloaded by 
     * derived classes.
@@ -542,6 +546,7 @@ public:
       _searchState = SS_NOT_STARTED;
       _firstEdge.SetSrc(start);
       _firstEdge.SetDes(start);
+      _flood.clear();
    }
 
    SEARCH_STATE_T SearchGraph()
@@ -606,6 +611,18 @@ public:
       }
       return path;
    }
+
+   list<const GraphNode*> GetFloodNodes()
+   {
+      list<const GraphNode*> path;
+      for(uint32 idx = 0; idx < _flood.size(); ++idx)
+      {
+         const GraphNode* node = _graph.GetNode(_flood[idx]);
+         path.push_back(node);
+      }
+      return path;
+   }
+   
    
    list<const GraphEdge*> GetPathEdges()
    {
@@ -761,7 +778,11 @@ protected:
       const GraphEdge * edge = _queue.front();
       // Remove it, we are processing it now.
       _queue.erase(_queue.begin());
-      
+
+#ifdef DEBUG_FLOODING
+      // Add this for flood debugging.
+      AddToFlood(edge->GetSrc());
+#endif
       // Update the route for the path we are following.
       GetRoute()[edge->GetDes()] = edge->GetSrc();
       // Is this the node we are looking for?

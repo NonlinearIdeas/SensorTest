@@ -45,8 +45,8 @@
 #include "Spaceship.h"
 
 
-#define SENSOR_DIAMETER (2.0f)
-#define SENSOR_SEPARATION (2.5f)
+#define SENSOR_DIAMETER (2.5f)
+#define SENSOR_SEPARATION (2.0f)
 //#define TRACK_ENTITY_CELL_INDEX
 //#define DUMP_PATH_INFO
 
@@ -321,7 +321,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   addChild(Box2DDebugDrawLayer::create(_world));
+   //addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -399,7 +399,24 @@ void MainScene::UpdateEntity()
 #endif
 }
 
-static void DrawPathList(const list<const GraphEdge*>& edges)
+static void DrawNodeList(const list<const GraphNode*>& nodes)
+{
+   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
+   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
+       iter != nodes.end();
+       ++iter)
+   {
+      NavGraphNode* gNode = (NavGraphNode*)*iter;
+      LINE_METERS_DATA_T lmd;
+      lmd.start = gNode->GetPos();
+      lmd.end = lmd.start;
+      lmd.color = ccc4f(0.99f, 0.25f, 0.25f, 1.0f);
+      lmd.markerRadius = 4.0f;
+      Notifier::Instance().Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
+   }
+}
+
+static void DrawEdgeList(const list<const GraphEdge*>& edges)
 {
    Notifier& no = Notifier::Instance();
    CCLOG("Drawing Path List (%ld edges)",edges.size());
@@ -433,9 +450,13 @@ void MainScene::NavigateToPosition(Vec2 pos)
       case GraphSearchAlgorithm::SS_FOUND:
       {
          CCLOG("Found Path");
+         Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
          list<const GraphEdge*> edges = search.GetPathEdges();
-         DrawPathList(edges);
-         list<const GraphNode*> nodes = search.GetPathNodes();
+         DrawEdgeList(edges);
+         list<const GraphNode*> nodes;
+         nodes = search.GetFloodNodes();
+         DrawNodeList(nodes);
+         nodes = search.GetPathNodes();
          list<Vec2> points;
          //#ifdef DUMP_PATH_INFO
          CCLOG("There are %ld edges in the path.",edges.size());

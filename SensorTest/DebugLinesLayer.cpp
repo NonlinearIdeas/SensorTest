@@ -96,12 +96,23 @@ void DebugLinesLayer::draw()
          CCPoint start = vp.Convert(iter->start);
          CCPoint end = vp.Convert(iter->end);
          ccDrawColor4F(iter->color.r, iter->color.g, iter->color.b, iter->color.a);
-         if(iter->markerRadius > 0.0)
+         bool drawLine = ccpDistanceSQ(start, end) > 0.01f;
+         if(drawLine)
          {
-            ccDrawCircle(start, iter->markerRadius, 0, 20, false);
-            ccDrawCircle(end, iter->markerRadius, 0, 20, false);
+            if(iter->markerRadius >= 1.0)
+            {
+               ccDrawCircle(start, iter->markerRadius, 0, 20, false);
+               ccDrawCircle(end, iter->markerRadius, 0, 20, false);
+            }
+            ccDrawLine(start,end);
          }
-         ccDrawLine(start,end);
+         else
+         {
+            if(iter->markerRadius >= 1.0)
+            {
+               ccDrawCircle(start, iter->markerRadius, 0, 20, false);               
+            }
+         }
       }
       _renderTexture->end();
       _lineMetersDataToDraw.clear();
