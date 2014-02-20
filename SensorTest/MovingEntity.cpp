@@ -26,6 +26,43 @@
 
 
 #include "MovingEntity.h"
+#include "Notifier.h"
+#include "GraphSensorManager.h"
+
+static void DrawNodeList(const list<const GraphNode*>& nodes)
+{
+   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
+   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
+       iter != nodes.end();
+       ++iter)
+   {
+      NavGraphNode* gNode = (NavGraphNode*)*iter;
+      LINE_METERS_DATA_T lmd;
+      lmd.start = gNode->GetPos();
+      lmd.end = lmd.start;
+      lmd.color = ccc4f(0.99f, 0.25f, 0.25f, 1.0f);
+      lmd.markerRadius = 4.0f;
+      Notifier::Instance().Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
+   }
+}
+
+static void DrawEdgeList(const list<const GraphEdge*>& edges)
+{
+   Notifier& no = Notifier::Instance();
+   CCLOG("Drawing Path List (%ld edges)",edges.size());
+   no.Notify(NE_RESET_DRAW_CYCLE);
+   for(list<const GraphEdge*>::const_iterator iter = edges.begin();
+       iter != edges.end();
+       ++iter)
+   {
+      NavGraphEdge* gEdge = (NavGraphEdge*)*iter;
+      LINE_METERS_DATA_T lmd;
+      lmd.start = gEdge->GetSrcPos();
+      lmd.end = gEdge->GetDesPos();
+      no.Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
+   }
+}
+
 
 void MovingEntity::StopBody()
 {
@@ -230,6 +267,81 @@ void MovingEntity::ExecuteFollowPath()
    }
 }
 
+bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path)
+{
+   GraphSensorManager& gsm = GraphSensorManager::Instance();
+   const GridCalculator& gridCalculator = gsm.GetGridCalculator();
+   const Graph& sensorGraph = gsm.GetSensorGraph();
+   
+   int32 startIdx = gridCalculator.CalcIndex(GetBody()->GetWorldCenter());
+   int32 targetIdx = gridCalculator.CalcIndex(_navigatePos);
+   
+   CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
+   
+   GraphSearchBFS search(sensorGraph,startIdx,targetIdx);
+   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
+   if(sstate == GraphSearchAlgorithm::SS_FOUND)
+   {
+      list<const GraphNode*> pathNodes;
+      list<const GraphEdge*> pathEdges;
+      
+      pathEdges = search.GetPathEdges();
+      pathNodes = search.GetPathNodes();
+      
+      Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
+      DrawEdgeList(pathEdges);
+      DrawNodeList(search.GetFloodNodes());
+      
+      path.clear();
+      for(list<const GraphNode*>::const_iterator iter = pathNodes.begin();
+          iter != pathNodes.end();
+          ++iter)
+      {
+         const NavGraphNode* gNode = (NavGraphNode*)*iter;
+         path.push_back(gNode->GetPos());
+      }
+   }
+   else
+   {
+      Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
+      DrawNodeList(search.GetFloodNodes());
+      
+      switch(sstate)
+      {
+         case GraphSearchAlgorithm::SS_NOT_FOUND:
+            CCLOG("No Path Found!!!");
+            break;
+         case GraphSearchAlgorithm::SS_NOT_STARTED:
+            assert(false);
+            break;
+         case GraphSearchAlgorithm::SS_STILL_WORKING:
+            assert(false);
+            break;
+         default:
+            assert(false);
+            break;
+      }
+   }
+   return sstate == GraphSearchAlgorithm::SS_FOUND;
+}
+
+
+void MovingEntity::EnterNavigateToPoint()
+{
+   if(FindPath(GetBody()->GetWorldCenter(), _navigatePos, _path))
+   {
+      
+   }
+   else
+   {
+      ChangeState(ST_IDLE);
+   }
+}
+
+void MovingEntity::ExecuteNavigateToPoint()
+{
+}
+
 void MovingEntity::ExecuteState(STATE_T state)
 {
    switch(state)
@@ -245,6 +357,9 @@ void MovingEntity::ExecuteState(STATE_T state)
          break;
       case ST_FOLLOW_PATH:
          ExecuteFollowPath();
+         break;
+      case ST_NAVIGATE_TO_POINT:
+         ExecuteNavigateToPoint();
          break;
       default:
          assert(false);
@@ -266,6 +381,9 @@ void MovingEntity::EnterState(STATE_T state)
          break;
       case ST_FOLLOW_PATH:
          EnterFollowPath();
+         break;
+      case ST_NAVIGATE_TO_POINT:
+         EnterNavigateToPoint();
          break;
       default:
          assert(false);
@@ -326,4 +444,10 @@ void MovingEntity::Update()
 {
    ExecuteState(_state);
    UpdateDisplay();
+}
+
+void MovingEntity::CommandNavigateToPoint(const Vec2& position)
+{
+   _navigatePos = position;
+   ChangeState(ST_NAVIGATE_TO_POINT);
 }

@@ -73,12 +73,12 @@ public:
       Init(100.0f,100.0f,1.0f);
    }
    
-   inline int32 GetCols() { return _cols; }
-   inline int32 GetRows() { return _rows; }
-   inline int32 GetCount() { return _count; }
+   inline int32 GetCols() const { return _cols; }
+   inline int32 GetRows() const { return _rows; }
+   inline int32 GetCount() const { return _count; }
 
    
-   inline int32 CalcRow(int32 idx)
+   inline int32 CalcRow(int32 idx) const
    {
       int32 result = idx / (_cols);
       if(result < 0)
@@ -88,7 +88,7 @@ public:
       return result;
    }
    
-   inline int32 CalcCol(int32 idx)
+   inline int32 CalcCol(int32 idx) const
    {
       int32 result =  idx % (_cols);
       if(result < 0)
@@ -98,7 +98,7 @@ public:
       return result;
    }
 
-   inline int32 CalcIndex(int32 row, int32 col)
+   inline int32 CalcIndex(int32 row, int32 col) const
    {
       if(row < 0)
          return -1;
@@ -112,7 +112,7 @@ public:
       return result;
    }
    
-   inline int32 CalcIndex(const Vec2& pos)
+   inline int32 CalcIndex(const Vec2& pos) const
    {
       int32 col = (int32)(pos.x+_separation/2)/_separation + _cols/2;
       if(col < 0)
@@ -132,7 +132,7 @@ public:
       return idx;
    }
    
-   inline Vec2 CalcPosition(int32 row, int32 col)
+   inline Vec2 CalcPosition(int32 row, int32 col) const
    {
       Vec2 pos;
       pos.x = (col-_cols/2)*_separation;
@@ -140,7 +140,7 @@ public:
       return pos;
    }
    
-   inline Vec2 CalcPosition(int32 idx)
+   inline Vec2 CalcPosition(int32 idx) const 
    {
       int32 row = CalcRow(idx);
       int32 col = CalcCol(idx);

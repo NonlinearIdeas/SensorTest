@@ -58,9 +58,6 @@ private:
    SpriteBatchLayer* _shipLayer;
    vector<Asteroid*> _asteroids;
    b2Body* _anchor;
-   Graph _sensorGraph;
-   GraphSearchAlgorithm* _graphSearch;
-   GridCalculator _gridCalculator;
    
 protected:
    // This is protected so that derived classes can call it

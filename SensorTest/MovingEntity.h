@@ -32,6 +32,7 @@
 #include "PIDController.h"
 #include "MathUtilities.h"
 #include "Entity.h"
+#include "GraphCommon.h"
 
 
 class MovingEntity : public Entity
@@ -43,10 +44,12 @@ private:
       ST_TURN_TOWARDS,
       ST_SEEK,
       ST_FOLLOW_PATH,
+      ST_NAVIGATE_TO_POINT,
       ST_MAX
    } STATE_T;
    
    Vec2 _targetPos;
+   Vec2 _navigatePos;
    float32 _maxAngularAcceleration;
    float32 _maxLinearAcceleration;
    float32 _minSeekDistance;
@@ -56,6 +59,8 @@ private:
    STATE_T _state;
    // Create turning acceleration
    PIDController _turnController;
+   
+   bool FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path);
    
    
    bool IsNearTarget();
@@ -70,6 +75,8 @@ private:
    void ExecuteTurnTowards();
    void EnterFollowPath();
    void ExecuteFollowPath();
+   void EnterNavigateToPoint();
+   void ExecuteNavigateToPoint();
    void ExecuteState(STATE_T state);
    void EnterState(STATE_T state);
    void ChangeState(STATE_T state);
@@ -116,6 +123,7 @@ public:
    void CommandFollowPath(const list<Vec2>& path);
    void CommandTurnTowards(const Vec2& position);
    void CommandSeek(const Vec2& position);
+   void CommandNavigateToPoint(const Vec2& position);
    void CommandIdle();
    void Update();
 };

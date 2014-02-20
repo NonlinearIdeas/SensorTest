@@ -45,10 +45,9 @@
 #include "Spaceship.h"
 
 
-#define SENSOR_DIAMETER (2.5f)
-#define SENSOR_SEPARATION (2.0f)
-//#define TRACK_ENTITY_CELL_INDEX
-//#define DUMP_PATH_INFO
+#define SENSOR_DIAMETER (3.75f)
+#define SENSOR_SEPARATION (4.0f)
+#define TRACK_ENTITY_CELL_INDEX
 
 
 
@@ -80,7 +79,7 @@ private:
       Viewport& vp = Viewport::Instance();
       CCSize worldSize = vp.GetWorldSizeMeters();
       SENSORS_T& sensors = GetSensors();
-      GridCalculator gridCalc;
+      GridCalculator& gridCalc = GetGridCalculator();
       
       gridCalc.Init(worldSize.width, worldSize.height, _separation);
 
@@ -138,7 +137,7 @@ private:
       CCSize worldSize = vp.GetWorldSizeMeters();
       SENSORS_T& sensors = GetSensors();
       SENSORS_ADJ_T& adj = GetAdjacentSensors();
-      GridCalculator gridCalc;
+      GridCalculator& gridCalc = GetGridCalculator();
       
       gridCalc.Init(worldSize.width, worldSize.height, _separation);
       adj.resize(sensors.size());
@@ -193,8 +192,7 @@ public:
 
 
 MainScene::MainScene() :
-   _entity(NULL),
-   _graphSearch(NULL)
+   _entity(NULL)
 {
 }
 
@@ -252,36 +250,6 @@ void MainScene::CreateSensors()
    sensorGrid.Create();
    
    GraphSensorManager::Instance().LoadSensors(sensorGrid);
-   
-   // Load the nodes into the graph
-   _sensorGraph.Reset();
-   GraphSensorGenerator::SENSORS_T& sensors = sensorGrid.GetSensors();
-   GraphSensorGenerator::SENSORS_ADJ_T& adj = sensorGrid.GetAdjacentSensors();
-
-   // Add the nodes in first.
-   for(int idx = 0; idx < sensors.size(); ++idx)
-   {
-      // Get the raw sensor from the generator
-      GraphSensor* sensor = sensors[idx];
-      NavGraphNode* node = new NavGraphNode(idx);
-      node->SetPos(sensor->GetBody()->GetWorldCenter());
-      sensor->SetGraphNode(node);
-      _sensorGraph.AddNode(node);
-   }
-   // Now fill in the adjacdency lists.
-   for(int idx = 0; idx < sensors.size(); ++idx)
-   {
-      const vector<uint32>& adjVec = adj[idx];
-      Vec2 srcPos = sensors[idx]->GetBody()->GetWorldCenter();
-      for(uint32 adjIdx = 0; adjIdx < adjVec.size(); ++adjIdx)
-      {
-         uint32 adjNodeIdx = adjVec[adjIdx];
-         Vec2 desPos = sensors[adjNodeIdx]->GetBody()->GetWorldCenter();
-         NavGraphEdge* edge = new NavGraphEdge(idx,adjNodeIdx,srcPos,desPos);
-         _sensorGraph.AddEdge(edge);
-      }
-   }
-   //   _sensorGraph.Dump();
 }
 
 bool MainScene::init()
@@ -321,7 +289,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   //addChild(Box2DDebugDrawLayer::create(_world));
+   addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -350,10 +318,6 @@ void MainScene::onEnter()
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
-   
-   // Initialize the grid
-   CCSize size = Viewport::Instance().GetWorldSizeMeters();
-   _gridCalculator.Init(size.width, size.height, SENSOR_SEPARATION);
    
    // Touch Input
    addChild(TapDragPinchInput::create(this));
@@ -390,7 +354,7 @@ void MainScene::UpdateEntity()
    }
 #ifdef TRACK_ENTITY_CELL_INDEX
    static int32 entCellIdxLast = -1;
-   int32 entCellIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
+   int32 entCellIdx = GraphSensorManager::Instance().GetGridCalculator().CalcIndex(_entity->GetBody()->GetWorldCenter());
    if(entCellIdx != entCellIdxLast)
    {
       CCLOG("Entity now in cell %d.",entCellIdx);
@@ -399,95 +363,10 @@ void MainScene::UpdateEntity()
 #endif
 }
 
-static void DrawNodeList(const list<const GraphNode*>& nodes)
-{
-   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
-   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
-       iter != nodes.end();
-       ++iter)
-   {
-      NavGraphNode* gNode = (NavGraphNode*)*iter;
-      LINE_METERS_DATA_T lmd;
-      lmd.start = gNode->GetPos();
-      lmd.end = lmd.start;
-      lmd.color = ccc4f(0.99f, 0.25f, 0.25f, 1.0f);
-      lmd.markerRadius = 4.0f;
-      Notifier::Instance().Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
-   }
-}
-
-static void DrawEdgeList(const list<const GraphEdge*>& edges)
-{
-   Notifier& no = Notifier::Instance();
-   CCLOG("Drawing Path List (%ld edges)",edges.size());
-   no.Notify(NE_RESET_DRAW_CYCLE);
-   for(list<const GraphEdge*>::const_iterator iter = edges.begin();
-       iter != edges.end();
-       ++iter)
-   {
-      NavGraphEdge* gEdge = (NavGraphEdge*)*iter;
-      LINE_METERS_DATA_T lmd;
-      lmd.start = gEdge->GetSrcPos();
-      lmd.end = gEdge->GetDesPos();
-      no.Notify<LINE_METERS_DATA_T>(NE_DEBUG_LINE_DRAW_ADD_LINE, lmd);
-   }
-}
 
 void MainScene::NavigateToPosition(Vec2 pos)
 {
-   //   TestBFS();
-   //_entity->CommandSeek(pos);
-   
-   int32 startIdx = _gridCalculator.CalcIndex(_entity->GetBody()->GetWorldCenter());
-   int32 targetIdx = _gridCalculator.CalcIndex(pos);
-#ifdef DUMP_PATH_INFO
-   CCLOG("Plotting path from %d -> %d",startIdx,targetIdx);
-#endif
-   GraphSearchBFS search(_sensorGraph,startIdx,targetIdx);
-   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
-   switch(sstate)
-   {
-      case GraphSearchAlgorithm::SS_FOUND:
-      {
-         CCLOG("Found Path");
-         Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
-         list<const GraphEdge*> edges = search.GetPathEdges();
-         DrawEdgeList(edges);
-         list<const GraphNode*> nodes;
-         nodes = search.GetFloodNodes();
-         DrawNodeList(nodes);
-         nodes = search.GetPathNodes();
-         list<Vec2> points;
-         //#ifdef DUMP_PATH_INFO
-         CCLOG("There are %ld edges in the path.",edges.size());
-         CCLOG("There are %ld nodes in the path.",nodes.size());
-         //#endif
-         for(list<const GraphNode*>::const_iterator iter = nodes.begin();
-             iter != nodes.end();
-             ++iter)
-         {
-            const NavGraphNode* gNode = (NavGraphNode*)*iter;
-            points.push_back(gNode->GetPos());
-#ifdef DUMP_PATH_INFO
-            CCLOG(" -> NODE: %d",(*iter)->GetGraphIndex());
-#endif
-         }
-         // Go to the point we wanted to be at.
-         points.push_back(pos);
-         _entity->CommandFollowPath(points);
-         
-      }
-         break;
-      case GraphSearchAlgorithm::SS_NOT_FOUND:
-         CCLOG("No Path Found!!!");
-         break;
-      case GraphSearchAlgorithm::SS_NOT_STARTED:
-         assert(false);
-         break;
-      case GraphSearchAlgorithm::SS_STILL_WORKING:
-         assert(false);
-         break;
-   }
+   _entity->CommandNavigateToPoint(pos);
 }
 
 

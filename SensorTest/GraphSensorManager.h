@@ -33,6 +33,8 @@
 #include "GraphSensor.h"
 #include "GraphSensorGenerator.h"
 #include "EntityManager.h"
+#include "GridCalculator.h"
+#include "GraphCommon.h"
 
 #define SHOW_SENSOR_BODIES
 
@@ -54,6 +56,8 @@ private:
    
    vector<GraphSensor*> _sensors;
    SENSOR_SET_T _changedSensors;
+   GridCalculator _gridCalculator;
+   Graph _sensorGraph;
    
    void RemoveSensors()
    {
@@ -70,6 +74,16 @@ public:
    const SENSOR_SET_T GetChangedSensors() const
    {
       return _changedSensors;
+   }
+   
+   const GridCalculator& GetGridCalculator() const
+   {
+      return _gridCalculator;
+   }
+   
+   const Graph& GetSensorGraph() const
+   {
+      return _sensorGraph;
    }
    
    void ClearChangedSensors()
@@ -105,6 +119,9 @@ public:
       {
          _sensors[idx] = sensors[idx];
       }
+      
+      _gridCalculator = generator.GetGridCalculator();
+      generator.GenerateGraph(_sensorGraph);
    }
    
 

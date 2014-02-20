@@ -31,6 +31,8 @@
 #include "CommonProject.h"
 #include "EntityManager.h"
 #include "GraphSensor.h"
+#include "GridCalculator.h"
+#include "GraphCommon.h"
 
 /* This abstract base class is a generator for the
  * graph sensor nodes.  It is used by the GraphSensorManager
@@ -56,6 +58,8 @@ public:
 private:
    SENSORS_T _sensors;
    SENSORS_ADJ_T _adjacentSensors;
+   GridCalculator _gridCalculator;
+   
 protected:
    GraphSensorGenerator()
    {
@@ -104,6 +108,45 @@ public:
          RegisterSensors();
       }
       return _sensors.size() == _adjacentSensors.size();
+   }
+   
+   GridCalculator& GetGridCalculator()
+   {
+      return _gridCalculator;
+   }
+   
+   /* Generate a graph of the sensors if
+    * somebody needs one.
+    */
+   void GenerateGraph(Graph& sensorGraph)
+   {
+      // Load the nodes into the graph
+      sensorGraph.Reset();
+      
+      // Add the nodes in first.
+      for(int idx = 0; idx < _sensors.size(); ++idx)
+      {
+         // Get the raw sensor from the generator
+         GraphSensor* sensor = _sensors[idx];
+         NavGraphNode* node = new NavGraphNode(idx);
+         node->SetPos(sensor->GetBody()->GetWorldCenter());
+         sensor->SetGraphNode(node);
+         sensorGraph.AddNode(node);
+      }
+      // Now fill in the adjacdency lists.
+      for(int idx = 0; idx < _sensors.size(); ++idx)
+      {
+         const vector<uint32>& adjVec = _adjacentSensors[idx];
+         Vec2 srcPos = _sensors[idx]->GetBody()->GetWorldCenter();
+         for(uint32 adjIdx = 0; adjIdx < adjVec.size(); ++adjIdx)
+         {
+            uint32 adjNodeIdx = adjVec[adjIdx];
+            Vec2 desPos = _sensors[adjNodeIdx]->GetBody()->GetWorldCenter();
+            NavGraphEdge* edge = new NavGraphEdge(idx,adjNodeIdx,srcPos,desPos);
+            sensorGraph.AddEdge(edge);
+         }
+      }
+      //   sensorGraph.Dump();
    }
    
    SENSORS_T& GetSensors()
