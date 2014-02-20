@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */; };
 		1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A30C3EC18A675A800195E50 /* GraphCommon.cpp */; };
+		1A4A6E3518B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */; };
 		1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */; };
 		1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B298189C96320034D1B9 /* Asteroids.plist */; };
 		1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */; };
@@ -345,6 +346,8 @@
 		1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityScheduler.h; sourceTree = "<group>"; };
 		1A30C3EC18A675A800195E50 /* GraphCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GraphCommon.cpp; path = ../GraphCommon.cpp; sourceTree = "<group>"; };
 		1A30C3ED18A675A800195E50 /* GraphCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GraphCommon.h; path = ../GraphCommon.h; sourceTree = "<group>"; };
+		1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGridSquareSensors.cpp; sourceTree = "<group>"; };
+		1A4A6E3418B62F3F00E91432 /* GraphSensorGridSquareSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGridSquareSensors.h; sourceTree = "<group>"; };
 		1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DShapeCache.cpp; sourceTree = "<group>"; };
 		1A81B296189C96130034D1B9 /* Box2DShapeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DShapeCache.h; sourceTree = "<group>"; };
 		1A81B298189C96320034D1B9 /* Asteroids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids.plist; sourceTree = "<group>"; };
@@ -2349,6 +2352,8 @@
 				1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */,
 				1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */,
 				1AFC762F188DE3AC00A258FB /* GraphSensorManager.h */,
+				1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */,
+				1A4A6E3418B62F3F00E91432 /* GraphSensorGridSquareSensors.h */,
 				1AFC762E188DE3AC00A258FB /* GraphSensorManager.cpp */,
 				1A961C1D188AEE57006789B0 /* GridLayer.cpp */,
 				1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */,
@@ -2710,6 +2715,7 @@
 				1A961C16188AEDB7006789B0 /* Notifier.cpp in Sources */,
 				1A961BC6188AED47006789B0 /* b2Joint.cpp in Sources */,
 				1A96194C188AED42006789B0 /* CCSAXParser.cpp in Sources */,
+				1A4A6E3518B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp in Sources */,
 				1A961A0E188AED44006789B0 /* CCTexture2D.cpp in Sources */,
 				1A961A79188AED45006789B0 /* CCLabelBMFontLoader.cpp in Sources */,
 				1AC478D7189D980500A7967E /* Spaceship.cpp in Sources */,

@@ -55,6 +55,7 @@ private:
    float32 _minSeekDistance;
    float32 _maxSpeed;
    list<Vec2> _path;
+   int32 _stateTickTimer;
    
    STATE_T _state;
    // Create turning acceleration

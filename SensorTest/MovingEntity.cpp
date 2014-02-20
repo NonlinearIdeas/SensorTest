@@ -249,19 +249,25 @@ void MovingEntity::ExecuteFollowPath()
 {
    list<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
-   if(path.size() == 0 && isNearTarget)
-   {  // Done.
-      ChangeState(ST_IDLE);
-   }
-   else if(isNearTarget)
-   {  // Still more points to go.
-      GetTargetPos() = *(path.begin());
-      path.erase(path.begin());
-      ApplyThrust();
-      ApplyTurnTorque();
+   if(path.size() == 0)
+   {  // Out of points in the list
+      if(isNearTarget)
+      {
+         ChangeState(ST_IDLE);
+      }
+      else
+      {  // Just keep pushing towards target.
+         ApplyThrust();
+         ApplyTurnTorque();
+      }
    }
    else
-   {  // Just keep moving along..
+   {  // Still more to go
+      if(isNearTarget)
+      {
+         GetTargetPos() = *(path.begin());
+         path.erase(path.begin());
+      }
       ApplyThrust();
       ApplyTurnTorque();
    }
@@ -330,7 +336,15 @@ void MovingEntity::EnterNavigateToPoint()
 {
    if(FindPath(GetBody()->GetWorldCenter(), _navigatePos, _path))
    {
-      
+      if(_path.size() > 0)
+      {  // Erase the first point...it is usually  junk.
+         _path.erase(_path.begin());
+      }
+      _path.push_back(_navigatePos);
+      PrepareForMotion();
+      GetTurnController().ResetHistory();
+      GetTargetPos() = *(_path.begin());
+      _path.erase(_path.begin());
    }
    else
    {
@@ -340,6 +354,40 @@ void MovingEntity::EnterNavigateToPoint()
 
 void MovingEntity::ExecuteNavigateToPoint()
 {
+   list<Vec2>& path = GetPath();
+   bool isNearTarget = IsNearTarget();
+   if(path.size() == 0)
+   {  // Out of points in the list
+      if(isNearTarget)
+      {
+         ChangeState(ST_IDLE);
+      }
+      else
+      {  // Just keep pushing towards target.
+         ApplyThrust();
+         ApplyTurnTorque();
+      }
+   }
+   else
+   {  // Still more to go
+      if(isNearTarget)
+      {
+         GetTargetPos() = *(path.begin());
+         path.erase(path.begin());
+         // Check the next point we will be going to
+         // after this.  If the path is blocked, then
+         // we need to replan.
+         Vec2 nextPoint = *(path.begin());
+         int32 nextIdx = GraphSensorManager::Instance().GetGridCalculator().CalcIndex(nextPoint);
+         const NavGraphNode* node = (const NavGraphNode*)GraphSensorManager::Instance().GetSensorGraph().GetNode(nextIdx);
+         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
+         {  // The cell is blocked...we need to replan.
+            ChangeState(ST_NAVIGATE_TO_POINT);
+         }
+      }
+      ApplyThrust();
+      ApplyTurnTorque();
+   }
 }
 
 void MovingEntity::ExecuteState(STATE_T state)
@@ -364,6 +412,7 @@ void MovingEntity::ExecuteState(STATE_T state)
       default:
          assert(false);
    }
+   ++_stateTickTimer;
 }
 
 void MovingEntity::EnterState(STATE_T state)
@@ -388,6 +437,7 @@ void MovingEntity::EnterState(STATE_T state)
       default:
          assert(false);
    }
+   _stateTickTimer = 0;
 }
 
 void MovingEntity::ChangeState(STATE_T state)
