@@ -62,7 +62,7 @@ private:
    PIDController _turnController;
    
    bool FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path);
-   
+   bool IsNodePassable(int32 currentNode);
    
    bool IsNearTarget();
    void ApplyTurnTorque();

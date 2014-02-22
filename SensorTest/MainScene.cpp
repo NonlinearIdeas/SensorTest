@@ -45,8 +45,8 @@
 #include "Spaceship.h"
 #include "GraphSensorGridSquareSensors.h"
 
-#define SENSOR_DIAMETER (1.75f)
-#define SENSOR_SEPARATION (2.0f)
+#define SENSOR_DIAMETER (2.4f)
+#define SENSOR_SEPARATION (2.5f)
 #define TRACK_ENTITY_CELL_INDEX
 
 
@@ -149,7 +149,7 @@ void MainScene::onEnter()
    addChild(GridLayer::create());
 
    // Box2d Debug
-   //   addChild(Box2DDebugDrawLayer::create(_world));
+   //addChild(Box2DDebugDrawLayer::create(_world));
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
