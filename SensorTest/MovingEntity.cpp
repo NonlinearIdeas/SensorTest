@@ -315,7 +315,8 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
    {
       CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
    }
-   GraphSearchDijkstra search(sensorGraph,startIdx,targetIdx);
+   AStarHeuristic_DistanceSquared heuristic;
+   GraphSearchAStar search(sensorGraph,startIdx,targetIdx,&heuristic);
    GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
    if(sstate == GraphSearchAlgorithm::SS_FOUND)
    {

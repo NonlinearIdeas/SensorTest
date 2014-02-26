@@ -852,6 +852,54 @@ public:
  * something of my own.
  */
 
+/* This class is a base class for a GoalEvaluator.  This
+ * is used by the search algorithm to determine if it has
+ * reached its goal node.  Sometimes this may just be the 
+ * node has been reached, but other times it may be that the 
+ * search is looking for a specific "something" about the 
+ * node it is exploring.
+ *
+ * This evaluator expects to KNOW what type of graph it 
+ * is looking at when casting nodes, etc.  Yes, this is
+ * potentially a violation of type safety.  Some 
+ * improvement will have to be made to address this...
+ */
+class GoalEvaluator
+{
+private:
+   const Graph& _graph;
+protected:
+   const Graph& GetGraph() const { return _graph; }
+public:
+   GoalEvaluator(const Graph& graph) :
+   _graph(graph)
+   {
+      
+   }
+   
+   virtual bool IsGoalMet(uint32 nodeIdx) const
+   {
+      return false;
+   }
+};
+
+class NodeIndexGoal : GoalEvaluator
+{
+   uint32 _nodeIdx;
+public:
+   NodeIndexGoal(const Graph& graph, uint32 nodeIdx) :
+      GoalEvaluator(graph),
+      _nodeIdx(nodeIdx)
+   {
+      
+   }
+
+   virtual bool IsGoalMet(uint32 nodeIdx) const
+   {
+      return nodeIdx == _nodeIdx;
+   }
+};
+
 // --------- THIS PART WAS LIFTED DIRECTLY FROM MAT BUCLAND'S BOOK --------
 //----------------------- Swap -------------------------------------------
 //
@@ -1324,6 +1372,176 @@ public:
                   uint32 target) :
    GraphSearchAlgorithm(graph,start,target),
    _pq(NULL)
+   {
+   }
+   
+   virtual list<const GraphNode*> GetPathNodes()
+   {
+      list<const GraphNode*> path;
+      
+      if(GetSearchState() != SS_FOUND)
+      {
+         return path;
+      }
+      
+      uint32 nodeIdx = GetTargetNode();
+      path.push_front(GetGraph().GetNode(nodeIdx));
+      while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
+      {
+         nodeIdx = _shortestPathTree[nodeIdx]->GetSrc();
+         path.push_front(GetGraph().GetNode(nodeIdx));
+      }
+      return path;
+   }
+   
+   list<const GraphEdge*> GetPathEdges()
+   {
+      list<const GraphEdge*> path;
+      if(GetSearchState() != SS_FOUND)
+      {
+         return path;
+      }
+      
+      uint32 desNode = GetTargetNode();
+      uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
+      
+      path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      while(srcNode != GetStartNode())
+      {
+         desNode = srcNode;
+         srcNode = _shortestPathTree[desNode]->GetSrc();
+         path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      }
+      
+      return path;
+   }
+   
+};
+
+class AStarHeuristic
+{
+public:
+   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   {
+      return 0.0;
+   }
+};
+
+class AStarHeuristic_Distance : public AStarHeuristic
+{
+   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   {
+      NavGraphNode* src = (NavGraphNode*)graph.GetNode(srcNode);
+      NavGraphNode* des = (NavGraphNode*)graph.GetNode(desNode);
+      Vec2 dir = src->GetPos() - des->GetPos();
+      return dir.Length();
+   }
+};
+
+class AStarHeuristic_DistanceSquared : public AStarHeuristic
+{
+   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   {
+      NavGraphNode* src = (NavGraphNode*)graph.GetNode(srcNode);
+      NavGraphNode* des = (NavGraphNode*)graph.GetNode(desNode);
+      Vec2 dir = src->GetPos() - des->GetPos();
+      return dir.LengthSquared();
+   }
+};
+
+class GraphSearchAStar : public GraphSearchAlgorithm
+{
+private:
+   vector<const GraphEdge*> _shortestPathTree;
+   vector<const GraphEdge*> _searchFrontier;
+   vector<double> _FCostToNode;
+   vector<double> _GCostToNode;
+   IndexedPriorityQLow<double>* _pq;
+   const AStarHeuristic* _heuristic;
+   
+protected:
+   virtual SEARCH_STATE_T SearchCycleStart()
+   {
+      _FCostToNode.resize(GetGraph().GetNodeCount());
+      _FCostToNode.assign(_FCostToNode.size(), 0.0);
+      _GCostToNode.resize(GetGraph().GetNodeCount());
+      _GCostToNode.assign(_GCostToNode.size(), 0.0);
+      _shortestPathTree.resize(GetGraph().GetNodeCount());
+      _shortestPathTree.assign(_shortestPathTree.size(),NULL);
+      _searchFrontier.resize(GetGraph().GetNodeCount());
+      _searchFrontier.assign(_searchFrontier.size(),NULL);
+      if(_pq != NULL)
+      {
+         delete _pq;
+         _pq = NULL;
+      }
+      _pq = new IndexedPriorityQLow<double>(_FCostToNode,_FCostToNode.size());
+      _pq->insert(GetStartNode());
+      return SS_STILL_WORKING;
+   }
+   
+   
+   virtual SEARCH_STATE_T SearchCycle()
+   {
+      if(_pq->empty())
+      {
+         return SS_NOT_FOUND;
+      }
+      int32 nextNode = _pq->Pop();
+      _shortestPathTree[nextNode] = _searchFrontier[nextNode];
+      if(nextNode == GetTargetNode())
+      {
+         return SS_FOUND;
+      }
+#ifdef DEBUG_FLOODING
+      // Add this for flood debugging.
+      AddToFlood(nextNode);
+#endif
+      // No.  Push all the edges that lead to the des
+      // node into the queue IFF we have not already
+      // visited that destination and if it is available.
+      if(GetGraph().GetNode(nextNode)->IsFlagSet(HasFlags::HF_IS_CONNECTED) ||
+         (nextNode == GetStartNode() && GetAllowDisconnectedStartNode()))
+      {
+         const GraphEdges& edges = GetGraph().GetEdges(nextNode);
+         for(int idx = 0; idx < edges.size(); ++idx)
+         {
+            GraphEdge* edge = edges[idx];
+            
+            double hCost = _heuristic->CalculateCost(GetGraph(), GetTargetNode(), edge->GetDes());
+            double gCost = _GCostToNode[nextNode] + edge->GetCost();
+            
+            if(_searchFrontier[edge->GetDes()] == NULL)
+            {  // Never been visited
+               // F = G + H
+               _FCostToNode[edge->GetDes()] = gCost + hCost;
+               _GCostToNode[edge->GetDes()] = gCost;
+               _pq->insert(edge->GetDes());
+               _searchFrontier[edge->GetDes()] = edge;
+            }
+            else if((gCost < _GCostToNode[edge->GetDes()]) &&
+                    (_shortestPathTree[edge->GetDes()] == NULL)
+                    )
+               
+            {
+               _FCostToNode[edge->GetDes()] = gCost + hCost;
+               _GCostToNode[edge->GetDes()] = gCost;
+               _pq->ChangePriority(edge->GetDes());
+               _searchFrontier[edge->GetDes()] = edge;
+            }
+         }
+      }
+      return SS_STILL_WORKING;
+   }
+   
+public:
+   GraphSearchAStar(const Graph& graph,
+                       uint32 start,
+                       uint32 target,
+                       const AStarHeuristic* heuristic) :
+   GraphSearchAlgorithm(graph,start,target),
+   _pq(NULL),
+   _heuristic(heuristic)
    {
    }
    
