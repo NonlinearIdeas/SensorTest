@@ -71,6 +71,8 @@ void Spaceship::CreateBody(b2World& world, const b2Vec2& position, float32 angle
    SetMaxSpeed(5);
    SetMinSeekDistance(0.5);
    EntityUtilities::AdjustNodeScale(_sprite, this, 1.0, Viewport::Instance().GetPTMRatio());
+   
+   SetFlag(HF_CAN_MOVE | HF_NO_SENSOR_CONTACT);
 }
 
 void Spaceship::UpdateDisplay()

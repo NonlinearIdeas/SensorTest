@@ -46,6 +46,8 @@ public:
       HF_CAN_MOVE                = 1 << 1,
       // Is this a connected node?
       HF_IS_CONNECTED            = 1 << 2,
+      // This object does not affect sensors
+      HF_NO_SENSOR_CONTACT       = 1 << 3,
       // ---------------------------------
       // Priority Scheduling Flags
       // ---------------------------------

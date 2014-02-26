@@ -160,7 +160,21 @@ public:
       // We only care about contacts with actual entities, not just geometry.
       if(entA != NULL && entB != NULL)
       {
-         UpdateContact(entA,entB,BEGIN_CONTACT);
+         bool update = true;
+         if(entA->IsFlagSet(HasFlags::HF_IS_GRAPH_SENSOR) &&
+            entB->IsFlagSet(HasFlags::HF_NO_SENSOR_CONTACT))
+         {  // We don't want this to register with the sensors.
+            update = false;
+         }
+         else if(entB->IsFlagSet(HasFlags::HF_IS_GRAPH_SENSOR) &&
+            entA->IsFlagSet(HasFlags::HF_NO_SENSOR_CONTACT))
+         {  // We don't want this to register with the sensors.
+            update = false;
+         }
+         if(update)
+         {
+            UpdateContact(entA,entB,BEGIN_CONTACT);
+         }
       }
    }
    
@@ -169,11 +183,25 @@ public:
    {
       Entity* entA = (Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
       Entity* entB = (Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
-      
+
       // We only care about contacts with actual entities, not just geometry.
       if(entA != NULL && entB != NULL)
       {
-         UpdateContact(entA,entB,END_CONTACT);
+         bool update = true;
+         if(entA->IsFlagSet(HasFlags::HF_IS_GRAPH_SENSOR) &&
+            entB->IsFlagSet(HasFlags::HF_NO_SENSOR_CONTACT))
+         {  // We don't want this to register with the sensors.
+            update = false;
+         }
+         else if(entB->IsFlagSet(HasFlags::HF_IS_GRAPH_SENSOR) &&
+                 entA->IsFlagSet(HasFlags::HF_NO_SENSOR_CONTACT))
+         {  // We don't want this to register with the sensors.
+            update = false;
+         }
+         if(update)
+         {
+            UpdateContact(entA,entB,END_CONTACT);
+         }
       }
    }
 };

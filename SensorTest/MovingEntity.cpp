@@ -32,7 +32,7 @@
 
 static void DrawNodeList(const list<const GraphNode*>& nodes, ccColor4F color)
 {
-   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
+   //   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
    for(list<const GraphNode*>::const_iterator iter = nodes.begin();
        iter != nodes.end();
        ++iter)
@@ -307,10 +307,15 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
    
    int32 startIdx = gridCalculator.CalcIndex(GetBody()->GetWorldCenter());
    int32 targetIdx = gridCalculator.CalcIndex(_navigatePos);
-   
-   CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
-   
-   GraphSearchBFS search(sensorGraph,startIdx,targetIdx);
+   if(startIdx == targetIdx)
+   {
+      CCLOG("Start and end at same position...(%d)",startIdx);
+   }
+   else
+   {
+      CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
+   }
+   GraphSearchDijkstra search(sensorGraph,startIdx,targetIdx);
    GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
    if(sstate == GraphSearchAlgorithm::SS_FOUND)
    {
@@ -379,19 +384,22 @@ void MovingEntity::ExecuteNavigateToPoint()
 {
    list<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
+   const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
+   Vec2 currentPoint = GetTargetPos();
+   int32 currentIdx = gridCalc.CalcIndex(currentPoint);
+   int32 navigateIdx = gridCalc.CalcIndex(_navigatePos);
+   
    if(path.size() == 0)
    {  // Out of points in the list
       if(isNearTarget)
-      {
+      {  // Not close to target point
          ChangeState(ST_IDLE);
       }
       else
       {  // Just keep pushing towards target.
          ApplyThrust();
          ApplyTurnTorque();
-         Vec2 currentPoint = GetTargetPos();
-         int32 currentIdx = GraphSensorManager::Instance().GetGridCalculator().CalcIndex(currentPoint);
-         if(!IsNodePassable(currentIdx))
+         if(!IsNodePassable(currentIdx) && currentIdx != navigateIdx)
          {
             ChangeState(ST_NAVIGATE_TO_POINT);
          }
@@ -407,8 +415,8 @@ void MovingEntity::ExecuteNavigateToPoint()
          // after this.  If the path is blocked, then
          // we need to replan.
          Vec2 nextPoint = *(path.begin());
-         int32 nextIdx = GraphSensorManager::Instance().GetGridCalculator().CalcIndex(nextPoint);
-         if(!IsNodePassable(nextIdx))
+         int32 nextIdx = gridCalc.CalcIndex(nextPoint);
+         if(!IsNodePassable(nextIdx) && (currentIdx != navigateIdx))
          {
             ChangeState(ST_NAVIGATE_TO_POINT);
          }

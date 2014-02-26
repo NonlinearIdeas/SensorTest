@@ -143,6 +143,8 @@ public:
             uint32 adjNodeIdx = adjVec[adjIdx];
             Vec2 desPos = _sensors[adjNodeIdx]->GetBody()->GetWorldCenter();
             NavGraphEdge* edge = new NavGraphEdge(idx,adjNodeIdx,srcPos,desPos);
+            Vec2 dir = srcPos-desPos;
+            edge->SetCost(dir.Length());
             sensorGraph.AddEdge(edge);
          }
       }

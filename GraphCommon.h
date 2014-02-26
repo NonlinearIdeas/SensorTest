@@ -375,30 +375,6 @@ public:
       }
    }
    
-   void EnableEdge(uint32 src, uint32 des, bool enable)
-   {
-      assert(src < _edges.size());
-      assert(des < _edges.size());
-      GraphEdge* edge = FindEdge(src,des);
-      if(edge != NULL)
-      {
-         if(enable)
-         {
-            edge->SetFlag(HasFlags::HF_IS_CONNECTED);
-         }
-         else
-         {
-            edge->ClearFlag(HasFlags::HF_IS_CONNECTED);
-         }
-      }
-   }
-
-   void EnableEdges(uint32 src, uint32 des, bool enable)
-   {
-      EnableEdge(src,des,enable);
-      EnableEdge(des,src,enable);
-   }   
-   
    void AddEdge(GraphEdge* edge)
    {
       assert(edge != NULL);
@@ -420,6 +396,48 @@ public:
          }
       }
    }
+   
+   void EnableEdge(uint32 src, uint32 des, bool enable)
+   {
+      assert(src < _edges.size());
+      assert(des < _edges.size());
+      GraphEdge* edge = FindEdge(src,des);
+      if(edge != NULL)
+      {
+         if(enable)
+         {
+            edge->SetFlag(HasFlags::HF_IS_CONNECTED);
+         }
+         else
+         {
+            edge->ClearFlag(HasFlags::HF_IS_CONNECTED);
+         }
+      }
+   }
+   
+   inline bool IsNodeEnabled(uint32 nodeIdx)
+   {
+      assert(nodeIdx < _nodes.size());
+      return _nodes[nodeIdx]->IsFlagSet(HasFlags::HF_IS_CONNECTED);
+   }
+   
+   inline bool IsEdgeEnabled(uint32 src, uint32 des)
+   {
+      assert(src < _edges.size());
+      assert(des < _edges.size());
+      GraphEdge* edge = FindEdge(src,des);
+      if(edge != NULL)
+      {
+         return edge->IsFlagSet(HasFlags::HF_IS_CONNECTED);
+      }
+      return false;
+   }
+
+   void EnableEdges(uint32 src, uint32 des, bool enable)
+   {
+      EnableEdge(src,des,enable);
+      EnableEdge(des,src,enable);
+   }   
    
    void Dump()
    {
@@ -593,7 +611,7 @@ public:
    }
    
    
-   list<const GraphNode*> GetPathNodes()
+   virtual list<const GraphNode*> GetPathNodes()
    {
       list<const GraphNode*> path;
       
@@ -611,18 +629,6 @@ public:
       }
       return path;
    }
-
-   list<const GraphNode*> GetFloodNodes()
-   {
-      list<const GraphNode*> path;
-      for(uint32 idx = 0; idx < _flood.size(); ++idx)
-      {
-         const GraphNode* node = _graph.GetNode(_flood[idx]);
-         path.push_back(node);
-      }
-      return path;
-   }
-   
    
    list<const GraphEdge*> GetPathEdges()
    {
@@ -642,9 +648,21 @@ public:
          srcNode = GetRoute()[desNode];
          path.push_front(_graph.GetEdge(srcNode, desNode));
       }
-   
+      
       return path;
    }
+
+   list<const GraphNode*> GetFloodNodes()
+   {
+      list<const GraphNode*> path;
+      for(uint32 idx = 0; idx < _flood.size(); ++idx)
+      {
+         const GraphNode* node = _graph.GetNode(_flood[idx]);
+         path.push_back(node);
+      }
+      return path;
+   }
+
    
    void Dump()
    {
@@ -821,6 +839,538 @@ public:
    {
    }
 };
+
+
+/* To implement A* and Dijkstra, we will need a class
+ * to manage the "Open List", which is a bottleneck 
+ * in the processing.
+ *
+ * Many implementations use and indexed priority queue.
+ *
+ * For the first pass, this is what I am going to use 
+ * as well.  As this evolves, I will replace it with 
+ * something of my own.
+ */
+
+// --------- THIS PART WAS LIFTED DIRECTLY FROM MAT BUCLAND'S BOOK --------
+//----------------------- Swap -------------------------------------------
+//
+//  used to swap two values
+//------------------------------------------------------------------------
+template<class T>
+void Swap(T &a, T &b)
+{
+   T temp = a;
+   a = b;
+   b = temp;
+}
+
+//-------------------- ReorderUpwards ------------------------------------
+//
+//  given a heap and a node in the heap, this function moves upwards
+//  through the heap swapping elements until the heap is ordered
+//------------------------------------------------------------------------
+template<class T>
+void ReorderUpwards(std::vector<T>& heap, int nd)
+{
+   //move up the heap swapping the elements until the heap is ordered
+   while ( (nd>1) && (heap[nd/2] < heap[nd]))
+   {
+      Swap(heap[nd/2], heap[nd]);
+      
+      nd /= 2;
+   }
+}
+
+//--------------------- ReorderDownwards ---------------------------------
+//
+//  given a heap, the heapsize and a node in the heap, this function
+//  reorders the elements in a top down fashion by moving down the heap
+//  and swapping the current node with the greater of its two children
+//  (provided a child is larger than the current node)
+//------------------------------------------------------------------------
+template<class T>
+void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
+{
+   //move down the heap from node nd swapping the elements until
+   //the heap is reordered
+   while (2*nd <= HeapSize)
+   {
+      int child = 2 * nd;
+      
+      //set child to largest of nd's two children
+      if ( (child < HeapSize) && (heap[child] < heap[child+1]) )
+      {
+         ++child;
+      }
+      
+      //if this nd is smaller than its child, swap
+      if (heap[nd] < heap[child])
+      {
+         Swap(heap[child], heap[nd]);
+         
+         //move the current node down the tree
+         nd = child;
+      }
+      
+      else
+      {
+         break;
+      }
+   }
+}
+
+
+
+//--------------------- PriorityQ ----------------------------------------
+//
+//  basic heap based priority queue implementation
+//------------------------------------------------------------------------
+template<class T>
+class PriorityQ
+{
+private:
+   
+   std::vector<T>  m_Heap;
+   
+   int             m_iSize;
+   
+   int             m_iMaxSize;
+   
+   //given a heap and a node in the heap, this function moves upwards
+   //through the heap swapping elements until the heap is ordered
+   void ReorderUpwards(std::vector<T>& heap, int nd)
+   {
+      //move up the heap swapping the elements until the heap is ordered
+      while ( (nd>1) && (heap[nd/2] < heap[nd]))
+      {
+         Swap(heap[nd/2], heap[nd]);
+         
+         nd /= 2;
+      }
+   }
+   
+   //given a heap, the heapsize and a node in the heap, this function
+   //reorders the elements in a top down fashion by moving down the heap
+   //and swapping the current node with the greater of its two children
+   //(provided a child is larger than the current node)
+   void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
+   {
+      //move down the heap from node nd swapping the elements until
+      //the heap is reordered
+      while (2*nd <= HeapSize)
+      {
+         int child = 2 * nd;
+         
+         //set child to largest of nd's two children
+         if ( (child < HeapSize) && (heap[child] < heap[child+1]) )
+         {
+            ++child;
+         }
+         
+         //if this nd is smaller than its child, swap
+         if (heap[nd] < heap[child])
+         {
+            Swap(heap[child], heap[nd]);
+            
+            //move the current node down the tree
+            nd = child;
+         }
+         
+         else
+         {
+            break;
+         }
+      }
+   }
+   
+public:
+   
+   PriorityQ(int MaxSize):m_iMaxSize(MaxSize), m_iSize(0)
+   {
+      m_Heap.assign(MaxSize+1, T());
+   }
+   
+   bool empty()const{return (m_iSize==0);}
+   
+   //to insert an item into the queue it gets added to the end of the heap
+   //and then the heap is reordered
+   void insert(const T item)
+   {
+      
+      assert (m_iSize+1 <= m_iMaxSize);
+      
+      ++m_iSize;
+      
+      m_Heap[m_iSize] = item;
+      
+      ReorderUpwards(m_Heap, m_iSize);
+   }
+   
+   //to get the max item the first element is exchanged with the lowest
+   //in the heap and then the heap is reordered from the top down.
+   T pop()
+   {
+      Swap(m_Heap[1], m_Heap[m_iSize]);
+      
+      ReorderDownwards(m_Heap, 1, m_iSize-1);
+      
+      return m_Heap[m_iSize--];
+   }
+   
+   //so we can take a peek at the first in line
+   const T& Peek()const{return m_Heap[1];}
+};
+
+//--------------------- PriorityQLow -------------------------------------
+//
+//  basic 2-way heap based priority queue implementation. This time the priority
+//  is given to the lowest valued key
+//------------------------------------------------------------------------
+template<class T>
+class PriorityQLow
+{
+private:
+   
+   std::vector<T>  m_Heap;
+   
+   int             m_iSize;
+   
+   int             m_iMaxSize;
+   
+   //given a heap and a node in the heap, this function moves upwards
+   //through the heap swapping elements until the heap is ordered
+   void ReorderUpwards(std::vector<T>& heap, int nd)
+   {
+      //move up the heap swapping the elements until the heap is ordered
+      while ( (nd>1) && (heap[nd/2] > heap[nd]))
+      {
+         Swap(heap[nd/2], heap[nd]);
+         
+         nd /= 2;
+      }
+   }
+   
+   //given a heap, the heapsize and a node in the heap, this function
+   //reorders the elements in a top down fashion by moving down the heap
+   //and swapping the current node with the smaller of its two children
+   //(provided a child is larger than the current node)
+   void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
+   {
+      //move down the heap from node nd swapping the elements until
+      //the heap is reordered
+      while (2*nd <= HeapSize)
+      {
+         int child = 2 * nd;
+         
+         //set child to largest of nd's two children
+         if ( (child < HeapSize) && (heap[child] > heap[child+1]) )
+         {
+            ++child;
+         }
+         
+         //if this nd is smaller than its child, swap
+         if (heap[nd] > heap[child])
+         {
+            Swap(heap[child], heap[nd]);
+            
+            //move the current node down the tree
+            nd = child;
+         }
+         
+         else
+         {
+            break;
+         }
+      }
+   }
+   
+public:
+   
+   PriorityQLow(int MaxSize):m_iMaxSize(MaxSize), m_iSize(0)
+   {
+      m_Heap.assign(MaxSize+1, T());
+   }
+   
+   bool empty()const{return (m_iSize==0);}
+   
+   //to insert an item into the queue it gets added to the end of the heap
+   //and then the heap is reordered
+   void insert(const T item)
+   {
+      assert (m_iSize+1 <= m_iMaxSize);
+      
+      ++m_iSize;
+      
+      m_Heap[m_iSize] = item;
+      
+      ReorderUpwards(m_Heap, m_iSize);
+   }
+   
+   //to get the max item the first element is exchanged with the lowest
+   //in the heap and then the heap is reordered from the top down.
+   T pop()
+   {
+      Swap(m_Heap[1], m_Heap[m_iSize]);
+      
+      ReorderDownwards(m_Heap, 1, m_iSize-1);
+      
+      return m_Heap[m_iSize--];
+   }
+   
+   //so we can take a peek at the first in line
+   const T& peek()const{return m_Heap[1];}
+};
+
+//----------------------- IndexedPriorityQLow ---------------------------
+//
+//  Priority queue based on an index into a set of keys. The queue is
+//  maintained as a 2-way heap.
+//
+//  The priority in this implementation is the lowest valued key
+//------------------------------------------------------------------------
+template<class KeyType>
+class IndexedPriorityQLow
+{
+private:
+   
+   std::vector<KeyType>&  m_vecKeys;
+   
+   std::vector<int>       m_Heap;
+   
+   std::vector<int>       m_invHeap;
+   
+   int                    m_iSize,
+   m_iMaxSize;
+   
+   void Swap(int a, int b)
+   {
+      int temp = m_Heap[a]; m_Heap[a] = m_Heap[b]; m_Heap[b] = temp;
+      
+      //change the handles too
+      m_invHeap[m_Heap[a]] = a; m_invHeap[m_Heap[b]] = b;
+   }
+   
+   void ReorderUpwards(int nd)
+   {
+      //move up the heap swapping the elements until the heap is ordered
+      while ( (nd>1) && (m_vecKeys[m_Heap[nd/2]] > m_vecKeys[m_Heap[nd]]) )
+      {
+         Swap(nd/2, nd);
+         
+         nd /= 2;
+      }
+   }
+   
+   void ReorderDownwards(int nd, int HeapSize)
+   {
+      //move down the heap from node nd swapping the elements until
+      //the heap is reordered
+      while (2*nd <= HeapSize)
+      {
+         int child = 2 * nd;
+         
+         //set child to smaller of nd's two children
+         if ((child < HeapSize) && (m_vecKeys[m_Heap[child]] > m_vecKeys[m_Heap[child+1]]))
+         {
+            ++child;
+         }
+         
+         //if this nd is larger than its child, swap
+         if (m_vecKeys[m_Heap[nd]] > m_vecKeys[m_Heap[child]])
+         {
+            Swap(child, nd);
+            
+            //move the current node down the tree
+            nd = child;
+         }
+         
+         else
+         {
+            break;
+         }
+      }
+   }
+   
+   
+public:
+   
+   //you must pass the constructor a reference to the std::vector the PQ
+   //will be indexing into and the maximum size of the queue.
+   IndexedPriorityQLow(std::vector<KeyType>& keys,
+                       int              MaxSize):m_vecKeys(keys),
+   m_iMaxSize(MaxSize),
+   m_iSize(0)
+   {
+      m_Heap.assign(MaxSize+1, 0);
+      m_invHeap.assign(MaxSize+1, 0);
+   }
+   
+   bool empty()const{return (m_iSize==0);}
+   
+   //to insert an item into the queue it gets added to the end of the heap
+   //and then the heap is reordered from the bottom up.
+   void insert(const int idx)
+   {
+      assert (m_iSize+1 <= m_iMaxSize);
+      
+      ++m_iSize;
+      
+      m_Heap[m_iSize] = idx;
+      
+      m_invHeap[idx] = m_iSize;
+      
+      ReorderUpwards(m_iSize);
+   }
+   
+   //to get the min item the first element is exchanged with the lowest
+   //in the heap and then the heap is reordered from the top down. 
+   int Pop()
+   {
+      Swap(1, m_iSize);
+      
+      ReorderDownwards(1, m_iSize-1);
+      
+      return m_Heap[m_iSize--];
+   }
+   
+   //if the value of one of the client key's changes then call this with 
+   //the key's index to adjust the queue accordingly
+   void ChangePriority(const int idx)
+   {
+      ReorderUpwards(m_invHeap[idx]);
+   }
+};
+
+class GraphSearchDijkstra : public GraphSearchAlgorithm
+{
+private:
+   vector<const GraphEdge*> _shortestPathTree;
+   vector<const GraphEdge*> _searchFrontier;
+   vector<double> _costToNode;
+   IndexedPriorityQLow<double>* _pq;
+   
+protected:
+   virtual SEARCH_STATE_T SearchCycleStart()
+   {
+      GetVisited()[GetStartNode()] = NS_VISITED;
+      _costToNode.resize(GetGraph().GetNodeCount());
+      _costToNode.assign(_costToNode.size(), 0.0);
+      _shortestPathTree.resize(GetGraph().GetNodeCount());
+      _shortestPathTree.assign(_shortestPathTree.size(),NULL);
+      _searchFrontier.resize(GetGraph().GetNodeCount());
+      _searchFrontier.assign(_searchFrontier.size(),NULL);
+      if(_pq != NULL)
+      {
+         delete _pq;
+         _pq = NULL;
+      }
+      _pq = new IndexedPriorityQLow<double>(_costToNode,_costToNode.size());
+      _pq->insert(GetStartNode());
+      return SS_STILL_WORKING;
+   }
+   
+   
+   virtual SEARCH_STATE_T SearchCycle()
+   {
+      if(_pq->empty())
+      {
+         return SS_NOT_FOUND;
+      }
+      int32 nextNode = _pq->Pop();
+      _shortestPathTree[nextNode] = _searchFrontier[nextNode];
+      if(nextNode == GetTargetNode())
+      {
+         return SS_FOUND;
+      }
+#ifdef DEBUG_FLOODING
+      // Add this for flood debugging.
+      AddToFlood(nextNode);
+#endif
+      // No.  Push all the edges that lead to the des
+      // node into the queue IFF we have not already
+      // visited that destination and if it is available.
+      if(GetGraph().GetNode(nextNode)->IsFlagSet(HasFlags::HF_IS_CONNECTED) ||
+         (nextNode == GetStartNode() && GetAllowDisconnectedStartNode()))
+      {
+         const GraphEdges& edges = GetGraph().GetEdges(nextNode);
+         for(int idx = 0; idx < edges.size(); ++idx)
+         {
+            GraphEdge* edge = edges[idx];
+            double cost = _costToNode[nextNode] + edge->GetCost();
+            if(_searchFrontier[edge->GetDes()] == NULL)
+            {  // Never been visited
+               _costToNode[edge->GetDes()] = cost;
+               _pq->insert(edge->GetDes());
+               _searchFrontier[edge->GetDes()] = edge;
+            }
+            else if((cost < _costToNode[edge->GetDes()]) &&
+                    (_shortestPathTree[edge->GetDes()] == NULL)
+                    )
+               
+            {
+               _costToNode[edge->GetDes()] = cost;
+               _pq->ChangePriority(edge->GetDes());
+               _searchFrontier[edge->GetDes()] = edge;
+            }
+         }
+      }
+      return SS_STILL_WORKING;
+   }
+   
+public:
+   GraphSearchDijkstra(const Graph& graph,
+                  uint32 start,
+                  uint32 target) :
+   GraphSearchAlgorithm(graph,start,target),
+   _pq(NULL)
+   {
+   }
+   
+   virtual list<const GraphNode*> GetPathNodes()
+   {
+      list<const GraphNode*> path;
+      
+      if(GetSearchState() != SS_FOUND)
+      {
+         return path;
+      }
+      
+      uint32 nodeIdx = GetTargetNode();
+      path.push_front(GetGraph().GetNode(nodeIdx));
+      while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
+      {
+         nodeIdx = _shortestPathTree[nodeIdx]->GetSrc();
+         path.push_front(GetGraph().GetNode(nodeIdx));
+      }
+      return path;
+   }
+   
+   list<const GraphEdge*> GetPathEdges()
+   {
+      list<const GraphEdge*> path;
+      if(GetSearchState() != SS_FOUND)
+      {
+         return path;
+      }
+      
+      uint32 desNode = GetTargetNode();
+      uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
+      
+      path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      while(srcNode != GetStartNode())
+      {
+         desNode = srcNode;
+         srcNode = _shortestPathTree[desNode]->GetSrc();
+         path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      }
+      
+      return path;
+   }
+   
+};
+
+
 
 void TestDFS();
 void TestBFS();
