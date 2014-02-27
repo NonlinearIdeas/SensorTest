@@ -10,6 +10,11 @@
 		1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */; };
 		1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A30C3EC18A675A800195E50 /* GraphCommon.cpp */; };
 		1A4A6E3518B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */; };
+		1A5CB4E718BF65E600C359EC /* buttons.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A5CB4E518BF65E600C359EC /* buttons.plist */; };
+		1A5CB4E818BF65E600C359EC /* buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A5CB4E618BF65E600C359EC /* buttons.png */; };
+		1A5CB4EB18BF665600C359EC /* PlayerGameControlsLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A5CB4E918BF665600C359EC /* PlayerGameControlsLayer.cpp */; };
+		1A5CB4EE18BF667E00C359EC /* TwoStateButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A5CB4EC18BF667E00C359EC /* TwoStateButton.cpp */; };
+		1A5CB4F118BF66A200C359EC /* GraphicsUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A5CB4EF18BF66A200C359EC /* GraphicsUtilities.cpp */; };
 		1A81B297189C96130034D1B9 /* Box2DShapeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */; };
 		1A81B299189C96320034D1B9 /* Asteroids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B298189C96320034D1B9 /* Asteroids.plist */; };
 		1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A81B29A189C96430034D1B9 /* Asteroids_ImgData.plist */; };
@@ -348,6 +353,14 @@
 		1A30C3ED18A675A800195E50 /* GraphCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GraphCommon.h; path = ../GraphCommon.h; sourceTree = "<group>"; };
 		1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGridSquareSensors.cpp; sourceTree = "<group>"; };
 		1A4A6E3418B62F3F00E91432 /* GraphSensorGridSquareSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGridSquareSensors.h; sourceTree = "<group>"; };
+		1A5CB4E518BF65E600C359EC /* buttons.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = buttons.plist; sourceTree = "<group>"; };
+		1A5CB4E618BF65E600C359EC /* buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttons.png; sourceTree = "<group>"; };
+		1A5CB4E918BF665600C359EC /* PlayerGameControlsLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlayerGameControlsLayer.cpp; sourceTree = "<group>"; };
+		1A5CB4EA18BF665600C359EC /* PlayerGameControlsLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerGameControlsLayer.h; sourceTree = "<group>"; };
+		1A5CB4EC18BF667E00C359EC /* TwoStateButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TwoStateButton.cpp; sourceTree = "<group>"; };
+		1A5CB4ED18BF667E00C359EC /* TwoStateButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwoStateButton.h; sourceTree = "<group>"; };
+		1A5CB4EF18BF66A200C359EC /* GraphicsUtilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsUtilities.cpp; sourceTree = "<group>"; };
+		1A5CB4F018BF66A200C359EC /* GraphicsUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsUtilities.h; sourceTree = "<group>"; };
 		1A81B295189C96130034D1B9 /* Box2DShapeCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DShapeCache.cpp; sourceTree = "<group>"; };
 		1A81B296189C96130034D1B9 /* Box2DShapeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DShapeCache.h; sourceTree = "<group>"; };
 		1A81B298189C96320034D1B9 /* Asteroids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Asteroids.plist; sourceTree = "<group>"; };
@@ -1114,6 +1127,8 @@
 		1A961828188AED3F006789B0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1A5CB4E518BF65E600C359EC /* buttons.plist */,
+				1A5CB4E618BF65E600C359EC /* buttons.png */,
 				1AC478D3189D972800A7967E /* Entity.plist */,
 				1AC478CF189D970F00A7967E /* EntitySpriteImages.plist */,
 				1AC478D0189D970F00A7967E /* EntitySpriteImages.png */,
@@ -2345,6 +2360,8 @@
 				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
 				1A30C3ED18A675A800195E50 /* GraphCommon.h */,
 				1A30C3EC18A675A800195E50 /* GraphCommon.cpp */,
+				1A5CB4EF18BF66A200C359EC /* GraphicsUtilities.cpp */,
+				1A5CB4F018BF66A200C359EC /* GraphicsUtilities.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
 				1AFC762B188DE36A00A258FB /* GraphSensor.cpp */,
 				1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */,
@@ -2371,6 +2388,8 @@
 				1A961C07188AEDB7006789B0 /* Notifier.h */,
 				1A845798189A838400B4BD66 /* PIDController.cpp */,
 				1A845799189A838400B4BD66 /* PIDController.h */,
+				1A5CB4E918BF665600C359EC /* PlayerGameControlsLayer.cpp */,
+				1A5CB4EA18BF665600C359EC /* PlayerGameControlsLayer.h */,
 				1AC9EFA8189D580C00397F34 /* RanNumGen.cpp */,
 				1AC9EFA9189D580C00397F34 /* RanNumGen.h */,
 				1A81B2A5189C98E60034D1B9 /* Snake.cpp */,
@@ -2390,6 +2409,8 @@
 				1AB7D90C188EA66700D311F2 /* SystemContactListener.h */,
 				1A961C0B188AEDB7006789B0 /* TapDragPinchInput.cpp */,
 				1A961C0C188AEDB7006789B0 /* TapDragPinchInput.h */,
+				1A5CB4EC18BF667E00C359EC /* TwoStateButton.cpp */,
+				1A5CB4ED18BF667E00C359EC /* TwoStateButton.h */,
 				1A961C0D188AEDB7006789B0 /* Viewport.cpp */,
 				1A961C0E188AEDB7006789B0 /* Viewport.h */,
 				1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */,
@@ -2450,6 +2471,7 @@
 			files = (
 				1A96183A188AED3F006789B0 /* Icon.png in Resources */,
 				1A81B29C189C96430034D1B9 /* Asteroids_ImgData.plist in Resources */,
+				1A5CB4E818BF65E600C359EC /* buttons.png in Resources */,
 				1A9618DD188AED40006789B0 /* ChangeLog in Resources */,
 				1A961C10188AEDB7006789B0 /* Arial_32_Green.png in Resources */,
 				1A96182A188AED3F006789B0 /* CloseNormal.png in Resources */,
@@ -2470,6 +2492,7 @@
 				1A96182C188AED3F006789B0 /* CloseSelected.png in Resources */,
 				1A81B2A1189C96920034D1B9 /* suncenter.png in Resources */,
 				1A96183C188AED3F006789B0 /* Icon@2x.png in Resources */,
+				1A5CB4E718BF65E600C359EC /* buttons.plist in Resources */,
 				1A961A51188AED45006789B0 /* project.pbxproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2545,6 +2568,7 @@
 				1AC9EFA1189D507A00397F34 /* SpriteBatchLayer.cpp in Sources */,
 				1A961862188AED40006789B0 /* CCActionInterval.cpp in Sources */,
 				1A9619B7188AED43006789B0 /* CCAnimation.cpp in Sources */,
+				1A5CB4EB18BF665600C359EC /* PlayerGameControlsLayer.cpp in Sources */,
 				1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */,
 				1A961A88188AED45006789B0 /* CCMenuItemImageLoader.cpp in Sources */,
 				1A961B39188AED46006789B0 /* RegionAttachment.cpp in Sources */,
@@ -2582,6 +2606,7 @@
 				1A961AA7188AED45006789B0 /* CCComAttribute.cpp in Sources */,
 				1A961C11188AEDB7006789B0 /* Box2DDebugDraw.cpp in Sources */,
 				1A961A21188AED44006789B0 /* CCTileMapAtlas.cpp in Sources */,
+				1A5CB4EE18BF667E00C359EC /* TwoStateButton.cpp in Sources */,
 				1A961BDB188AED47006789B0 /* b2WheelJoint.cpp in Sources */,
 				1A96190E188AED41006789B0 /* CCScene.cpp in Sources */,
 				1AC9EFA4189D543900397F34 /* StraightMovingEntity.cpp in Sources */,
@@ -2614,6 +2639,7 @@
 				1A961B64188AED46006789B0 /* b2DynamicTree.cpp in Sources */,
 				1A96197B188AED42006789B0 /* AccelerometerSimulation.m in Sources */,
 				1A96185C188AED40006789B0 /* CCActionGrid3D.cpp in Sources */,
+				1A5CB4F118BF66A200C359EC /* GraphicsUtilities.cpp in Sources */,
 				1A961A8F188AED45006789B0 /* CCNode+CCBRelativePositioning.cpp in Sources */,
 				1A961A07188AED44006789B0 /* CCIMEDispatcher.cpp in Sources */,
 				1A9618B0188AED40006789B0 /* cocos2d.cpp in Sources */,

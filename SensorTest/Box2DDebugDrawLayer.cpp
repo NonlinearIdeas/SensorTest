@@ -83,9 +83,29 @@ bool Box2DDebugDrawLayer::init(b2World* world)
    flags += b2Draw::e_pairBit;
    //flags += b2Draw::e_centerOfMassBit;
    _debugDraw->SetFlags(flags);
+   
+   Notifier::Instance().Attach(this, NE_DEBUG_TOGGLE_VISIBILITY);
+   
    return true;
 }
 Box2DDebugDrawLayer::~Box2DDebugDrawLayer()
 {
    delete _debugDraw;
+}
+
+bool Box2DDebugDrawLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
+{
+   bool result = true;
+   switch(eventType)
+   {
+      case NE_DEBUG_TOGGLE_VISIBILITY:
+         if(value)
+            setVisible(!isVisible());
+         break;
+      default:
+         result = false;
+         assert(false);
+         break;
+   }
+   return result;
 }

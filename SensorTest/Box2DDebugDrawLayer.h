@@ -29,10 +29,11 @@
 
 #include "cocos2d.h"
 #include "Box2DDebugDraw.h"
+#include "Notifier.h"
 
 using namespace cocos2d;
 
-class Box2DDebugDrawLayer : public CCLayer
+class Box2DDebugDrawLayer : public CCLayer, public Notified
 {
 private:
    // Weak reference, do not delete here.
@@ -46,6 +47,7 @@ public:
    static Box2DDebugDrawLayer* create(b2World* world);
    virtual void draw();
    virtual ~Box2DDebugDrawLayer();
+   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value);
    
    // Use this to get the drawing tool in case the size needs
    // to be adjusted.

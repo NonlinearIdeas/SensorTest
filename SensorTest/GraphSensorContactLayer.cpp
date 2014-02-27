@@ -45,7 +45,7 @@ void GraphSensorContactLayer::UpdateSensorLabelsAfterViewportChanged()
       label->setPosition(pPos);
    }
    _viewportChanged = false;
-   setVisible(true);
+   setVisible(true && _shouldBeVisible);
 }
 
 void GraphSensorContactLayer::update(float dt)
@@ -74,7 +74,7 @@ void GraphSensorContactLayer::InitSensorLabels()
       label->setPosition(pPos);
       label->setTag(id);
       label->setScale(LABEL_SCALE);
-      label->setVisible(false);
+      label->setVisible(false && _shouldBeVisible);
       addChild(label);
    }
 }
@@ -93,11 +93,11 @@ void GraphSensorContactLayer::UpdateSensorLabels()
       {
          sprintf(buffer,"%d",count);
          label->setString(buffer);
-         label->setVisible(true);
+         label->setVisible(true && _shouldBeVisible);
       }
       else
       {
-         label->setVisible(false);
+         label->setVisible(false && _shouldBeVisible);
       }
    }
 }
@@ -105,7 +105,7 @@ void GraphSensorContactLayer::UpdateSensorLabels()
 void GraphSensorContactLayer::ViewportChanged()
 {
    _viewportChanged = true;
-   setVisible(false);
+   setVisible(false && _shouldBeVisible);
    _stopWatch.Start();
 }
 
@@ -126,6 +126,7 @@ bool GraphSensorContactLayer::init()
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
    Notifier::Instance().Attach(this, NE_DEBUG_TOGGLE_VISIBILITY);
    Notifier::Instance().Attach(this, NE_UPDATE_DEBUG_INFO);
+   _shouldBeVisible = true;
    return true;
 }
 
@@ -153,7 +154,11 @@ bool GraphSensorContactLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool
          ViewportChanged();
          break;
       case NE_DEBUG_TOGGLE_VISIBILITY:
-         setVisible(!isVisible());
+         if(value)
+         {
+            _shouldBeVisible = !_shouldBeVisible;
+            setVisible((_shouldBeVisible));
+         }
          break;
       case NE_UPDATE_DEBUG_INFO:
          UpdateSensorLabels();

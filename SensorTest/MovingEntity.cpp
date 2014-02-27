@@ -412,14 +412,18 @@ void MovingEntity::ExecuteNavigateToPoint()
       {
          GetTargetPos() = *(path.begin());
          path.erase(path.begin());
+         
          // Check the next point we will be going to
          // after this.  If the path is blocked, then
          // we need to replan.
          Vec2 nextPoint = *(path.begin());
          int32 nextIdx = gridCalc.CalcIndex(nextPoint);
-         if(!IsNodePassable(nextIdx) && (currentIdx != navigateIdx))
+         if(currentIdx != navigateIdx)
          {
-            ChangeState(ST_NAVIGATE_TO_POINT);
+            if(!IsNodePassable(nextIdx) || !IsNodePassable(currentIdx))
+            {
+               ChangeState(ST_NAVIGATE_TO_POINT);
+            }
          }
       }
       ApplyThrust();

@@ -44,11 +44,14 @@
 #include "EntityScheduler.h"
 #include "Spaceship.h"
 #include "GraphSensorGridSquareSensors.h"
+#include "PlayerGameControlsLayer.h"
 
 #define SENSOR_DIAMETER (2.4f)
 #define SENSOR_SEPARATION (2.5f)
 #define TRACK_ENTITY_CELL_INDEX
-
+#define TAG_DEBUG_BOX2D (1000)
+#define TAG_DEBUG_GRID (1001)
+#define TAG_DEBUG_LINES (1002)
 
 
 MainScene::MainScene() :
@@ -143,13 +146,24 @@ void MainScene::onEnter()
    addChild(SunBackgroundLayer::create());
    
    // Adding the debug lines so that we can draw the path followed.
+   DebugLinesLayer* linesLayer = DebugLinesLayer::create();
+   assert(linesLayer != NULL);
    addChild(DebugLinesLayer::create());
+   linesLayer->setTag(TAG_DEBUG_LINES);
+   addChild(linesLayer);
    
    // Grid
-   addChild(GridLayer::create());
-
+   // This should be at the bottom of the layer stack.
+   GridLayer* gridLayer = GridLayer::create(5);
+   assert(gridLayer != NULL);
+   gridLayer->setTag(TAG_DEBUG_GRID);
+   addChild(gridLayer);
+   
    // Box2d Debug
-   //addChild(Box2DDebugDrawLayer::create(_world));
+   Box2DDebugDrawLayer* debugLayer = Box2DDebugDrawLayer::create(_world);
+   assert(debugLayer != NULL);
+   debugLayer->setTag(TAG_DEBUG_BOX2D);
+   addChild(debugLayer);
    
    // Asteroids
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
@@ -160,6 +174,14 @@ void MainScene::onEnter()
    _shipLayer = SpriteBatchLayer::create("EntitySpriteImages.png", "EntitySpriteImages.plist");
    assert(_shipLayer != NULL);
    addChild(_shipLayer);
+   
+   
+   // Touch Input
+   addChild(TapDragPinchInput::create(this));
+
+   // User Controls
+   addChild(PlayerGameControlsLayer::create());
+   
    
    // Create the Anchor
    CreateAnchor();
@@ -174,13 +196,13 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   //   addChild(GraphSensorContactLayer::create());
+   addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
-   
-   // Touch Input
-   addChild(TapDragPinchInput::create(this));
+   Notifier::Instance().Attach(this, NE_GAME_COMMAND_ZOOM_IN);
+   Notifier::Instance().Attach(this, NE_GAME_COMMAND_ZOOM_OUT);
+   Notifier::Instance().Attach(this, NE_GAME_COMMAND_TRACK);
    
    // Kickstart all sizes
    ViewportChanged();
@@ -204,7 +226,6 @@ void MainScene::onExitTransitionDidStart()
    // Turn off updates
    unscheduleUpdate();
 }
-
 
 void MainScene::UpdateEntity()
 {
@@ -294,6 +315,12 @@ bool MainScene::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
    {
       case NE_VIEWPORT_CHANGED:
          ViewportChanged();
+         break;
+      case NE_GAME_COMMAND_ZOOM_IN:
+         break;
+      case NE_GAME_COMMAND_ZOOM_OUT:
+         break;
+      case NE_GAME_COMMAND_TRACK:
          break;
       default:
          result = false;

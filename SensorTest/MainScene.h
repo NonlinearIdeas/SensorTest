@@ -76,6 +76,7 @@ private:
    void UpdatePhysics();
    void ViewportChanged();
    void NavigateToPosition(Vec2 pos);
+   
 public:
    
    static MainScene* create();

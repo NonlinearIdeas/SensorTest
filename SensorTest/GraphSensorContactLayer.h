@@ -41,6 +41,7 @@ private:
    void ViewportChanged();
    StopWatch _stopWatch;
    bool _viewportChanged;
+   bool _shouldBeVisible;
    
 protected:
    bool init();

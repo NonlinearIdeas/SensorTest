@@ -145,7 +145,8 @@ bool DebugLinesLayer::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
          Reset();
          break;
       case NE_DEBUG_TOGGLE_VISIBILITY:
-         setVisible(!isVisible());
+         if(value)
+            setVisible(!isVisible());
          break;
       case NE_VIEWPORT_CHANGED:
          ViewportChanged();
