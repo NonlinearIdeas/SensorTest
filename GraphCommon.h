@@ -1282,6 +1282,7 @@ public:
    {
       ReorderUpwards(m_invHeap[idx]);
    }
+
 };
 
 
@@ -1304,7 +1305,8 @@ private:
    
 public:
    OpenList() :
-      _pq(NULL)
+      _pq(NULL),
+      _costToNode(NULL)
    {
       
    }
@@ -1318,15 +1320,15 @@ public:
       }
    }
    
-   void Init(uint32 maxDepth, vector<double>& costToNode)
+   void Init(vector<double>& costToNode)
    {
       if(_pq != NULL)
       {
          delete _pq;
          _pq = NULL;
       }
-      assert(costToNode.size() == maxDepth);
-      _pq = new IndexedPriorityQLow<double>(costToNode,maxDepth);
+      _costToNode = &costToNode;
+      _pq = new IndexedPriorityQLow<double>(costToNode,costToNode.size());
    }
    
    void Insert(int32 index)
@@ -1335,15 +1337,24 @@ public:
       _pq->insert(index);
    }
    
-   void ChangePriority(int32 index)
+   void NodeCostChanged(int32 index)
    {
+      assert(_pq != NULL);
+      assert(_costToNode != NULL);
       assert(index < _costToNode->size());
       _pq->ChangePriority(index);
    }
    
    int32 GetLowestCostNodeIndex()
    {
+      assert(_pq != NULL);
       return _pq->Pop();
+   }
+   
+   bool IsEmpty()
+   {
+      assert(_pq != NULL);
+      return _pq->empty();
    }
    
 };
@@ -1354,7 +1365,7 @@ private:
    vector<const GraphEdge*> _shortestPathTree;
    vector<const GraphEdge*> _searchFrontier;
    vector<double> _costToNode;
-   IndexedPriorityQLow<double>* _pq;
+   OpenList _openList;
    
 protected:
    virtual SEARCH_STATE_T SearchCycleStart()
@@ -1366,24 +1377,20 @@ protected:
       _shortestPathTree.assign(_shortestPathTree.size(),NULL);
       _searchFrontier.resize(GetGraph().GetNodeCount());
       _searchFrontier.assign(_searchFrontier.size(),NULL);
-      if(_pq != NULL)
-      {
-         delete _pq;
-         _pq = NULL;
-      }
-      _pq = new IndexedPriorityQLow<double>(_costToNode,_costToNode.size());
-      _pq->insert(GetStartNode());
+      
+      _openList.Init(_costToNode);
+      _openList.Insert(GetStartNode());
       return SS_STILL_WORKING;
    }
    
    
    virtual SEARCH_STATE_T SearchCycle()
    {
-      if(_pq->empty())
+      if(_openList.IsEmpty())
       {
          return SS_NOT_FOUND;
       }
-      int32 nextNode = _pq->Pop();
+      int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
@@ -1407,7 +1414,7 @@ protected:
             if(_searchFrontier[edge->GetDes()] == NULL)
             {  // Never been visited
                _costToNode[edge->GetDes()] = cost;
-               _pq->insert(edge->GetDes());
+               _openList.Insert(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
             else if((cost < _costToNode[edge->GetDes()]) &&
@@ -1416,7 +1423,7 @@ protected:
                
             {
                _costToNode[edge->GetDes()] = cost;
-               _pq->ChangePriority(edge->GetDes());
+               _openList.NodeCostChanged(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
          }
@@ -1428,15 +1435,12 @@ public:
    GraphSearchDijkstra(const Graph& graph,
                   uint32 start,
                   uint32 target) :
-   GraphSearchAlgorithm(graph,start,target),
-   _pq(NULL)
+   GraphSearchAlgorithm(graph,start,target)
    {
    }
    
    virtual ~GraphSearchDijkstra()
    {
-      if(_pq != NULL)
-         delete _pq;
    }
    
    virtual list<const GraphNode*> GetPathNodes()
@@ -1520,7 +1524,7 @@ private:
    vector<const GraphEdge*> _searchFrontier;
    vector<double> _FCostToNode;
    vector<double> _GCostToNode;
-   IndexedPriorityQLow<double>* _pq;
+   OpenList _openList;
    const AStarHeuristic* _heuristic;
    
 protected:
@@ -1534,24 +1538,20 @@ protected:
       _shortestPathTree.assign(_shortestPathTree.size(),NULL);
       _searchFrontier.resize(GetGraph().GetNodeCount());
       _searchFrontier.assign(_searchFrontier.size(),NULL);
-      if(_pq != NULL)
-      {
-         delete _pq;
-         _pq = NULL;
-      }
-      _pq = new IndexedPriorityQLow<double>(_FCostToNode,_FCostToNode.size());
-      _pq->insert(GetStartNode());
+      
+      _openList.Init(_FCostToNode);
+      _openList.Insert(GetStartNode());
       return SS_STILL_WORKING;
    }
    
    
    virtual SEARCH_STATE_T SearchCycle()
    {
-      if(_pq->empty())
+      if(_openList.IsEmpty())
       {
          return SS_NOT_FOUND;
       }
-      int32 nextNode = _pq->Pop();
+      int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
@@ -1580,7 +1580,7 @@ protected:
                // F = G + H
                _FCostToNode[edge->GetDes()] = gCost + hCost;
                _GCostToNode[edge->GetDes()] = gCost;
-               _pq->insert(edge->GetDes());
+               _openList.Insert(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
             else if((gCost < _GCostToNode[edge->GetDes()]) &&
@@ -1590,7 +1590,7 @@ protected:
             {
                _FCostToNode[edge->GetDes()] = gCost + hCost;
                _GCostToNode[edge->GetDes()] = gCost;
-               _pq->ChangePriority(edge->GetDes());
+               _openList.NodeCostChanged(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
          }
@@ -1604,18 +1604,12 @@ public:
                        uint32 target,
                        const AStarHeuristic* heuristic) :
    GraphSearchAlgorithm(graph,start,target),
-   _pq(NULL),
    _heuristic(heuristic)
    {
    }
    
    virtual ~GraphSearchAStar()
    {
-      if(_pq != NULL)
-      {
-         delete _pq;
-         _pq = NULL;
-      }
    }
    
    virtual list<const GraphNode*> GetPathNodes()

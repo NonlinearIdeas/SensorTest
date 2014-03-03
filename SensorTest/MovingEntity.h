@@ -52,8 +52,8 @@ private:
    typedef enum
    {
       NA_FIRST,
-      NA_DIJ = NA_FIRST,
-      NA_AST_DISTSQ,
+      NA_AST_DISTSQ = NA_FIRST,
+      NA_DIJ,
       NA_AST_DIST,
       NA_BFS,
       NA_MAX
