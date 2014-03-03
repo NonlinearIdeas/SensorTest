@@ -24,6 +24,7 @@ private:
       BUTTON_ZOOM_IN,
       BUTTON_ZOOM_OUT,
       BUTTON_TOGGLE_DEBUG,
+      BUTTON_NEXT,
    };
 protected:
    bool init();

@@ -33,9 +33,10 @@
 #include "MathUtilities.h"
 #include "Entity.h"
 #include "GraphCommon.h"
+#include "Notifier.h"
 
 
-class MovingEntity : public Entity
+class MovingEntity : public Entity, public Notified
 {
 private:
    typedef enum
@@ -48,12 +49,24 @@ private:
       ST_MAX
    } STATE_T;
    
+   typedef enum
+   {
+      NA_FIRST,
+      NA_AST_DISTSQ = NA_FIRST,
+      NA_AST_DIST,
+      NA_DIJ,
+      NA_BFS,
+      NA_MAX
+   } NAV_ALG_T;
+   
    Vec2 _targetPos;
    Vec2 _navigatePos;
    float32 _maxAngularAcceleration;
    float32 _maxLinearAcceleration;
    float32 _minSeekDistance;
    float32 _maxSpeed;
+   NAV_ALG_T _navAlg;
+   
    list<Vec2> _path;
    int32 _stateTickTimer;
    
@@ -65,6 +78,7 @@ private:
    bool IsNodePassable(int32 currentNode);
    
    bool IsNearTarget();
+   bool IsNearTarget(const Vec2& target,float32 factor);
    void ApplyTurnTorque();
    void ApplyThrust();
    void PrepareForMotion();
@@ -82,6 +96,10 @@ private:
    void EnterState(STATE_T state);
    void ChangeState(STATE_T state);
    
+   inline void ResetStateTickTimer(int32 value) { _stateTickTimer = value; }
+   inline void UpdateStateTickTimer() { if(_stateTickTimer > 0) --_stateTickTimer; }
+   inline bool IsStateTickTimerExpired() { return _stateTickTimer == 0; }
+   
 protected:
    Vec2& GetTargetPos() { return _targetPos; }
    list<Vec2>& GetPath() { return _path; }
@@ -90,6 +108,8 @@ protected:
    {
       return _turnController;
    }
+   
+   virtual bool Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value);   
    
    inline float32 GetMaxLinearAcceleration() { return _maxLinearAcceleration; }
    inline void SetMaxLinearAcceleration(float32 maxLinearAcceleration) { _maxLinearAcceleration = maxLinearAcceleration; }

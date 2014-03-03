@@ -535,6 +535,9 @@ protected:
 public:
    SEARCH_STATE_T GetSearchState() { return _searchState; }
    
+   
+   virtual ~GraphSearchAlgorithm() { }
+   
    GraphSearchAlgorithm(const class Graph& graph,
                         uint32 start,
                         uint32 target) :

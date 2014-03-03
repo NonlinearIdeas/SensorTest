@@ -46,16 +46,19 @@
 #include "GraphSensorGridSquareSensors.h"
 #include "PlayerGameControlsLayer.h"
 
-#define SENSOR_DIAMETER (2.4f)
-#define SENSOR_SEPARATION (2.5f)
-#define TRACK_ENTITY_CELL_INDEX
+#define SENSOR_SEPARATION (3.0f)
+#define SENSOR_DIAMETER (SENSOR_SEPARATION*0.9)
+//#define TRACK_ENTITY_CELL_INDEX
 #define TAG_DEBUG_BOX2D (1000)
 #define TAG_DEBUG_GRID (1001)
 #define TAG_DEBUG_LINES (1002)
+#define SCALE_STEPS_START (TICKS_PER_SECOND/2)
+#define SCALE_MIN 0.0625
+#define SCALE_MAX 2.0
 
 
 MainScene::MainScene() :
-   _entity(NULL)
+_entity(NULL)
 {
 }
 
@@ -95,7 +98,7 @@ void MainScene::InitSystem()
 }
 
 void MainScene::CreatePhysics()
-{   
+{
    _world = new b2World(Vec2(0.0,0.0));
    // Do we want to let bodies sleep?
    // No for now...makes the debug layer blink
@@ -118,6 +121,9 @@ void MainScene::CreateSensors()
 bool MainScene::init()
 {
    InitSystem();
+   _trackingEnabled = false;
+   _scalingEnabled = false;
+   
    return true;
 }
 
@@ -169,7 +175,7 @@ void MainScene::onEnter()
    _asteroidLayer = SpriteBatchLayer::create("Asteroids_ImgData.png", "Asteroids_ImgData.plist");
    assert(_asteroidLayer != NULL);
    addChild(_asteroidLayer);
-
+   
    // Space Ships
    _shipLayer = SpriteBatchLayer::create("EntitySpriteImages.png", "EntitySpriteImages.plist");
    assert(_shipLayer != NULL);
@@ -178,7 +184,7 @@ void MainScene::onEnter()
    
    // Touch Input
    addChild(TapDragPinchInput::create(this));
-
+   
    // User Controls
    addChild(PlayerGameControlsLayer::create());
    
@@ -196,7 +202,7 @@ void MainScene::onEnter()
    CreateSensors();
    
    // Contact Counts
-   addChild(GraphSensorContactLayer::create());
+   //   addChild(GraphSensorContactLayer::create());
    
    // Register for events
    Notifier::Instance().Attach(this, NE_VIEWPORT_CHANGED);
@@ -206,6 +212,89 @@ void MainScene::onEnter()
    
    // Kickstart all sizes
    ViewportChanged();
+}
+
+void MainScene::IncreaseScale()
+{
+   // Don't change the scaling if we are already moving.
+   if(_scalingEnabled)
+   {
+      _scalingEnabled = false;
+      return;
+   }
+   
+   Viewport& viewport = Viewport::Instance();
+   
+   float32 scale = viewport.GetScale();
+   
+   
+   if(scale < SCALE_MAX)
+   {
+      scale *= 2;
+      if(scale > SCALE_MAX)
+      {
+         scale = SCALE_MAX;
+      }
+      ZoomViewport(scale);
+   }
+}
+
+void MainScene::DecreaseScale()
+{
+   // Don't change the scaling if we are already moving.
+   if(_scalingEnabled)
+   {
+      _scalingEnabled = false;
+      return;
+   }
+   
+   
+   Viewport& viewport = Viewport::Instance();
+   
+   if(viewport.GetScale() > SCALE_MIN)
+   {
+      ZoomViewport(viewport.GetScale()/2);
+   }
+}
+
+void MainScene::ZoomViewport(float32 scaleTarget)
+{
+   if(!_scalingEnabled)
+   {
+      _scaleTarget = scaleTarget;
+      _scaleStart = Viewport::Instance().GetScale();
+      _scalingEnabled = true;
+      _scaleStepsLeft = SCALE_STEPS_START;
+   }
+}
+
+void MainScene::ZoomViewport()
+{
+   if(!_scalingEnabled)
+      return;
+   
+   if(_scaleStepsLeft > 0)
+   {
+      _scaleStepsLeft--;
+      float32 time = 1.0 - (1.0*_scaleStepsLeft)/SCALE_STEPS_START;
+      float32 scale = MathUtilities::LinearTween(time, _scaleStart, _scaleTarget);
+      Viewport::Instance().SetScale(scale);
+   }
+   else
+   {
+      _scalingEnabled = false;
+   }
+}
+
+void MainScene::TrackViewport()
+{
+   if(!_trackingEnabled)
+      return;
+   
+   Vec2 pos = _entity->GetBody()->GetPosition();
+   
+   Viewport::Instance().TrackPosition(pos, 0.35);
+   
 }
 
 void MainScene::onExit()
@@ -272,6 +361,10 @@ void MainScene::update(float dt)
    Notifier::Instance().Notify(NE_UPDATE_DEBUG_INFO,true);
    // Clear out any old information
    GraphSensorManager::Instance().ClearChangedSensors();
+   
+   // Do any zooming/tracking
+   ZoomViewport();
+   TrackViewport();
 }
 
 
@@ -280,6 +373,7 @@ void MainScene::update(float dt)
 // Handler for Tap/Drag/Pinch Events
 void MainScene::TapDragPinchInputTap(const TOUCH_DATA_T& point)
 {
+   CCLOG("Got Tap at location (%f,%f)",point.pos.x,point.pos.y);
    NavigateToPosition(Viewport::Instance().Convert(point.pos));
 }
 void MainScene::TapDragPinchInputLongTap(const TOUCH_DATA_T& point)
@@ -317,10 +411,13 @@ bool MainScene::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
          ViewportChanged();
          break;
       case NE_GAME_COMMAND_ZOOM_IN:
+         DecreaseScale();
          break;
       case NE_GAME_COMMAND_ZOOM_OUT:
+         IncreaseScale();
          break;
       case NE_GAME_COMMAND_TRACK:
+         _trackingEnabled = !_trackingEnabled;
          break;
       default:
          result = false;

@@ -7,21 +7,21 @@
  * Copyright (c) 2013 Nonlinear Ideas Inc. All rights reserved.
  ********************************************************************
  * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any 
+ * warranty.  In no event will the authors be held liable for any
  * damages arising from the use of this software.
  *
- * Permission is granted to anyone to use this software for any 
- * purpose, including commercial applications, and to alter it and 
+ * Permission is granted to anyone to use this software for any
+ * purpose, including commercial applications, and to alter it and
  * redistribute it freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented; you must 
- *    not claim that you wrote the original software. If you use this 
- *    software in a product, an acknowledgment in the product 
+ * 1. The origin of this software must not be misrepresented; you must
+ *    not claim that you wrote the original software. If you use this
+ *    software in a product, an acknowledgment in the product
  *    documentation would be appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and 
+ * 2. Altered source versions must be plainly marked as such, and
  *    must not be misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source 
- *    distribution. 
+ * 3. This notice may not be removed or altered from any source
+ *    distribution.
  */
 
 
@@ -60,8 +60,8 @@ static void DrawPathList(const list<Vec2> points)
       LINE_METERS_DATA_T lmd;
       Vec2 lastPoint = *points.begin();
       for(list <Vec2>::const_iterator iter = ++(points.begin());
-      iter != points.end();
-      ++iter)
+          iter != points.end();
+          ++iter)
       {
          lmd.start = lastPoint;
          lmd.end = *iter;
@@ -169,6 +169,37 @@ bool MovingEntity::IsNearTarget()
    }
    return false;
 }
+
+bool MovingEntity::IsNearTarget(const Vec2& target,float32 distanceMin)
+{
+   Vec2 toTarget = target - GetBody()->GetPosition();
+   
+   if(toTarget.LengthSquared() < distanceMin*distanceMin)
+   {
+      return true;
+   }
+   return false;
+}
+
+bool MovingEntity::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
+{
+   bool result = true;
+   switch (eventType)
+   {
+      case NE_DEBUG_NEXT_ALGORITHM:
+         _navAlg++;
+         if(_navAlg >= NA_MAX)
+         {
+            _navAlg = NA_FIRST;
+         }
+         break;
+      default:
+         result = false;
+         break;
+   }
+   return result;
+}
+
 
 void MovingEntity::ApplyTurnTorque()
 {
@@ -315,17 +346,38 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
    {
       CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
    }
-   AStarHeuristic_DistanceSquared heuristic;
-   GraphSearchAStar search(sensorGraph,startIdx,targetIdx,&heuristic);
-   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph();
+   GraphSearchAlgorithm* gsa = NULL;
+   AStarHeuristic* ashe = NULL;
+   
+   switch(_navAlg)
+   {
+      case NA_BFS:
+         gsa = new GraphSearchBFS(sensorGraph,startIdx,targetIdx);
+         break;
+      case NA_DIJ:
+         gsa = new GraphSearchDijkstra(sensorGraph,startIdx,targetIdx);
+         break;
+      case NA_AST_DIST:
+         ashe = new AStarHeuristic_Distance();
+         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         break;
+      case NA_AST_DISTSQ:
+         ashe = new AStarHeuristic_DistanceSquared();
+         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         break;
+      default:
+         assert(false);
+         break;
+   }
+   GraphSearchAlgorithm::SEARCH_STATE_T sstate = gsa->SearchGraph();
    if(sstate == GraphSearchAlgorithm::SS_FOUND)
    {
       list<const GraphNode*> pathNodes;
       
-      pathNodes = search.GetPathNodes();
+      pathNodes = gsa->GetPathNodes();
       
       Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
-      DrawNodeList(search.GetFloodNodes());
+      DrawNodeList(gsa->GetFloodNodes());
       path.clear();
       for(list<const GraphNode*>::const_iterator iter = pathNodes.begin();
           iter != pathNodes.end();
@@ -357,6 +409,11 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
             break;
       }
    }
+   // Don't leak memory!!!
+   if(gsa != NULL)
+      delete gsa;
+   if(ashe != NULL)
+      delete ashe;
    return sstate == GraphSearchAlgorithm::SS_FOUND;
 }
 
@@ -374,6 +431,7 @@ void MovingEntity::EnterNavigateToPoint()
       GetTurnController().ResetHistory();
       GetTargetPos() = *(_path.begin());
       _path.erase(_path.begin());
+      ResetStateTickTimer(2*TICKS_PER_SECOND);
    }
    else
    {
@@ -385,49 +443,66 @@ void MovingEntity::ExecuteNavigateToPoint()
 {
    list<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
+   bool isNearNavTarget = IsNearTarget(_navigatePos,5.0);
    const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
    Vec2 currentPoint = GetTargetPos();
    int32 currentIdx = gridCalc.CalcIndex(currentPoint);
    int32 navigateIdx = gridCalc.CalcIndex(_navigatePos);
    
-   if(path.size() == 0)
-   {  // Out of points in the list
-      if(isNearTarget)
-      {  // Not close to target point
-         ChangeState(ST_IDLE);
-      }
-      else
-      {  // Just keep pushing towards target.
-         ApplyThrust();
-         ApplyTurnTorque();
-         if(!IsNodePassable(currentIdx) && currentIdx != navigateIdx)
-         {
-            ChangeState(ST_NAVIGATE_TO_POINT);
-         }
-      }
+   if(isNearNavTarget)
+   {  // Must be really close...just seek to it.
+      CommandSeek(_navigatePos);
    }
    else
-   {  // Still more to go
-      if(isNearTarget)
-      {
-         GetTargetPos() = *(path.begin());
-         path.erase(path.begin());
-         
-         // Check the next point we will be going to
-         // after this.  If the path is blocked, then
-         // we need to replan.
-         Vec2 nextPoint = *(path.begin());
-         int32 nextIdx = gridCalc.CalcIndex(nextPoint);
-         if(currentIdx != navigateIdx)
-         {
-            if(!IsNodePassable(nextIdx) || !IsNodePassable(currentIdx))
+   {
+      if(path.size() == 0)
+      {  // Out of points in the list
+         if(isNearTarget)
+         {  // Not close to target point
+            ChangeState(ST_IDLE);
+         }
+         else
+         {  // Just keep pushing towards target.
+            ApplyThrust();
+            ApplyTurnTorque();
+            if(!IsNodePassable(currentIdx) && currentIdx != navigateIdx)
             {
                ChangeState(ST_NAVIGATE_TO_POINT);
             }
          }
       }
-      ApplyThrust();
-      ApplyTurnTorque();
+      else
+      {  // Still more to go
+         if(isNearTarget)
+         {
+            GetTargetPos() = *(path.begin());
+            path.erase(path.begin());
+            ResetStateTickTimer(2*TICKS_PER_SECOND);
+            // Check the next point we will be going to
+            // after this.  If the path is blocked, then
+            // we need to replan.
+            Vec2 nextPoint = *(path.begin());
+            int32 nextIdx = gridCalc.CalcIndex(nextPoint);
+            if(currentIdx != navigateIdx)
+            {
+               if(!IsNodePassable(nextIdx) || !IsNodePassable(currentIdx))
+               {
+                  ChangeState(ST_NAVIGATE_TO_POINT);
+               }
+            }
+         }
+         ApplyThrust();
+         ApplyTurnTorque();
+         /* If the state tick timer expires, it means we
+          * have spent too long trying to reach the next waypoint
+          * and we need to replan on how to get to it.
+          */
+         if(IsStateTickTimerExpired())
+         {
+            CCLOG("Tick Timer Expired!!!");
+            ChangeState(ST_NAVIGATE_TO_POINT);
+         }
+      }
    }
 }
 
@@ -605,6 +680,7 @@ bool MovingEntity::IsNodePassable(int32 nodeIdx)
 
 void MovingEntity::ExecuteState(STATE_T state)
 {
+   UpdateStateTickTimer();
    switch(state)
    {
       case ST_IDLE:
@@ -625,11 +701,11 @@ void MovingEntity::ExecuteState(STATE_T state)
       default:
          assert(false);
    }
-   ++_stateTickTimer;
 }
 
 void MovingEntity::EnterState(STATE_T state)
 {
+   ResetStateTickTimer(0);
    switch(state)
    {
       case ST_IDLE:
@@ -650,7 +726,6 @@ void MovingEntity::EnterState(STATE_T state)
       default:
          assert(false);
    }
-   _stateTickTimer = 0;
 }
 
 void MovingEntity::ChangeState(STATE_T state)
@@ -661,7 +736,8 @@ void MovingEntity::ChangeState(STATE_T state)
 
 MovingEntity::MovingEntity() :
 Entity(HF_CAN_MOVE,2),
-_state(ST_IDLE)
+_state(ST_IDLE),
+_navAlg(NA_FIRST)
 {
 }
 
@@ -674,6 +750,7 @@ bool MovingEntity::Create(b2World& world,const Vec2& position, float32 angleRads
 {
    CreateBody(world,position,angleRads);
    SetupTurnController();
+   Notifier::Instance().Attach(this, NE_DEBUG_NEXT_ALGORITHM);
    return true;
 }
 
