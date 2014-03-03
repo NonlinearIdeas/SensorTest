@@ -27,7 +27,7 @@
 #include "TapDragPinchInput.h"
 #include "DebugLinesLayer.h"
 
-const static float32 DRAG_RADIUS = 2.0f;
+const static float32 DRAG_RADIUS = 8.0f;
 const static float32 DRAG_RADIUS_SQ = (DRAG_RADIUS*DRAG_RADIUS);
 
 

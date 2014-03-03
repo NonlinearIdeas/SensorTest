@@ -844,17 +844,6 @@ public:
 };
 
 
-/* To implement A* and Dijkstra, we will need a class
- * to manage the "Open List", which is a bottleneck 
- * in the processing.
- *
- * Many implementations use and indexed priority queue.
- *
- * For the first pass, this is what I am going to use 
- * as well.  As this evolves, I will replace it with 
- * something of my own.
- */
-
 /* This class is a base class for a GoalEvaluator.  This
  * is used by the search algorithm to determine if it has
  * reached its goal node.  Sometimes this may just be the 
@@ -902,6 +891,8 @@ public:
       return nodeIdx == _nodeIdx;
    }
 };
+
+
 
 // --------- THIS PART WAS LIFTED DIRECTLY FROM MAT BUCLAND'S BOOK --------
 //----------------------- Swap -------------------------------------------
@@ -1293,6 +1284,70 @@ public:
    }
 };
 
+
+/* To implement A* and Dijkstra, we will need a class
+ * to manage the "Open List", which is a bottleneck
+ * in the processing.
+ *
+ * Many implementations use an indexed priority queue.
+ *
+ * For now, the class below will wrap the open list
+ * so that we can explore different algorithms without
+ * changing the interface.
+ */
+
+class OpenList
+{
+private:
+   IndexedPriorityQLow<double>* _pq;
+   vector<double>* _costToNode;
+   
+public:
+   OpenList() :
+      _pq(NULL)
+   {
+      
+   }
+   
+   ~OpenList()
+   {
+      if(_pq != NULL)
+      {
+         delete _pq;
+         _pq = NULL;
+      }
+   }
+   
+   void Init(uint32 maxDepth, vector<double>& costToNode)
+   {
+      if(_pq != NULL)
+      {
+         delete _pq;
+         _pq = NULL;
+      }
+      assert(costToNode.size() == maxDepth);
+      _pq = new IndexedPriorityQLow<double>(costToNode,maxDepth);
+   }
+   
+   void Insert(int32 index)
+   {
+      assert(_pq != NULL);
+      _pq->insert(index);
+   }
+   
+   void ChangePriority(int32 index)
+   {
+      assert(index < _costToNode->size());
+      _pq->ChangePriority(index);
+   }
+   
+   int32 GetLowestCostNodeIndex()
+   {
+      return _pq->Pop();
+   }
+   
+};
+
 class GraphSearchDijkstra : public GraphSearchAlgorithm
 {
 private:
@@ -1376,6 +1431,12 @@ public:
    GraphSearchAlgorithm(graph,start,target),
    _pq(NULL)
    {
+   }
+   
+   virtual ~GraphSearchDijkstra()
+   {
+      if(_pq != NULL)
+         delete _pq;
    }
    
    virtual list<const GraphNode*> GetPathNodes()
@@ -1546,6 +1607,15 @@ public:
    _pq(NULL),
    _heuristic(heuristic)
    {
+   }
+   
+   virtual ~GraphSearchAStar()
+   {
+      if(_pq != NULL)
+      {
+         delete _pq;
+         _pq = NULL;
+      }
    }
    
    virtual list<const GraphNode*> GetPathNodes()
