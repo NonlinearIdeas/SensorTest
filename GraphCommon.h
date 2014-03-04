@@ -1276,6 +1276,11 @@ public:
       return m_Heap[m_iSize--];
    }
    
+   int Size()
+   {
+      return m_iSize;
+   }
+   
    //if the value of one of the client key's changes then call this with 
    //the key's index to adjust the queue accordingly
    void ChangePriority(const int idx)
@@ -1296,6 +1301,12 @@ public:
  * so that we can explore different algorithms without
  * changing the interface.
  */
+
+//#define USE_VECTOR_OPENLIST
+#define USE_HEAP_OPENLIST
+
+
+#ifdef USE_HEAP_OPENLIST
 
 class OpenList
 {
@@ -1358,6 +1369,86 @@ public:
    }
    
 };
+
+#endif
+
+#ifdef USE_VECTOR_OPENLIST
+
+class OpenList
+{
+private:
+   class ListCompare
+   {
+   private:
+      vector<double>& _costToNode;
+   public:
+      ListCompare(vector<double>& costToNode) :
+         _costToNode(costToNode)
+      {
+         
+      }
+      
+      bool operator() (int i,int j) const
+      {
+         return (_costToNode[i] > _costToNode[j]);
+      }
+   };
+   
+   ListCompare* _compare;
+   vector<int32> _indexes;
+   
+public:
+   OpenList() :
+      _compare(NULL),
+      _indexes(128)
+   {
+      
+   }
+   
+   ~OpenList()
+   {
+      if(_compare != NULL)
+         delete _compare;
+   }
+   
+   void Init(vector<double>& costToNode)
+   {
+      if(_compare != NULL)
+         delete _compare;
+      _compare = new ListCompare(costToNode);
+      _indexes.clear();
+   }
+   
+   inline void Insert(int32 index)
+   {
+      _indexes.push_back(index);
+   }
+   
+   inline void NodeCostChanged(int32 index)
+   {
+   }
+   
+   // Pragmatic sort only when getting the lowest cost
+   // node.  Note that the sort is designed to place
+   // the lowest cost node at the end of the list so that
+   // the pop_back operation doesn't have to work to move
+   // the vector data.
+   inline int32 GetLowestCostNodeIndex()
+   {
+      std::sort(_indexes.begin(),_indexes.end(),*_compare);
+      int32 result = _indexes[_indexes.size()-1];
+      _indexes.pop_back();
+      return result;
+   }
+   
+   inline bool IsEmpty()
+   {
+      return _indexes.size() == 0;
+   }
+   
+};
+
+#endif 
 
 class GraphSearchDijkstra : public GraphSearchAlgorithm
 {
