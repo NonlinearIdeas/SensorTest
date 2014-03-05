@@ -35,6 +35,7 @@ private:
 	uint64 _stop;
 	uint64 _elapsed;
 public:
+   StopWatch();
    void Start();
    void Stop();
    void Reset();

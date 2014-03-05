@@ -25,6 +25,7 @@
 		1A81B2A7189C98E60034D1B9 /* Snake.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A81B2A5189C98E60034D1B9 /* Snake.cpp */; };
 		1A845797189A835600B4BD66 /* MovingEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845795189A835600B4BD66 /* MovingEntity.cpp */; };
 		1A84579A189A838400B4BD66 /* PIDController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A845798189A838400B4BD66 /* PIDController.cpp */; };
+		1A947C1B18C6BB8400B8A1ED /* PerformanceStat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A947C1918C6BB8400B8A1ED /* PerformanceStat.cpp */; };
 		1A94E93718941D2300BD4025 /* GraphSensorGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */; };
 		1A9583CE189BD1DA0035AF80 /* GraphSensorContactLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */; };
 		1A961818188AED3F006789B0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A961817188AED3F006789B0 /* QuartzCore.framework */; };
@@ -376,6 +377,8 @@
 		1A845796189A835600B4BD66 /* MovingEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovingEntity.h; sourceTree = "<group>"; };
 		1A845798189A838400B4BD66 /* PIDController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PIDController.cpp; sourceTree = "<group>"; };
 		1A845799189A838400B4BD66 /* PIDController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PIDController.h; sourceTree = "<group>"; };
+		1A947C1918C6BB8400B8A1ED /* PerformanceStat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PerformanceStat.cpp; sourceTree = "<group>"; };
+		1A947C1A18C6BB8400B8A1ED /* PerformanceStat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceStat.h; sourceTree = "<group>"; };
 		1A94E93518941D2300BD4025 /* GraphSensorGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGenerator.cpp; sourceTree = "<group>"; };
 		1A94E93618941D2300BD4025 /* GraphSensorGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGenerator.h; sourceTree = "<group>"; };
 		1A9583CC189BD1DA0035AF80 /* GraphSensorContactLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorContactLayer.cpp; sourceTree = "<group>"; };
@@ -2400,6 +2403,8 @@
 				1AC478D6189D980500A7967E /* Spaceship.h */,
 				1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */,
 				1A961C09188AEDB7006789B0 /* Stopwatch.cpp */,
+				1A947C1918C6BB8400B8A1ED /* PerformanceStat.cpp */,
+				1A947C1A18C6BB8400B8A1ED /* PerformanceStat.h */,
 				1A961C0A188AEDB7006789B0 /* Stopwatch.h */,
 				1AC9EFA2189D543900397F34 /* StraightMovingEntity.cpp */,
 				1AC9EFA3189D543900397F34 /* StraightMovingEntity.h */,
@@ -2795,6 +2800,7 @@
 				1A9618BD188AED40006789B0 /* CCGrid.cpp in Sources */,
 				1A9619F4188AED44006789B0 /* TransformUtils.cpp in Sources */,
 				1AFC762D188DE36A00A258FB /* GraphSensor.cpp in Sources */,
+				1A947C1B18C6BB8400B8A1ED /* PerformanceStat.cpp in Sources */,
 				1A961935188AED41006789B0 /* CCParticleSystem.cpp in Sources */,
 				1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */,
 				1A961907188AED41006789B0 /* CCLabelTTF.cpp in Sources */,

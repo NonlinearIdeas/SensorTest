@@ -27,6 +27,16 @@
 #include "Stopwatch.h"
 #include <mach/mach_time.h>
 
+static mach_timebase_info_data_t _timeBaseInfo;
+static bool _initDone = false;
+
+StopWatch::StopWatch()
+{
+   if(!_initDone)
+   {
+      mach_timebase_info(&_timeBaseInfo);
+   }
+}
 
 void StopWatch::Start()
 {
@@ -67,9 +77,7 @@ double StopWatch::GetSeconds()
    
 	if(_elapsed > 0)
 	{  // Stopped
-		mach_timebase_info_data_t timeBaseInfo;
-		mach_timebase_info(&timeBaseInfo);
-		elapsedTimeNano = _elapsed * timeBaseInfo.numer / timeBaseInfo.denom;
+		elapsedTimeNano = _elapsed * _timeBaseInfo.numer / _timeBaseInfo.denom;
 		elapsedSeconds = elapsedTimeNano * 1.0E-9;
 	}
 	else if(_start > 0)
@@ -84,9 +92,7 @@ double StopWatch::GetSeconds()
       {
          elapsedTemp = 0;
       }
-		mach_timebase_info_data_t timeBaseInfo;
-		mach_timebase_info(&timeBaseInfo);
-		elapsedTimeNano = elapsedTemp * timeBaseInfo.numer / timeBaseInfo.denom;
+		elapsedTimeNano = elapsedTemp * _timeBaseInfo.numer / _timeBaseInfo.denom;
 		elapsedSeconds = elapsedTimeNano * 1.0E-9;
 	}
    return elapsedSeconds;

@@ -41,6 +41,7 @@
 #include "CommonProject.h"
 #include "CommonSTL.h"
 #include "HasFlags.h"
+#include "PerformanceStat.h"
 
 #define DEBUG_FLOODING
 
@@ -1175,7 +1176,7 @@ template<class KeyType>
 class IndexedPriorityQLow
 {
 private:
-   
+
    std::vector<KeyType>&  m_vecKeys;
    
    std::vector<int>       m_Heap;
@@ -1303,18 +1304,24 @@ public:
  */
 
 //#define USE_VECTOR_OPENLIST
-#define USE_HEAP_OPENLIST
-
+//#define USE_HEAP_OPENLIST
+#define NO_SORT_OPENLIST
 
 #ifdef USE_HEAP_OPENLIST
 
 class OpenList
 {
 private:
+   PerformanceStat _stat;
    IndexedPriorityQLow<double>* _pq;
    vector<double>* _costToNode;
    
 public:
+   double GetPerformanceStatAverage()
+   {
+      return _stat.GetAverageSeconds();
+   }
+   
    OpenList() :
       _pq(NULL),
       _costToNode(NULL)
@@ -1345,7 +1352,9 @@ public:
    void Insert(int32 index)
    {
       assert(_pq != NULL);
+      _stat.Start();
       _pq->insert(index);
+      _stat.Stop();
    }
    
    void NodeCostChanged(int32 index)
@@ -1353,13 +1362,18 @@ public:
       assert(_pq != NULL);
       assert(_costToNode != NULL);
       assert(index < _costToNode->size());
+      _stat.Start();
       _pq->ChangePriority(index);
+      _stat.Stop();
    }
    
    int32 GetLowestCostNodeIndex()
    {
       assert(_pq != NULL);
-      return _pq->Pop();
+      _stat.Start();
+      int32 idx = _pq->Pop();
+      _stat.Stop();
+      return idx;
    }
    
    bool IsEmpty()
@@ -1394,10 +1408,16 @@ private:
       }
    };
    
+   PerformanceStat _stat;
    ListCompare* _compare;
    vector<int32> _indexes;
    
 public:
+   double GetPerformanceStatAverage()
+   {
+      return _stat.GetAverageSeconds();
+   }
+   
    OpenList() :
       _compare(NULL),
       _indexes(128)
@@ -1421,7 +1441,9 @@ public:
    
    inline void Insert(int32 index)
    {
+      _stat.Start();
       _indexes.push_back(index);
+      _stat.Stop();
    }
    
    inline void NodeCostChanged(int32 index)
@@ -1435,9 +1457,11 @@ public:
    // the vector data.
    inline int32 GetLowestCostNodeIndex()
    {
+      _stat.Start();
       std::sort(_indexes.begin(),_indexes.end(),*_compare);
       int32 result = _indexes[_indexes.size()-1];
       _indexes.pop_back();
+      _stat.Stop();
       return result;
    }
    
@@ -1449,6 +1473,80 @@ public:
 };
 
 #endif 
+
+#ifdef NO_SORT_OPENLIST
+
+class OpenList
+{
+private:
+   vector<double>* _costToNode;
+   list<int32> _indexes;
+   PerformanceStat _stat;
+   
+public:
+   double GetPerformanceStat()
+   {
+      return _stat.GetTotalSeconds();
+   }
+   
+   OpenList() :
+   _costToNode(NULL)
+   {
+      
+   }
+   
+   ~OpenList()
+   {
+   }
+   
+   void Init(vector<double>& costToNode)
+   {
+      _costToNode = &costToNode;
+      _indexes.clear();
+   }
+   
+   void Insert(int32 index)
+   {
+      _stat.Start();
+      _indexes.push_back(index);
+      _stat.Stop();
+   }
+   
+   void NodeCostChanged(int32 index)
+   {
+   }
+   
+   int32 GetLowestCostNodeIndex()
+   {
+      vector<double>& cost = *_costToNode;
+      list<int32>::iterator iterMin = _indexes.begin();
+      double minCost = cost[*iterMin];
+      for(list<int32>::iterator iter = _indexes.begin();
+          iter != _indexes.end();
+          ++iter)
+      {
+         double lowerCost = cost[*iter];
+         if(lowerCost < minCost)
+         {
+            iterMin = iter;
+            minCost = lowerCost;
+         }
+      }
+      int32 result = *iterMin;
+      _indexes.erase(iterMin);
+      
+      return result;
+   }
+   
+   bool IsEmpty()
+   {
+      return _indexes.size() == 0;
+   }
+   
+};
+
+#endif
+
 
 class GraphSearchDijkstra : public GraphSearchAlgorithm
 {
@@ -1479,12 +1577,14 @@ protected:
    {
       if(_openList.IsEmpty())
       {
+         CCLOG("OpenList Time: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_NOT_FOUND;
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
+         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_FOUND;
       }
 #ifdef DEBUG_FLOODING
@@ -1640,12 +1740,14 @@ protected:
    {
       if(_openList.IsEmpty())
       {
+         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_NOT_FOUND;
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
+         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_FOUND;
       }
 #ifdef DEBUG_FLOODING
