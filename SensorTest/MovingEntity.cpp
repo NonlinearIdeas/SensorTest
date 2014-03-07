@@ -344,7 +344,7 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
    }
    else
    {
-      CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
+      //      CCLOG("Searching for path from %d --> %d",startIdx,targetIdx);
    }
    GraphSearchAlgorithm* gsa = NULL;
    AStarHeuristic* ashe = NULL;
@@ -365,11 +365,24 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
          ashe = new AStarHeuristic_DistanceSquared();
          gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
          break;
+      case NA_AST_MANHATTAN:
+         ashe = new AStarHeuristic_DistanceManhattan();
+         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         break;
       default:
          assert(false);
          break;
    }
+   _searchStat.Start();
    GraphSearchAlgorithm::SEARCH_STATE_T sstate = gsa->SearchGraph();
+   _searchStat.Stop(gsa->GetFloodNodes().size());
+   CCLOG("Average Search Time %.2f ms, Average Nodes = %.1f (%.2f s total, %d samples, %.1f Nodes)",
+         _searchStat.GetAverageSeconds()*1000,
+         _searchStat.GetAverageValue(),
+         _searchStat.GetTotalSeconds(),
+         _searchStat.GetSamples(),
+         _searchStat.GetValue()
+         );
    if(sstate == GraphSearchAlgorithm::SS_FOUND)
    {
       list<const GraphNode*> pathNodes;

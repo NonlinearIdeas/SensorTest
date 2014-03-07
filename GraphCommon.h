@@ -41,7 +41,6 @@
 #include "CommonProject.h"
 #include "CommonSTL.h"
 #include "HasFlags.h"
-#include "PerformanceStat.h"
 
 #define DEBUG_FLOODING
 
@@ -893,405 +892,6 @@ public:
    }
 };
 
-
-
-// --------- THIS PART WAS LIFTED DIRECTLY FROM MAT BUCLAND'S BOOK --------
-//----------------------- Swap -------------------------------------------
-//
-//  used to swap two values
-//------------------------------------------------------------------------
-template<class T>
-void Swap(T &a, T &b)
-{
-   T temp = a;
-   a = b;
-   b = temp;
-}
-
-//-------------------- ReorderUpwards ------------------------------------
-//
-//  given a heap and a node in the heap, this function moves upwards
-//  through the heap swapping elements until the heap is ordered
-//------------------------------------------------------------------------
-template<class T>
-void ReorderUpwards(std::vector<T>& heap, int nd)
-{
-   //move up the heap swapping the elements until the heap is ordered
-   while ( (nd>1) && (heap[nd/2] < heap[nd]))
-   {
-      Swap(heap[nd/2], heap[nd]);
-      
-      nd /= 2;
-   }
-}
-
-//--------------------- ReorderDownwards ---------------------------------
-//
-//  given a heap, the heapsize and a node in the heap, this function
-//  reorders the elements in a top down fashion by moving down the heap
-//  and swapping the current node with the greater of its two children
-//  (provided a child is larger than the current node)
-//------------------------------------------------------------------------
-template<class T>
-void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
-{
-   //move down the heap from node nd swapping the elements until
-   //the heap is reordered
-   while (2*nd <= HeapSize)
-   {
-      int child = 2 * nd;
-      
-      //set child to largest of nd's two children
-      if ( (child < HeapSize) && (heap[child] < heap[child+1]) )
-      {
-         ++child;
-      }
-      
-      //if this nd is smaller than its child, swap
-      if (heap[nd] < heap[child])
-      {
-         Swap(heap[child], heap[nd]);
-         
-         //move the current node down the tree
-         nd = child;
-      }
-      
-      else
-      {
-         break;
-      }
-   }
-}
-
-
-
-//--------------------- PriorityQ ----------------------------------------
-//
-//  basic heap based priority queue implementation
-//------------------------------------------------------------------------
-template<class T>
-class PriorityQ
-{
-private:
-   
-   std::vector<T>  m_Heap;
-   
-   int             m_iSize;
-   
-   int             m_iMaxSize;
-   
-   //given a heap and a node in the heap, this function moves upwards
-   //through the heap swapping elements until the heap is ordered
-   void ReorderUpwards(std::vector<T>& heap, int nd)
-   {
-      //move up the heap swapping the elements until the heap is ordered
-      while ( (nd>1) && (heap[nd/2] < heap[nd]))
-      {
-         Swap(heap[nd/2], heap[nd]);
-         
-         nd /= 2;
-      }
-   }
-   
-   //given a heap, the heapsize and a node in the heap, this function
-   //reorders the elements in a top down fashion by moving down the heap
-   //and swapping the current node with the greater of its two children
-   //(provided a child is larger than the current node)
-   void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
-   {
-      //move down the heap from node nd swapping the elements until
-      //the heap is reordered
-      while (2*nd <= HeapSize)
-      {
-         int child = 2 * nd;
-         
-         //set child to largest of nd's two children
-         if ( (child < HeapSize) && (heap[child] < heap[child+1]) )
-         {
-            ++child;
-         }
-         
-         //if this nd is smaller than its child, swap
-         if (heap[nd] < heap[child])
-         {
-            Swap(heap[child], heap[nd]);
-            
-            //move the current node down the tree
-            nd = child;
-         }
-         
-         else
-         {
-            break;
-         }
-      }
-   }
-   
-public:
-   
-   PriorityQ(int MaxSize):m_iMaxSize(MaxSize), m_iSize(0)
-   {
-      m_Heap.assign(MaxSize+1, T());
-   }
-   
-   bool empty()const{return (m_iSize==0);}
-   
-   //to insert an item into the queue it gets added to the end of the heap
-   //and then the heap is reordered
-   void insert(const T item)
-   {
-      
-      assert (m_iSize+1 <= m_iMaxSize);
-      
-      ++m_iSize;
-      
-      m_Heap[m_iSize] = item;
-      
-      ReorderUpwards(m_Heap, m_iSize);
-   }
-   
-   //to get the max item the first element is exchanged with the lowest
-   //in the heap and then the heap is reordered from the top down.
-   T pop()
-   {
-      Swap(m_Heap[1], m_Heap[m_iSize]);
-      
-      ReorderDownwards(m_Heap, 1, m_iSize-1);
-      
-      return m_Heap[m_iSize--];
-   }
-   
-   //so we can take a peek at the first in line
-   const T& Peek()const{return m_Heap[1];}
-};
-
-//--------------------- PriorityQLow -------------------------------------
-//
-//  basic 2-way heap based priority queue implementation. This time the priority
-//  is given to the lowest valued key
-//------------------------------------------------------------------------
-template<class T>
-class PriorityQLow
-{
-private:
-   
-   std::vector<T>  m_Heap;
-   
-   int             m_iSize;
-   
-   int             m_iMaxSize;
-   
-   //given a heap and a node in the heap, this function moves upwards
-   //through the heap swapping elements until the heap is ordered
-   void ReorderUpwards(std::vector<T>& heap, int nd)
-   {
-      //move up the heap swapping the elements until the heap is ordered
-      while ( (nd>1) && (heap[nd/2] > heap[nd]))
-      {
-         Swap(heap[nd/2], heap[nd]);
-         
-         nd /= 2;
-      }
-   }
-   
-   //given a heap, the heapsize and a node in the heap, this function
-   //reorders the elements in a top down fashion by moving down the heap
-   //and swapping the current node with the smaller of its two children
-   //(provided a child is larger than the current node)
-   void ReorderDownwards(std::vector<T>& heap, int nd, int HeapSize)
-   {
-      //move down the heap from node nd swapping the elements until
-      //the heap is reordered
-      while (2*nd <= HeapSize)
-      {
-         int child = 2 * nd;
-         
-         //set child to largest of nd's two children
-         if ( (child < HeapSize) && (heap[child] > heap[child+1]) )
-         {
-            ++child;
-         }
-         
-         //if this nd is smaller than its child, swap
-         if (heap[nd] > heap[child])
-         {
-            Swap(heap[child], heap[nd]);
-            
-            //move the current node down the tree
-            nd = child;
-         }
-         
-         else
-         {
-            break;
-         }
-      }
-   }
-   
-public:
-   
-   PriorityQLow(int MaxSize):m_iMaxSize(MaxSize), m_iSize(0)
-   {
-      m_Heap.assign(MaxSize+1, T());
-   }
-   
-   bool empty()const{return (m_iSize==0);}
-   
-   //to insert an item into the queue it gets added to the end of the heap
-   //and then the heap is reordered
-   void insert(const T item)
-   {
-      assert (m_iSize+1 <= m_iMaxSize);
-      
-      ++m_iSize;
-      
-      m_Heap[m_iSize] = item;
-      
-      ReorderUpwards(m_Heap, m_iSize);
-   }
-   
-   //to get the max item the first element is exchanged with the lowest
-   //in the heap and then the heap is reordered from the top down.
-   T pop()
-   {
-      Swap(m_Heap[1], m_Heap[m_iSize]);
-      
-      ReorderDownwards(m_Heap, 1, m_iSize-1);
-      
-      return m_Heap[m_iSize--];
-   }
-   
-   //so we can take a peek at the first in line
-   const T& peek()const{return m_Heap[1];}
-};
-
-//----------------------- IndexedPriorityQLow ---------------------------
-//
-//  Priority queue based on an index into a set of keys. The queue is
-//  maintained as a 2-way heap.
-//
-//  The priority in this implementation is the lowest valued key
-//------------------------------------------------------------------------
-template<class KeyType>
-class IndexedPriorityQLow
-{
-private:
-
-   std::vector<KeyType>&  m_vecKeys;
-   
-   std::vector<int>       m_Heap;
-   
-   std::vector<int>       m_invHeap;
-   
-   int                    m_iSize,
-   m_iMaxSize;
-   
-   void Swap(int a, int b)
-   {
-      int temp = m_Heap[a]; m_Heap[a] = m_Heap[b]; m_Heap[b] = temp;
-      
-      //change the handles too
-      m_invHeap[m_Heap[a]] = a; m_invHeap[m_Heap[b]] = b;
-   }
-   
-   void ReorderUpwards(int nd)
-   {
-      //move up the heap swapping the elements until the heap is ordered
-      while ( (nd>1) && (m_vecKeys[m_Heap[nd/2]] > m_vecKeys[m_Heap[nd]]) )
-      {
-         Swap(nd/2, nd);
-         
-         nd /= 2;
-      }
-   }
-   
-   void ReorderDownwards(int nd, int HeapSize)
-   {
-      //move down the heap from node nd swapping the elements until
-      //the heap is reordered
-      while (2*nd <= HeapSize)
-      {
-         int child = 2 * nd;
-         
-         //set child to smaller of nd's two children
-         if ((child < HeapSize) && (m_vecKeys[m_Heap[child]] > m_vecKeys[m_Heap[child+1]]))
-         {
-            ++child;
-         }
-         
-         //if this nd is larger than its child, swap
-         if (m_vecKeys[m_Heap[nd]] > m_vecKeys[m_Heap[child]])
-         {
-            Swap(child, nd);
-            
-            //move the current node down the tree
-            nd = child;
-         }
-         
-         else
-         {
-            break;
-         }
-      }
-   }
-   
-   
-public:
-   
-   //you must pass the constructor a reference to the std::vector the PQ
-   //will be indexing into and the maximum size of the queue.
-   IndexedPriorityQLow(std::vector<KeyType>& keys,
-                       int              MaxSize):m_vecKeys(keys),
-   m_iMaxSize(MaxSize),
-   m_iSize(0)
-   {
-      m_Heap.assign(MaxSize+1, 0);
-      m_invHeap.assign(MaxSize+1, 0);
-   }
-   
-   bool empty()const{return (m_iSize==0);}
-   
-   //to insert an item into the queue it gets added to the end of the heap
-   //and then the heap is reordered from the bottom up.
-   void insert(const int idx)
-   {
-      assert (m_iSize+1 <= m_iMaxSize);
-      
-      ++m_iSize;
-      
-      m_Heap[m_iSize] = idx;
-      
-      m_invHeap[idx] = m_iSize;
-      
-      ReorderUpwards(m_iSize);
-   }
-   
-   //to get the min item the first element is exchanged with the lowest
-   //in the heap and then the heap is reordered from the top down. 
-   int Pop()
-   {
-      Swap(1, m_iSize);
-      
-      ReorderDownwards(1, m_iSize-1);
-      
-      return m_Heap[m_iSize--];
-   }
-   
-   int Size()
-   {
-      return m_iSize;
-   }
-   
-   //if the value of one of the client key's changes then call this with 
-   //the key's index to adjust the queue accordingly
-   void ChangePriority(const int idx)
-   {
-      ReorderUpwards(m_invHeap[idx]);
-   }
-
-};
-
-
 /* To implement A* and Dijkstra, we will need a class
  * to manage the "Open List", which is a bottleneck
  * in the processing.
@@ -1303,83 +903,82 @@ public:
  * changing the interface.
  */
 
-//#define USE_VECTOR_OPENLIST
-//#define USE_HEAP_OPENLIST
-#define NO_SORT_OPENLIST
+#define USE_VECTOR_OPENLIST
+//#define USE_PRIORITY_QUEUE
+//#define NO_SORT_OPENLIST
 
-#ifdef USE_HEAP_OPENLIST
+#ifdef USE_PRIORITY_QUEUE
 
 class OpenList
 {
 private:
-   PerformanceStat _stat;
-   IndexedPriorityQLow<double>* _pq;
-   vector<double>* _costToNode;
+   class Compare
+   {
+   private:
+      vector<double>& _costToNode;
+      
+   public:
+      Compare(vector<double>& costToNode) :
+      _costToNode(costToNode)
+      {
+         
+      }
+      
+      inline bool operator() (int i,int j) const
+      {
+         return (_costToNode[i] > _costToNode[j]);
+      }
+   };
+
+   typedef priority_queue<int32,vector<int32>,Compare> IndexedPriorityQueue;
+
+   Compare* _compare;
+   IndexedPriorityQueue* _queue;
    
 public:
-   double GetPerformanceStatAverage()
-   {
-      return _stat.GetAverageSeconds();
-   }
-   
    OpenList() :
-      _pq(NULL),
-      _costToNode(NULL)
+   _compare(NULL),
+   _queue(NULL)
    {
       
    }
    
    ~OpenList()
    {
-      if(_pq != NULL)
-      {
-         delete _pq;
-         _pq = NULL;
-      }
+      if(_compare != NULL)
+         delete _compare;
+      if(_queue != NULL)
+         delete _queue;
    }
    
    void Init(vector<double>& costToNode)
    {
-      if(_pq != NULL)
-      {
-         delete _pq;
-         _pq = NULL;
-      }
-      _costToNode = &costToNode;
-      _pq = new IndexedPriorityQLow<double>(costToNode,costToNode.size());
+      if(_compare != NULL)
+         delete _compare;
+      _compare = new Compare(costToNode);
+      _queue = new IndexedPriorityQueue(*_compare);
    }
    
-   void Insert(int32 index)
+   inline void Insert(int32 index)
    {
-      assert(_pq != NULL);
-      _stat.Start();
-      _pq->insert(index);
-      _stat.Stop();
+      _queue->push(index);
    }
    
-   void NodeCostChanged(int32 index)
+   // Pragmatic sort only when getting the lowest cost
+   // node.  Note that the sort is designed to place
+   // the lowest cost node at the end of the list so that
+   // the pop_back operation doesn't have to work to move
+   // the vector data.
+   inline int32 GetLowestCostNodeIndex()
    {
-      assert(_pq != NULL);
-      assert(_costToNode != NULL);
-      assert(index < _costToNode->size());
-      _stat.Start();
-      _pq->ChangePriority(index);
-      _stat.Stop();
+      int32 result = _queue->top();
+      _queue->pop();
+      return result;
    }
    
-   int32 GetLowestCostNodeIndex()
+   inline bool IsEmpty()
    {
-      assert(_pq != NULL);
-      _stat.Start();
-      int32 idx = _pq->Pop();
-      _stat.Stop();
-      return idx;
-   }
-   
-   bool IsEmpty()
-   {
-      assert(_pq != NULL);
-      return _pq->empty();
+      return _queue->size() == 0;
    }
    
 };
@@ -1391,33 +990,27 @@ public:
 class OpenList
 {
 private:
-   class ListCompare
+   class Compare
    {
    private:
       vector<double>& _costToNode;
    public:
-      ListCompare(vector<double>& costToNode) :
+      Compare(vector<double>& costToNode) :
          _costToNode(costToNode)
       {
          
       }
       
-      bool operator() (int i,int j) const
+      inline bool operator() (int i,int j) const
       {
          return (_costToNode[i] > _costToNode[j]);
       }
    };
    
-   PerformanceStat _stat;
-   ListCompare* _compare;
+   Compare* _compare;
    vector<int32> _indexes;
    
 public:
-   double GetPerformanceStatAverage()
-   {
-      return _stat.GetAverageSeconds();
-   }
-   
    OpenList() :
       _compare(NULL),
       _indexes(128)
@@ -1435,19 +1028,13 @@ public:
    {
       if(_compare != NULL)
          delete _compare;
-      _compare = new ListCompare(costToNode);
+      _compare = new Compare(costToNode);
       _indexes.clear();
    }
    
    inline void Insert(int32 index)
    {
-      _stat.Start();
       _indexes.push_back(index);
-      _stat.Stop();
-   }
-   
-   inline void NodeCostChanged(int32 index)
-   {
    }
    
    // Pragmatic sort only when getting the lowest cost
@@ -1457,11 +1044,9 @@ public:
    // the vector data.
    inline int32 GetLowestCostNodeIndex()
    {
-      _stat.Start();
       std::sort(_indexes.begin(),_indexes.end(),*_compare);
       int32 result = _indexes[_indexes.size()-1];
       _indexes.pop_back();
-      _stat.Stop();
       return result;
    }
    
@@ -1481,13 +1066,8 @@ class OpenList
 private:
    vector<double>* _costToNode;
    list<int32> _indexes;
-   PerformanceStat _stat;
    
 public:
-   double GetPerformanceStat()
-   {
-      return _stat.GetTotalSeconds();
-   }
    
    OpenList() :
    _costToNode(NULL)
@@ -1505,18 +1085,12 @@ public:
       _indexes.clear();
    }
    
-   void Insert(int32 index)
+   inline void Insert(int32 index)
    {
-      _stat.Start();
       _indexes.push_back(index);
-      _stat.Stop();
    }
    
-   void NodeCostChanged(int32 index)
-   {
-   }
-   
-   int32 GetLowestCostNodeIndex()
+   inline int32 GetLowestCostNodeIndex()
    {
       vector<double>& cost = *_costToNode;
       list<int32>::iterator iterMin = _indexes.begin();
@@ -1538,7 +1112,7 @@ public:
       return result;
    }
    
-   bool IsEmpty()
+   inline bool IsEmpty()
    {
       return _indexes.size() == 0;
    }
@@ -1577,14 +1151,12 @@ protected:
    {
       if(_openList.IsEmpty())
       {
-         CCLOG("OpenList Time: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_NOT_FOUND;
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
-         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_FOUND;
       }
 #ifdef DEBUG_FLOODING
@@ -1614,7 +1186,6 @@ protected:
                
             {
                _costToNode[edge->GetDes()] = cost;
-               _openList.NodeCostChanged(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
          }
@@ -1680,31 +1251,62 @@ public:
 class AStarHeuristic
 {
 public:
-   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   /* The basic Heuristic equation is:
+    * 
+    * F = G + H
+    *
+    * G is the cost to the current node.
+    * H is the estimated cost to the destination node.
+    *
+    * This function takes in G, computes H, and returns F.
+    *
+    * G and H must be on the same scale, so even this function
+    * must adjust G as needed so that F is a function of two 
+    * numbers with the same "units".  For example, if G is in meters
+    * but H is in meters squared, then they are really on different scales
+    * and the algorithm not work optimally.
+    */
+   virtual double CalculateFCost(const Graph& graph, uint32 srcNode, uint32 desNode,double gCost) const
    {
-      return 0.0;
+      return gCost + 0.0;
    }
 };
 
 class AStarHeuristic_Distance : public AStarHeuristic
 {
-   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   virtual double CalculateFCost(const Graph& graph, uint32 srcNode, uint32 desNode, double gCost) const
    {
       NavGraphNode* src = (NavGraphNode*)graph.GetNode(srcNode);
       NavGraphNode* des = (NavGraphNode*)graph.GetNode(desNode);
       Vec2 dir = src->GetPos() - des->GetPos();
-      return dir.Length();
+      return gCost + dir.Length();
    }
 };
 
 class AStarHeuristic_DistanceSquared : public AStarHeuristic
 {
-   virtual double CalculateCost(const Graph& graph, uint32 srcNode, uint32 desNode) const
+   virtual double CalculateFCost(const Graph& graph, uint32 srcNode, uint32 desNode, double gCost) const
    {
       NavGraphNode* src = (NavGraphNode*)graph.GetNode(srcNode);
       NavGraphNode* des = (NavGraphNode*)graph.GetNode(desNode);
       Vec2 dir = src->GetPos() - des->GetPos();
-      return dir.LengthSquared();
+      /* NOTE:  This is NOT correct...it is returning F as distance(G) + distance squared(H).
+       * HOWEVER, it works very well for the current application, giving the LEAST NUMBER OF NODES
+       * OPENED.  That makes a bit of sense, as it would "punish" any path that strayed off the 
+       * "crow flies" path to the destination.  This may not work great in all situations.
+       */
+      return gCost + dir.LengthSquared();
+   }
+};
+
+class AStarHeuristic_DistanceManhattan : public AStarHeuristic
+{
+   virtual double CalculateFCost(const Graph& graph, uint32 srcNode, uint32 desNode, double gCost) const
+   {
+      NavGraphNode* src = (NavGraphNode*)graph.GetNode(srcNode);
+      NavGraphNode* des = (NavGraphNode*)graph.GetNode(desNode);
+      Vec2 dir = src->GetPos() - des->GetPos();
+      return gCost + fabs(dir.x) + fabs(dir.y);
    }
 };
 
@@ -1740,14 +1342,12 @@ protected:
    {
       if(_openList.IsEmpty())
       {
-         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_NOT_FOUND;
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
       if(nextNode == GetTargetNode())
       {
-         CCLOG("OpenList Average: %f ms",_openList.GetPerformanceStat()*1000);
          return SS_FOUND;
       }
 #ifdef DEBUG_FLOODING
@@ -1765,13 +1365,13 @@ protected:
          {
             GraphEdge* edge = edges[idx];
             
-            double hCost = _heuristic->CalculateCost(GetGraph(), GetTargetNode(), edge->GetDes());
             double gCost = _GCostToNode[nextNode] + edge->GetCost();
+            double fCost = _heuristic->CalculateFCost(GetGraph(), GetTargetNode(), edge->GetDes(),gCost);
             
             if(_searchFrontier[edge->GetDes()] == NULL)
             {  // Never been visited
                // F = G + H
-               _FCostToNode[edge->GetDes()] = gCost + hCost;
+               _FCostToNode[edge->GetDes()] = fCost;
                _GCostToNode[edge->GetDes()] = gCost;
                _openList.Insert(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
@@ -1781,9 +1381,8 @@ protected:
                     )
                
             {
-               _FCostToNode[edge->GetDes()] = gCost + hCost;
+               _FCostToNode[edge->GetDes()] = fCost;
                _GCostToNode[edge->GetDes()] = gCost;
-               _openList.NodeCostChanged(edge->GetDes());
                _searchFrontier[edge->GetDes()] = edge;
             }
          }

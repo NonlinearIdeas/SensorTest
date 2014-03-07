@@ -86,6 +86,7 @@ private:
    void ZoomViewport();
    void ZoomViewport(float32 scaleTarget);
    void TrackViewport();
+   void TestSearchPerformance();
    
 public:
    

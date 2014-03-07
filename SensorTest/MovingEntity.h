@@ -34,6 +34,7 @@
 #include "Entity.h"
 #include "GraphCommon.h"
 #include "Notifier.h"
+#include "PerformanceStat.h"
 
 
 class MovingEntity : public Entity, public Notified
@@ -51,10 +52,11 @@ private:
    
    typedef enum
    {
-      NA_FIRST,
-      NA_AST_DISTSQ = NA_FIRST,
-      NA_DIJ,
+      NA_FIRST = 0,
+      NA_AST_MANHATTAN = NA_FIRST,
+      NA_AST_DISTSQ,
       NA_AST_DIST,
+      NA_DIJ,
       NA_BFS,
       NA_MAX
    } NAV_ALG_T;
@@ -66,6 +68,7 @@ private:
    float32 _minSeekDistance;
    float32 _maxSpeed;
    NAV_ALG_T _navAlg;
+   PerformanceStat _searchStat;
    
    list<Vec2> _path;
    int32 _stateTickTimer;
@@ -147,6 +150,10 @@ public:
    void CommandNavigateToPoint(const Vec2& position);
    void CommandIdle();
    void Update();
+   
+   bool IsIdle() { return _state == ST_IDLE; }
+   
+   PerformanceStat& GetSearchStat() { return _searchStat; }
 };
 
 #endif /* defined(__MovingEntity__) */

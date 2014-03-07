@@ -35,6 +35,7 @@ private:
    StopWatch _stopWatch;
    unsigned int _samples;
    double _totalSeconds;
+   double _value;
 public:
 	PerformanceStat()
    {
@@ -51,6 +52,7 @@ public:
       _stopWatch.Stop();
       _samples = 0;
       _totalSeconds = 0.0;
+      _value = 0.0;
    }
    
    inline void Start()
@@ -65,9 +67,19 @@ public:
       ++_samples;
    }
    
+   inline void Stop(double value)
+   {
+      _stopWatch.Stop();
+      _totalSeconds += _stopWatch.GetSeconds();
+      ++_samples;
+      _value += value;
+   }
+   
    inline double GetTotalSeconds() { return _totalSeconds; }
    inline unsigned int GetSamples() { return _samples; }
+   inline double GetValue() { return _value; }
    inline double GetAverageSeconds() { return _samples > 0?_totalSeconds/_samples:0.0; }
+   inline double GetAverageValue() { return _samples > 0?_value/_samples:0.0; }
 };
 
 #endif /* defined(__PerformanceStat__) */

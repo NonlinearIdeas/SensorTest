@@ -48,7 +48,11 @@
 
 #define SENSOR_SEPARATION (3.0f)
 #define SENSOR_DIAMETER (SENSOR_SEPARATION*0.9)
+
+#define TEST_SEARCH_PERFORMANCE
+#define TEST_SEARCH_SAMPLES (400)
 //#define TRACK_ENTITY_CELL_INDEX
+
 #define TAG_DEBUG_BOX2D (1000)
 #define TAG_DEBUG_GRID (1001)
 #define TAG_DEBUG_LINES (1002)
@@ -365,6 +369,9 @@ void MainScene::update(float dt)
    // Do any zooming/tracking
    ZoomViewport();
    TrackViewport();
+#ifdef TEST_SEARCH_PERFORMANCE
+   TestSearchPerformance();
+#endif
 }
 
 
@@ -514,6 +521,67 @@ void MainScene::CreateAsteroids()
       EntityScheduler::Instance().Register(_asteroids[idx]);
       // Give it at least one update to start.
       _asteroids[idx]->Update();
+   }
+}
+
+
+/* This routine will check if the entity is idle.  If it is
+ * then it will command it to move to one of a sequence of positions.
+ * The entity sends the average search time to the debug log each time
+ * it searches for a path.
+ */
+void MainScene::TestSearchPerformance()
+{
+   typedef enum
+   {
+      POS_FIRST = 0,
+      TOP_MID = POS_FIRST,
+      BOT_MID,
+      LEFT_MID,
+      RIGHT_MID,
+      POS_MAX
+   } TEST_POS;
+   
+   
+   static TEST_POS testPos = POS_FIRST;
+   
+   if(_entity != NULL)
+   {
+      PerformanceStat& stat = _entity->GetSearchStat();
+      if(stat.GetSamples() < TEST_SEARCH_SAMPLES)
+      {
+      if(_entity->IsIdle())
+      {
+         Vec2 botLeft = Viewport::Instance().GetBottomLeftMeters();
+         Vec2 topRight = Viewport::Instance().GetTopRightMeters();
+         
+         Vec2 targetPos;
+         switch(testPos)
+         {
+            case TOP_MID:
+               targetPos.x = (topRight.x + botLeft.x)/2;
+               targetPos.y = topRight.y;
+               break;
+            case BOT_MID:
+               targetPos.x = (topRight.x + botLeft.x)/2;
+               targetPos.y = botLeft.y;
+               break;
+            case LEFT_MID:
+               targetPos.x = botLeft.x;
+               targetPos.y = (topRight.y + botLeft.y)/2;
+               break;
+            case RIGHT_MID:
+               targetPos.x = topRight.x;
+               targetPos.y = (topRight.y + botLeft.y)/2;
+               break;
+            case POS_MAX:
+               testPos = POS_FIRST;
+               return;
+         }
+         ++testPos;
+         _entity->CommandNavigateToPoint(targetPos);
+      }
+      }
    }
 }
 
