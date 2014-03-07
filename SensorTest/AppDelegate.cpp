@@ -43,6 +43,7 @@ bool AppDelegate::applicationDidFinishLaunching()
    // set FPS. the default value is 1.0/60 if you don't call this
    pDirector->setAnimationInterval(SECONDS_PER_TICK);
    
+   
    Notifier::Instance().Init();
    
    // create a scene. it's an autorelease object
