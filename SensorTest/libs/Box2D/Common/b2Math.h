@@ -132,7 +132,7 @@ struct b2Vec2
    // another one.
    float32 Dot(const b2Vec2& other) const
    {
-      return x*other.x + y*other.y;
+      return x*other.y + y*other.x;
    }
    
    inline static b2Vec2 FromPolar(float32 radius, float32 angleRads)

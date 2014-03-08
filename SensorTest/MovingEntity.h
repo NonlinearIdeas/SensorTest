@@ -73,11 +73,6 @@ private:
    // This list is used to maintain waypoints
    // that the entity will follow.
    list<Vec2> _path;
-   // This list contains the "near points" that the
-   // entity will follow.  Points are pulled from
-   // _path and put onto this one.  This allows
-   // for smoothing of the points if needed.
-   list<Vec2> _shortPath;
    
    int32 _stateTickTimer;
    
@@ -93,8 +88,6 @@ private:
    void ApplyTurnTorque();
    void ApplyThrust();
    void PrepareForMotion();
-   void CreateSmoothShortPath();
-   void GrabNextPathPoint();
    void EnterSeek();
    void ExecuteSeek();
    void EnterIdle();

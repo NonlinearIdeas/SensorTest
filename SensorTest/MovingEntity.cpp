@@ -481,7 +481,7 @@ void MovingEntity::ExecuteNavigateToPoint()
       // on the list, pop the next point and navigate to it.
       if(isNearTarget && path.size() > 0)
       {  // Still more points on the list.
-         GetTargetPos() = *(path.begin());
+         GetTargetPos() = path.front();
          path.pop_front();
          ResetStateTickTimer(2*TICKS_PER_SECOND);
          /* If we can't get past the current nodes, replan.
