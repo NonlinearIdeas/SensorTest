@@ -458,236 +458,81 @@ void MovingEntity::ExecuteNavigateToPoint()
    bool isNearTarget = IsNearTarget();
    bool isNearNavTarget = IsNearTarget(_navigatePos,5.0);
    const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
-   Vec2 currentPoint = GetTargetPos();
-   int32 currentIdx = gridCalc.CalcIndex(currentPoint);
    int32 navigateIdx = gridCalc.CalcIndex(_navigatePos);
-   
+
+   /* If the state tick timer expires, it means we
+    * have spent too long trying to reach the next waypoint
+    * and we need to replan on how to get to it.
+    */
+   if(IsStateTickTimerExpired())
+   {
+      CCLOG("Tick Timer Expired!!!");
+      ChangeState(ST_NAVIGATE_TO_POINT);
+   }
+   /* If we are close to the navigation target point,
+    * just seek to it.
+    */
    if(isNearNavTarget)
    {  // Must be really close...just seek to it.
       CommandSeek(_navigatePos);
    }
    else
-   {
-      if(path.size() == 0)
-      {  // Out of points in the list
-         if(isNearTarget)
-         {  // Not close to target point
-            ChangeState(ST_IDLE);
-         }
-         else
-         {  // Just keep pushing towards target.
-            ApplyThrust();
-            ApplyTurnTorque();
-            if(!IsNodePassable(currentIdx) && currentIdx != navigateIdx)
-            {
-               ChangeState(ST_NAVIGATE_TO_POINT);
-            }
-         }
-      }
-      else
-      {  // Still more to go
-         if(isNearTarget)
-         {
-            GetTargetPos() = *(path.begin());
-            path.erase(path.begin());
-            ResetStateTickTimer(2*TICKS_PER_SECOND);
-            // Check the next point we will be going to
-            // after this.  If the path is blocked, then
-            // we need to replan.
-            Vec2 nextPoint = *(path.begin());
-            int32 nextIdx = gridCalc.CalcIndex(nextPoint);
-            if(currentIdx != navigateIdx)
-            {
-               if(!IsNodePassable(nextIdx) || !IsNodePassable(currentIdx))
-               {
-                  ChangeState(ST_NAVIGATE_TO_POINT);
-               }
-            }
-         }
-         ApplyThrust();
-         ApplyTurnTorque();
-         /* If the state tick timer expires, it means we
-          * have spent too long trying to reach the next waypoint
-          * and we need to replan on how to get to it.
+   {  // If we are near the target and there are more points
+      // on the list, pop the next point and navigate to it.
+      if(isNearTarget && path.size() > 0)
+      {  // Still more points on the list.
+         GetTargetPos() = *(path.begin());
+         path.pop_front();
+         ResetStateTickTimer(2*TICKS_PER_SECOND);
+         /* If we can't get past the current nodes, replan.
           */
-         if(IsStateTickTimerExpired())
+         Vec2 currentPoint = GetTargetPos();
+         int32 currentIdx = gridCalc.CalcIndex(currentPoint);
+         if(currentIdx != navigateIdx && !IsNodePassable(currentIdx)  )
          {
-            CCLOG("Tick Timer Expired!!!");
             ChangeState(ST_NAVIGATE_TO_POINT);
          }
       }
+      ApplyThrust();
+      ApplyTurnTorque();
    }
 }
+
+bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3)
+{
+   return false;
+}
+
 
 bool MovingEntity::IsNodePassable(int32 nodeIdx)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
    list<const GraphNode*> nodesChecked;
-   
+   bool result = true;
    const GraphNode* node = gsm.GetSensorGraph().GetNode(nodeIdx);
    nodesChecked.push_back(node);
    if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
    {  // The cell is blocked...we need to replan.
-      return false;
-   }
-   // A little more complicated...we need to check the adjacent nodes to the place
-   // we are about to enter.  If they are blocked, we may be in a situation where
-   // something is going to broadside us.  So check if they are blocked as well.
-   const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
-   const Vec2 dir = GetBody()->GetLinearVelocity();
-   int32 row = gridCalc.CalcRow(nodeIdx);
-   int32 col = gridCalc.CalcCol(nodeIdx);
-   int32 offIdx;
-   if(fabs(dir.y) > 4*fabs(dir.x))
-   {  // Mostly upwards or down
-      if(col-1 > 0)
-      {
-         offIdx = gridCalc.CalcIndex(row, col-1);
-         node = gsm.GetSensorGraph().GetNode(offIdx);
-         nodesChecked.push_back(node);
-         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         {  // The cell is blocked...we need to replan.
-            return false;
-         }
-      }
-      if(col+1 < gridCalc.GetCols())
-      {
-         offIdx = gridCalc.CalcIndex(row, col+1);
-         node = gsm.GetSensorGraph().GetNode(offIdx);
-         nodesChecked.push_back(node);
-         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         {  // The cell is blocked...we need to replan.
-            return false;
-         }
-         
-      }
-   }
-   else if(fabs(dir.x) > 4*fabs(dir.y))
-   {  // Mostly to the right or left
-      if(row-1 > 0)
-      {
-         offIdx = gridCalc.CalcIndex(row-1, col);
-         node = gsm.GetSensorGraph().GetNode(offIdx);
-         nodesChecked.push_back(node);
-         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         {  // The cell is blocked...we need to replan.
-            return false;
-         }
-      }
-      if(row+1 < gridCalc.GetRows())
-      {
-         offIdx = gridCalc.CalcIndex(row+1, col);
-         node = gsm.GetSensorGraph().GetNode(offIdx);
-         nodesChecked.push_back(node);
-         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         {  // The cell is blocked...we need to replan.
-            return false;
-         }
-      }
+      result = false;
    }
    else
-   {  // Diagonally
-      if(dir.y >= 0)
-      {  // Upper half plane
-         if(dir.x > 0)
-         {  // Moving towards right
-            if(col-1 > 0 && row < gridCalc.GetRows())
-            {
-               offIdx = gridCalc.CalcIndex(row, col-1);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-            if(col < gridCalc.GetCols() && row-1 > 0)
-            {
-               offIdx = gridCalc.CalcIndex(row-1, col);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-         }
-         else
-         {  // Moving towards left
-            if(col+1 < gridCalc.GetCols() && row < gridCalc.GetRows())
-            {
-               offIdx = gridCalc.CalcIndex(row, col+1);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-            if(col > 0 && row-1 > 0)
-            {
-               offIdx = gridCalc.CalcIndex(row-1, col);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-         }
-      }
-      else
-      {  // Lower half plane
-         if(dir.x > 0)
-         {  // Moving towards right
-            if(col-1 > 0 && row < gridCalc.GetRows())
-            {
-               offIdx = gridCalc.CalcIndex(row, col-1);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-            if(col < gridCalc.GetCols() && row+1 < gridCalc.GetRows())
-            {
-               offIdx = gridCalc.CalcIndex(row+1, col);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-         }
-         else
-         {  // Moving towards left
-            if(col < gridCalc.GetCols() && row+1 < gridCalc.GetRows())
-            {
-               offIdx = gridCalc.CalcIndex(row+1, col);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
-            if(row < gridCalc.GetRows() && col+1 < gridCalc.GetCols())
-            {
-               offIdx = gridCalc.CalcIndex(row, col+1);
-               node = gsm.GetSensorGraph().GetNode(offIdx);
-               nodesChecked.push_back(node);
-               if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-               {  // The cell is blocked...we need to replan.
-                  return false;
-               }
-            }
+   {
+      // Just check the surrounding nodes...if any of them are blocked, the
+      // node is considered blocked.  This is much simpler than
+      // trying to user the direction of travel.
+      const GraphEdges& edges = gsm.GetSensorGraph().GetEdges(nodeIdx);
+      for(int32 idx = 0; idx < edges.size() && result; ++idx)
+      {
+         node = gsm.GetSensorGraph().GetNode(edges[idx]->GetDes());
+         nodesChecked.push_back(node);
+         if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
+         {
+            result = false;
          }
       }
    }
    DrawNodeList(nodesChecked,ccc4f(0.99, 0.99, 0.99, 1.0));
-   return true;
+   return result;
 }
 
 

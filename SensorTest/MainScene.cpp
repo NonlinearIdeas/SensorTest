@@ -600,7 +600,7 @@ void MainScene::TestSearchPerformance()
                   targetPos.y = -worldSize.height;
                   break;
                case BOT_RIGHT:
-                  targetPos.x = -worldSize.width;
+                  targetPos.x = worldSize.width;
                   targetPos.y = -worldSize.height;
                   break;
             }

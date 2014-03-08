@@ -87,7 +87,7 @@ private:
    
    bool FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path);
    bool IsNodePassable(int32 currentNode);
-   
+   bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3);
    bool IsNearTarget();
    bool IsNearTarget(const Vec2& target,float32 factor);
    void ApplyTurnTorque();
