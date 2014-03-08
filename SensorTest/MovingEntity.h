@@ -53,9 +53,9 @@ private:
    typedef enum
    {
       NA_FIRST = 0,
-      NA_AST_MANHATTAN = NA_FIRST,
-      NA_AST_DISTSQ,
+      NA_AST_DISTSQ = NA_FIRST,
       NA_AST_DIST,
+      NA_AST_MANHATTAN,
       NA_DIJ,
       NA_BFS,
       NA_MAX
@@ -70,7 +70,15 @@ private:
    NAV_ALG_T _navAlg;
    PerformanceStat _searchStat;
    
+   // This list is used to maintain waypoints
+   // that the entity will follow.
    list<Vec2> _path;
+   // This list contains the "near points" that the
+   // entity will follow.  Points are pulled from
+   // _path and put onto this one.  This allows
+   // for smoothing of the points if needed.
+   list<Vec2> _shortPath;
+   
    int32 _stateTickTimer;
    
    STATE_T _state;
@@ -85,6 +93,8 @@ private:
    void ApplyTurnTorque();
    void ApplyThrust();
    void PrepareForMotion();
+   void CreateSmoothShortPath();
+   void GrabNextPathPoint();
    void EnterSeek();
    void ExecuteSeek();
    void EnterIdle();

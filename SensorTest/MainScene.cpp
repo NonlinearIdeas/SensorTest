@@ -534,53 +534,86 @@ void MainScene::TestSearchPerformance()
 {
    typedef enum
    {
-      POS_FIRST = 0,
-      TOP_MID = POS_FIRST,
+      TOP_MID,
       BOT_MID,
       LEFT_MID,
       RIGHT_MID,
-      POS_MAX
+      TOP_RIGHT,
+      TOP_LEFT,
+      BOT_RIGHT,
+      BOT_LEFT,
    } TEST_POS;
    
+   static TEST_POS positions[] =
+   {
+      BOT_LEFT,
+      TOP_MID,
+      BOT_RIGHT,
+      TOP_LEFT,
+      RIGHT_MID,
+      LEFT_MID,
+      BOT_MID,
+      TOP_RIGHT,
+   };
    
-   static TEST_POS testPos = POS_FIRST;
+   const int32 POS_MAX = sizeof(positions)/sizeof(positions[0]);
+   static int32  currentPosition = 0;
    
    if(_entity != NULL)
    {
       PerformanceStat& stat = _entity->GetSearchStat();
       if(stat.GetSamples() < TEST_SEARCH_SAMPLES)
       {
-      if(_entity->IsIdle())
-      {
-         Vec2 botLeft = Viewport::Instance().GetBottomLeftMeters();
-         Vec2 topRight = Viewport::Instance().GetTopRightMeters();
-         
-         Vec2 targetPos;
-         switch(testPos)
+         if(_entity->IsIdle())
          {
-            case TOP_MID:
-               targetPos.x = (topRight.x + botLeft.x)/2;
-               targetPos.y = topRight.y;
-               break;
-            case BOT_MID:
-               targetPos.x = (topRight.x + botLeft.x)/2;
-               targetPos.y = botLeft.y;
-               break;
-            case LEFT_MID:
-               targetPos.x = botLeft.x;
-               targetPos.y = (topRight.y + botLeft.y)/2;
-               break;
-            case RIGHT_MID:
-               targetPos.x = topRight.x;
-               targetPos.y = (topRight.y + botLeft.y)/2;
-               break;
-            case POS_MAX:
-               testPos = POS_FIRST;
-               return;
+            CCSize worldSize = Viewport::Instance().GetWorldSizeMeters();
+            
+            Vec2 targetPos;
+            switch(positions[currentPosition])
+            {
+               case TOP_MID:
+                  targetPos.x = 0;
+                  targetPos.y = worldSize.height;
+                  break;
+               case BOT_MID:
+                  targetPos.x = 0;
+                  targetPos.y = -worldSize.height;
+                  break;
+               case LEFT_MID:
+                  targetPos.x = -worldSize.width;
+                  targetPos.y = 0;
+                  break;
+               case RIGHT_MID:
+                  targetPos.x = worldSize.width;
+                  targetPos.y = 0;
+                  break;
+               case TOP_LEFT:
+                  targetPos.x = -worldSize.width;
+                  targetPos.y = worldSize.height;
+                  break;
+               case TOP_RIGHT:
+                  targetPos.x = worldSize.width;
+                  targetPos.y = worldSize.height;
+                  break;
+               case BOT_LEFT:
+                  targetPos.x = -worldSize.width;
+                  targetPos.y = -worldSize.height;
+                  break;
+               case BOT_RIGHT:
+                  targetPos.x = -worldSize.width;
+                  targetPos.y = -worldSize.height;
+                  break;
+            }
+            ++currentPosition;
+            if(currentPosition >= POS_MAX)
+               currentPosition = 0;
+            // Lock the target position onto the grid.
+            const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
+            int32 index = gridCalc.CalcIndex(targetPos);
+            targetPos = gridCalc.CalcPosition(index);
+            
+            _entity->CommandNavigateToPoint(targetPos);
          }
-         ++testPos;
-         _entity->CommandNavigateToPoint(targetPos);
-      }
       }
    }
 }
