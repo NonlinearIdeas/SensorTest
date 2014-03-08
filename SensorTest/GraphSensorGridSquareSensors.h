@@ -131,29 +131,35 @@ private:
          // 8 cardinal directions as adjacent.
          int32 calcIdx;
          
-         calcIdx = gridCalc.CalcIndex(row-1, col);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         typedef struct RCOFFSET_T
+         {
+            int32 rOff;
+            int32 cOff;
+         } RCOFFSET;
          
-         calcIdx = gridCalc.CalcIndex(row+1, col);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         static RCOFFSET rcOffs[] =
+         {
+            // Cardinal Directions
+            {  0,    1  },
+            {  1,    1  },
+            {  1,    0  },
+            {  1,    -1 },
+            {  0,    -1 },
+            {  -1,   1  },
+            {  -1,   0  },
+            {  -1,   -1 },
+         };
          
-         calcIdx = gridCalc.CalcIndex(row, col+1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         const  int32 rcOffMax = sizeof(rcOffs)/sizeof(rcOffs[0]);
          
-         calcIdx = gridCalc.CalcIndex(row, col-1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
-         
-         calcIdx = gridCalc.CalcIndex(row+1, col+1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
-         
-         calcIdx = gridCalc.CalcIndex(row+1, col-1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
-         
-         calcIdx = gridCalc.CalcIndex(row-1, col+1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
-         
-         calcIdx = gridCalc.CalcIndex(row-1, col-1);
-         if(calcIdx >= 0 && calcIdx < sensors.size()) {  adj[idx].push_back(calcIdx); }
+         for(int32 offIdx = 0; offIdx < rcOffMax; offIdx++)
+         {
+            calcIdx = gridCalc.CalcIndex(row + rcOffs[offIdx].rOff, col + rcOffs[offIdx].cOff);
+            if(calcIdx >= 0 && calcIdx < sensors.size())
+            {
+               adj[idx].push_back(calcIdx);
+            }
+         }
       }
    }
    
