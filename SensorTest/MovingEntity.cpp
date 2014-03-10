@@ -28,6 +28,11 @@
 #include "MovingEntity.h"
 #include "Notifier.h"
 #include "GraphSensorManager.h"
+#include "SplineCommon.h"
+
+
+//#define NODE_CHECK_ALL_SURROUNDING
+
 
 
 static void DrawNodeList(const list<const GraphNode*>& nodes, ccColor4F color)
@@ -330,6 +335,35 @@ void MovingEntity::ExecuteFollowPath()
    }
 }
 
+void SmoothPath(list<Vec2>& path, int32 segments)
+{
+   const int32 SMOOTH_FIRST_POINTS = 5;
+   // We only do this for the first N points.  After
+   // that, we let the original points stay in there.
+   if(path.size() > SMOOTH_FIRST_POINTS)
+   {
+      BezierSpine spline;
+      // Grab the points.
+      for(int idx = 0; idx < SMOOTH_FIRST_POINTS; idx++)
+      {
+         const Vec2& pt = path.front();
+         spline.AddPoint(pt.x,pt.y);
+         path.pop_front();
+      }
+      // Smooth them.
+      spline.ComputeSpline();
+      // Push them back in.
+      for(int idx = SMOOTH_FIRST_POINTS-2; idx >= 0; --idx)
+      {
+         for(int seg = segments-1; seg >= 0; --seg)
+         {
+            double t = seg*1.0/segments;
+            path.push_front(spline.Eval(idx, t));
+         }
+      }
+   }
+}
+
 bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
@@ -399,6 +433,7 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
          const NavGraphNode* gNode = (NavGraphNode*)*iter;
          path.push_back(gNode->GetPos());
       }
+      SmoothPath(path,4);
       DrawPathList(path);
    }
    else
@@ -504,6 +539,7 @@ bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3)
 }
 
 
+
 bool MovingEntity::IsNodePassable(int32 nodeIdx)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
@@ -515,6 +551,7 @@ bool MovingEntity::IsNodePassable(int32 nodeIdx)
    {  // The cell is blocked...we need to replan.
       result = false;
    }
+#ifdef NODE_CHECK_ALL_SURROUNDING
    else
    {
       // Just check the surrounding nodes...if any of them are blocked, the
@@ -531,6 +568,7 @@ bool MovingEntity::IsNodePassable(int32 nodeIdx)
          }
       }
    }
+#endif
    DrawNodeList(nodesChecked,ccc4f(0.99, 0.99, 0.99, 1.0));
    return result;
 }

@@ -20,7 +20,7 @@
 #define B2_MATH_H
 
 #include <Box2D/Common/b2Settings.h>
-
+#include <iostream>
 #include <cmath>
 #ifndef SHP
 #include <cfloat>
@@ -165,6 +165,12 @@ struct b2Vec2
    b2Vec2 Skew() const
    {
       return b2Vec2(-y, x);
+   }
+   
+   inline friend std::ostream& operator<<(std::ostream& out, const b2Vec2& s)
+   {
+      out << "(" << s.x << "," << s.y << ")";
+      return out;
    }
    
    float32 x, y;

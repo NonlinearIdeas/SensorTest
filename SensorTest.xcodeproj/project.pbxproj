@@ -329,6 +329,7 @@
 		1A961C1B188AEDFD006789B0 /* AppDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1A188AEDFD006789B0 /* AppDelegate.cpp */; };
 		1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1D188AEE57006789B0 /* GridLayer.cpp */; };
 		1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */; };
+		1AA6069D18CD3BB300EEB512 /* SplineCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AA6069B18CD3BB300EEB512 /* SplineCommon.cpp */; };
 		1AB6EABF18A82173005C2A19 /* GridCalculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */; };
 		1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */; };
 		1AC478CE189D7ED000A7967E /* EntityUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */; };
@@ -1030,6 +1031,8 @@
 		1A961C1E188AEE57006789B0 /* GridLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridLayer.h; sourceTree = "<group>"; };
 		1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ViewportCamera.cpp; sourceTree = "<group>"; };
 		1A961C24188AEF2E006789B0 /* ViewportCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewportCamera.h; sourceTree = "<group>"; };
+		1AA6069B18CD3BB300EEB512 /* SplineCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SplineCommon.cpp; sourceTree = "<group>"; };
+		1AA6069C18CD3BB300EEB512 /* SplineCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplineCommon.h; sourceTree = "<group>"; };
 		1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridCalculator.cpp; sourceTree = "<group>"; };
 		1AB6EABE18A82173005C2A19 /* GridCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridCalculator.h; sourceTree = "<group>"; };
 		1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemContactListener.cpp; sourceTree = "<group>"; };
@@ -2400,6 +2403,8 @@
 				1A81B2A5189C98E60034D1B9 /* Snake.cpp */,
 				1A81B2A6189C98E60034D1B9 /* Snake.h */,
 				1A961C08188AEDB7006789B0 /* SingletonTemplate.h */,
+				1AA6069B18CD3BB300EEB512 /* SplineCommon.cpp */,
+				1AA6069C18CD3BB300EEB512 /* SplineCommon.h */,
 				1AC478D5189D980500A7967E /* Spaceship.cpp */,
 				1AC478D6189D980500A7967E /* Spaceship.h */,
 				1AC9EFA0189D507A00397F34 /* SpriteBatchLayer.h */,
@@ -2663,6 +2668,7 @@
 				1A961B7C188AED46006789B0 /* b2Draw.cpp in Sources */,
 				1A961B36188AED46006789B0 /* Json.cpp in Sources */,
 				1A9619FF188AED44006789B0 /* unzip.cpp in Sources */,
+				1AA6069D18CD3BB300EEB512 /* SplineCommon.cpp in Sources */,
 				1A961ACF188AED45006789B0 /* CCControlSwitch.cpp in Sources */,
 				1A961AAD188AED45006789B0 /* CCComController.cpp in Sources */,
 				1A9619F1188AED44006789B0 /* tinyxml2.cpp in Sources */,
