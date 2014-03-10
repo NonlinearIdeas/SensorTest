@@ -29,12 +29,14 @@
 
 #include "CommonSTL.h"
 #include "CommonProject.h"
+#include "MathUtilities.h"
 
 /* A Spline base class. */
 class SplineBase
 {
 private:
    vector<Vec2> _points;
+   bool _elimColinearPoints;
    
 protected:
    
@@ -53,9 +55,12 @@ public:
    SplineBase()
    {
       _points.reserve(NOM_SIZE);
+      _elimColinearPoints = true;
    }
    
    const vector<Vec2>& GetPoints() { return _points; }
+   bool GetElimColinearPoints() { return _elimColinearPoints; }
+   void SetElimColinearPoints(bool elim) { _elimColinearPoints = elim; }
    
    
    /* OVERRIDE THESE FUNCTIONS */
@@ -71,9 +76,31 @@ public:
       ResetDerived();
    }
    
-   void AddPoint(double x, double y)
+   void AddPoint(const Vec2& pt)
    {
-      _points.push_back(Vec2(x,y));
+      if(_elimColinearPoints && _points.size() > 2)
+      {
+         int N = _points.size();
+         Vec2 p0 = _points[N-1] - _points[N-2];
+         Vec2 p1 = pt - _points[N-1];
+         const Vec2& p2 = pt;
+         // We test for colinearity by comparing the slopes
+         // of the two lines.  If the slopes are the same,
+         // we assume colinearity.
+         float32 delta = (p2.y-p1.y)*(p1.x-p0.x)-(p1.y-p0.y)*(p2.x-p1.x);
+         if(MathUtilities::IsNearZero(delta))
+         {
+            _points[N-1] = pt;
+         }
+         else
+         {
+            _points.push_back(pt);
+         }
+      }
+      else
+      {
+         _points.push_back(pt);
+      }
    }
    
    void Dump(int segments = 5)
@@ -254,7 +281,6 @@ public:
       double yVal = omt*omt*omt*p0.y + 3*omt*omt*t*p1.y +3*omt*t*t*p2.y+t*t*t*p3.y;
       return Vec2(xVal,yVal);
    }
-   
    
    /* Clear out all the data.
     */

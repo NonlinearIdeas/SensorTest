@@ -342,7 +342,7 @@ void SmoothPath(vector<Vec2>& path, int32 segments)
    while(path.size() > 0)
    {
       const Vec2& pt = path.back();
-      spline.AddPoint(pt.x,pt.y);
+      spline.AddPoint(pt);
       path.pop_back();
    }
    // Smooth them.
@@ -427,7 +427,8 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
          const NavGraphNode* gNode = (NavGraphNode*)*iter;
          path.push_back(gNode->GetPos());
       }
-      SmoothPath(path,4);
+      path.pop_back();
+      SmoothPath(path,3);
       DrawPathList(path);
    }
    else
@@ -514,11 +515,14 @@ void MovingEntity::ExecuteNavigateToPoint()
          ResetStateTickTimer(2*TICKS_PER_SECOND);
          /* If we can't get past the current nodes, replan.
           */
-         Vec2 currentPoint = GetTargetPos();
-         int32 currentIdx = gridCalc.CalcIndex(currentPoint);
-         if(currentIdx != navigateIdx && !IsNodePassable(currentIdx)  )
+         if(path.size() > 0)
          {
-            ChangeState(ST_NAVIGATE_TO_POINT);
+            Vec2 nextPoint = path.back();
+            int32 nextIdx = gridCalc.CalcIndex(nextPoint);
+            if(nextIdx != navigateIdx && !IsNodePassable(nextIdx)  )
+            {
+               ChangeState(ST_NAVIGATE_TO_POINT);
+            }
          }
       }
       ApplyThrust();
