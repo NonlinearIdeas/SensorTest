@@ -613,10 +613,14 @@ public:
       return _searchState;
    }
    
-   
-   virtual list<const GraphNode*> GetPathNodes()
+   /* Returns a vector of GraphNode* in REVERSE
+    * order.  This is so they can easily be 
+    * removed via pop_back.
+    */
+   virtual vector<const GraphNode*> GetPathNodes()
    {
-      list<const GraphNode*> path;
+      vector<const GraphNode*> path;
+      path.reserve(_flood.size());
       
       if(GetSearchState() != SS_FOUND)
       {
@@ -624,40 +628,41 @@ public:
       }
       
       uint32 nodeIdx = GetTargetNode();
-      path.push_front(_graph.GetNode(nodeIdx));
+      path.push_back(_graph.GetNode(nodeIdx));
       while(nodeIdx != GetStartNode())
       {
          nodeIdx = GetRoute()[nodeIdx];
-         path.push_front(_graph.GetNode(nodeIdx));
+         path.push_back(_graph.GetNode(nodeIdx));
       }
       return path;
    }
    
-   list<const GraphEdge*> GetPathEdges()
+   vector<const GraphEdge*> GetPathEdges()
    {
-      list<const GraphEdge*> path;
+      vector<const GraphEdge*> path;
       if(GetSearchState() != SS_FOUND)
       {
          return path;
       }
+      path.reserve(_flood.size());
       
       uint32 desNode = GetTargetNode();
       uint32 srcNode = GetRoute()[desNode];
       
-      path.push_front(_graph.GetEdge(srcNode, desNode));
+      path.push_back(_graph.GetEdge(srcNode, desNode));
       while(srcNode != GetStartNode())
       {
          desNode = srcNode;
          srcNode = GetRoute()[desNode];
-         path.push_front(_graph.GetEdge(srcNode, desNode));
+         path.push_back(_graph.GetEdge(srcNode, desNode));
       }
       
       return path;
    }
 
-   list<const GraphNode*> GetFloodNodes()
+   vector<const GraphNode*> GetFloodNodes()
    {
-      list<const GraphNode*> path;
+      vector<const GraphNode*> path;
       for(uint32 idx = 0; idx < _flood.size(); ++idx)
       {
          const GraphNode* node = _graph.GetNode(_flood[idx]);
@@ -682,8 +687,8 @@ public:
             break;
          case SS_FOUND:
          {
-            list<const GraphNode*> nodeList = GetPathNodes();
-            for(list<const GraphNode*>::iterator iter = nodeList.begin();
+            vector<const GraphNode*> nodeList = GetPathNodes();
+            for(vector<const GraphNode*>::iterator iter = nodeList.begin();
                 iter != nodeList.end();
                 ++iter)
             {
@@ -1205,42 +1210,46 @@ public:
    {
    }
    
-   virtual list<const GraphNode*> GetPathNodes()
+   virtual vector<const GraphNode*> GetPathNodes()
    {
-      list<const GraphNode*> path;
+      vector<const GraphNode*> path;
       
       if(GetSearchState() != SS_FOUND)
       {
          return path;
       }
       
+      path.reserve(GetFloodNodes().size());
+      
       uint32 nodeIdx = GetTargetNode();
-      path.push_front(GetGraph().GetNode(nodeIdx));
+      path.push_back(GetGraph().GetNode(nodeIdx));
       while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
       {
          nodeIdx = _shortestPathTree[nodeIdx]->GetSrc();
-         path.push_front(GetGraph().GetNode(nodeIdx));
+         path.push_back(GetGraph().GetNode(nodeIdx));
       }
       return path;
    }
    
-   list<const GraphEdge*> GetPathEdges()
+   vector<const GraphEdge*> GetPathEdges()
    {
-      list<const GraphEdge*> path;
+      vector<const GraphEdge*> path;
       if(GetSearchState() != SS_FOUND)
       {
          return path;
       }
       
+      path.reserve(GetFloodNodes().size());
+      
       uint32 desNode = GetTargetNode();
       uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
       
-      path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      path.push_back(GetGraph().GetEdge(srcNode, desNode));
       while(srcNode != GetStartNode())
       {
          desNode = srcNode;
          srcNode = _shortestPathTree[desNode]->GetSrc();
-         path.push_front(GetGraph().GetEdge(srcNode, desNode));
+         path.push_back(GetGraph().GetEdge(srcNode, desNode));
       }
       
       return path;
@@ -1404,42 +1413,47 @@ public:
    {
    }
    
-   virtual list<const GraphNode*> GetPathNodes()
+   virtual vector<const GraphNode*> GetPathNodes()
    {
-      list<const GraphNode*> path;
+      vector<const GraphNode*> path;
       
       if(GetSearchState() != SS_FOUND)
       {
          return path;
       }
       
+      path.reserve(GetFloodNodes().size());
+      
       uint32 nodeIdx = GetTargetNode();
-      path.push_front(GetGraph().GetNode(nodeIdx));
+      path.push_back(GetGraph().GetNode(nodeIdx));
       while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
       {
          nodeIdx = _shortestPathTree[nodeIdx]->GetSrc();
-         path.push_front(GetGraph().GetNode(nodeIdx));
+         path.push_back(GetGraph().GetNode(nodeIdx));
       }
       return path;
    }
    
-   list<const GraphEdge*> GetPathEdges()
+   vector<const GraphEdge*> GetPathEdges()
    {
-      list<const GraphEdge*> path;
+      vector<const GraphEdge*> path;
+      
       if(GetSearchState() != SS_FOUND)
       {
          return path;
       }
       
+      path.reserve(GetFloodNodes().size());
+      
       uint32 desNode = GetTargetNode();
       uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
       
-      path.push_front(GetGraph().GetEdge(srcNode, desNode));
+      path.push_back(GetGraph().GetEdge(srcNode, desNode));
       while(srcNode != GetStartNode())
       {
          desNode = srcNode;
          srcNode = _shortestPathTree[desNode]->GetSrc();
-         path.push_front(GetGraph().GetEdge(srcNode, desNode));
+         path.push_back(GetGraph().GetEdge(srcNode, desNode));
       }
       
       return path;

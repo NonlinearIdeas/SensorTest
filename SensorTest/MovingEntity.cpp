@@ -35,10 +35,10 @@
 
 
 
-static void DrawNodeList(const list<const GraphNode*>& nodes, ccColor4F color)
+static void DrawNodeList(const vector<const GraphNode*>& nodes, ccColor4F color)
 {
    //   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
-   for(list<const GraphNode*>::const_iterator iter = nodes.begin();
+   for(vector<const GraphNode*>::const_iterator iter = nodes.begin();
        iter != nodes.end();
        ++iter)
    {
@@ -52,19 +52,19 @@ static void DrawNodeList(const list<const GraphNode*>& nodes, ccColor4F color)
    }
 }
 
-static void DrawNodeList(const list<const GraphNode*>& nodes)
+static void DrawNodeList(const vector<const GraphNode*>& nodes)
 {
    DrawNodeList(nodes, ccc4f(0.99f, 0.25f, 0.25f, 1.0f));
 }
 
-static void DrawPathList(const list<Vec2> points)
+static void DrawPathList(const vector<Vec2> points)
 {
    
    if(points.size() > 0)
    {
       LINE_METERS_DATA_T lmd;
       Vec2 lastPoint = *points.begin();
-      for(list <Vec2>::const_iterator iter = ++(points.begin());
+      for(vector<Vec2>::const_iterator iter = ++(points.begin());
           iter != points.end();
           ++iter)
       {
@@ -293,7 +293,7 @@ void MovingEntity::EnterFollowPath()
    // If there are any points to follow,
    // then pop the first as the target
    // and follow it.  Otherwise, go idle.
-   list<Vec2>& path = GetPath();
+   vector<Vec2>& path = GetPath();
    if(path.size() > 0)
    {
       PrepareForMotion();
@@ -309,7 +309,7 @@ void MovingEntity::EnterFollowPath()
 
 void MovingEntity::ExecuteFollowPath()
 {
-   list<Vec2>& path = GetPath();
+   vector<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
    if(path.size() == 0)
    {  // Out of points in the list
@@ -327,44 +327,38 @@ void MovingEntity::ExecuteFollowPath()
    {  // Still more to go
       if(isNearTarget)
       {
-         GetTargetPos() = *(path.begin());
-         path.erase(path.begin());
+         GetTargetPos() = path.back();
+         path.pop_back();
       }
       ApplyThrust();
       ApplyTurnTorque();
    }
 }
 
-void SmoothPath(list<Vec2>& path, int32 segments)
+void SmoothPath(vector<Vec2>& path, int32 segments)
 {
-   const int32 SMOOTH_FIRST_POINTS = 5;
-   // We only do this for the first N points.  After
-   // that, we let the original points stay in there.
-   if(path.size() > SMOOTH_FIRST_POINTS)
+   BezierSpine spline;
+   // Grab the points.
+   while(path.size() > 0)
    {
-      BezierSpine spline;
-      // Grab the points.
-      for(int idx = 0; idx < SMOOTH_FIRST_POINTS; idx++)
+      const Vec2& pt = path.back();
+      spline.AddPoint(pt.x,pt.y);
+      path.pop_back();
+   }
+   // Smooth them.
+   spline.ComputeSpline();
+   // Push them back in.
+   for(int idx = spline.GetPoints().size()-2; idx >= 0; --idx)
+   {
+      for(int seg = segments-1; seg >= 0; --seg)
       {
-         const Vec2& pt = path.front();
-         spline.AddPoint(pt.x,pt.y);
-         path.pop_front();
-      }
-      // Smooth them.
-      spline.ComputeSpline();
-      // Push them back in.
-      for(int idx = SMOOTH_FIRST_POINTS-2; idx >= 0; --idx)
-      {
-         for(int seg = segments-1; seg >= 0; --seg)
-         {
-            double t = seg*1.0/segments;
-            path.push_front(spline.Eval(idx, t));
-         }
+         double t = seg*1.0/segments;
+         path.push_back(spline.Eval(idx, t));
       }
    }
 }
 
-bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path)
+bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec2>& path)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
    const GridCalculator& gridCalculator = gsm.GetGridCalculator();
@@ -419,14 +413,14 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>
          );
    if(sstate == GraphSearchAlgorithm::SS_FOUND)
    {
-      list<const GraphNode*> pathNodes;
+      vector<const GraphNode*> pathNodes;
       
       pathNodes = gsa->GetPathNodes();
       
       Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
       DrawNodeList(gsa->GetFloodNodes());
       path.clear();
-      for(list<const GraphNode*>::const_iterator iter = pathNodes.begin();
+      for(vector<const GraphNode*>::const_iterator iter = pathNodes.begin();
           iter != pathNodes.end();
           ++iter)
       {
@@ -474,11 +468,10 @@ void MovingEntity::EnterNavigateToPoint()
       {  // Erase the first point...it is usually  junk.
          _path.erase(_path.begin());
       }
-      _path.push_back(_navigatePos);
       PrepareForMotion();
       GetTurnController().ResetHistory();
-      GetTargetPos() = *(_path.begin());
-      _path.erase(_path.begin());
+      GetTargetPos() = _path.back();
+      _path.pop_back();
       ResetStateTickTimer(2*TICKS_PER_SECOND);
    }
    else
@@ -489,7 +482,7 @@ void MovingEntity::EnterNavigateToPoint()
 
 void MovingEntity::ExecuteNavigateToPoint()
 {
-   list<Vec2>& path = GetPath();
+   vector<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
    bool isNearNavTarget = IsNearTarget(_navigatePos,5.0);
    const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
@@ -507,7 +500,7 @@ void MovingEntity::ExecuteNavigateToPoint()
    /* If we are close to the navigation target point,
     * just seek to it.
     */
-   if(isNearNavTarget)
+   if(isNearNavTarget || path.size() == 0)
    {  // Must be really close...just seek to it.
       CommandSeek(_navigatePos);
    }
@@ -516,8 +509,8 @@ void MovingEntity::ExecuteNavigateToPoint()
       // on the list, pop the next point and navigate to it.
       if(isNearTarget && path.size() > 0)
       {  // Still more points on the list.
-         GetTargetPos() = path.front();
-         path.pop_front();
+         GetTargetPos() = path.back();
+         path.pop_back();
          ResetStateTickTimer(2*TICKS_PER_SECOND);
          /* If we can't get past the current nodes, replan.
           */
@@ -543,7 +536,7 @@ bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3)
 bool MovingEntity::IsNodePassable(int32 nodeIdx)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
-   list<const GraphNode*> nodesChecked;
+   vector<const GraphNode*> nodesChecked;
    bool result = true;
    const GraphNode* node = gsm.GetSensorGraph().GetNode(nodeIdx);
    nodesChecked.push_back(node);
@@ -652,7 +645,7 @@ bool MovingEntity::Create(b2World& world,const Vec2& position, float32 angleRads
 
 // Commands - Use thse to change the state
 // of the missile.
-void MovingEntity::CommandFollowPath(const list<Vec2>& path)
+void MovingEntity::CommandFollowPath(const vector<Vec2>& path)
 {
    GetPath() = path;
    ChangeState(ST_FOLLOW_PATH);

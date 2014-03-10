@@ -72,7 +72,7 @@ private:
    
    // This list is used to maintain waypoints
    // that the entity will follow.
-   list<Vec2> _path;
+   vector<Vec2> _path;
    
    int32 _stateTickTimer;
    
@@ -80,7 +80,7 @@ private:
    // Create turning acceleration
    PIDController _turnController;
    
-   bool FindPath(const Vec2& startPos, const Vec2& endPos, list<Vec2>& path);
+   bool FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec2>& path);
    bool IsNodePassable(int32 currentNode);
    bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3);
    bool IsNearTarget();
@@ -108,7 +108,7 @@ private:
    
 protected:
    Vec2& GetTargetPos() { return _targetPos; }
-   list<Vec2>& GetPath() { return _path; }
+   vector<Vec2>& GetPath() { return _path; }
 
    PIDController& GetTurnController()
    {
@@ -147,7 +147,7 @@ public:
    
    // Commands - Use thse to change the state
    // of the missile.
-   void CommandFollowPath(const list<Vec2>& path);
+   void CommandFollowPath(const vector<Vec2>& path);
    void CommandTurnTowards(const Vec2& position);
    void CommandSeek(const Vec2& position);
    void CommandNavigateToPoint(const Vec2& position);
