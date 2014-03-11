@@ -57,7 +57,10 @@ static void DrawNodeList(const vector<const GraphNode*>& nodes)
    DrawNodeList(nodes, ccc4f(0.99f, 0.25f, 0.25f, 1.0f));
 }
 
-static void DrawPathList(const vector<Vec2> points)
+
+
+
+static void DrawPathList(const vector<Vec2>& points, ccColor4F color)
 {
    
    if(points.size() > 0)
@@ -76,6 +79,11 @@ static void DrawPathList(const vector<Vec2> points)
          lastPoint = lmd.end;
       }
    }
+}
+
+static void DrawPathList(const vector<Vec2>& points)
+{
+   DrawPathList(points, ccc4f(0.99f, 0.45f, 0.25f, 0.75f));
 }
 
 static void DrawEdgeList(const list<const GraphEdge*>& edges)
@@ -335,14 +343,20 @@ void MovingEntity::ExecuteFollowPath()
    }
 }
 
+/* Smooth the points on the path so that turns look
+ * more natural.  We'll only smooth the first few 
+ * points.  Most of the time, the full path will not
+ * be executed anyway...why waste cycles.
+ */
 void SmoothPath(vector<Vec2>& path, int32 segments)
 {
+   const int SMOOTH_POINTS = 8;
+   
    BezierSpine spline;
    // Grab the points.
-   while(path.size() > 0)
+   for(int idx = 0; idx < SMOOTH_POINTS; idx++)
    {
-      const Vec2& pt = path.back();
-      spline.AddPoint(pt);
+      spline.AddPoint(path.back());
       path.pop_back();
    }
    // Smooth them.
@@ -428,7 +442,7 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
          path.push_back(gNode->GetPos());
       }
       path.pop_back();
-      SmoothPath(path,3);
+      SmoothPath(path,4);
       DrawPathList(path);
    }
    else

@@ -78,29 +78,24 @@ public:
    
    void AddPoint(const Vec2& pt)
    {
+      // If this new point is colinear with the two previous points,
+      // pop off the last point and add this one instead.
       if(_elimColinearPoints && _points.size() > 2)
       {
-         int N = _points.size();
+         int N = _points.size()-1;
          Vec2 p0 = _points[N-1] - _points[N-2];
-         Vec2 p1 = pt - _points[N-1];
-         const Vec2& p2 = pt;
+         Vec2 p1 = _points[N] - _points[N-1];
+         Vec2 p2 = pt - _points[N];
          // We test for colinearity by comparing the slopes
          // of the two lines.  If the slopes are the same,
          // we assume colinearity.
          float32 delta = (p2.y-p1.y)*(p1.x-p0.x)-(p1.y-p0.y)*(p2.x-p1.x);
          if(MathUtilities::IsNearZero(delta))
          {
-            _points[N-1] = pt;
-         }
-         else
-         {
-            _points.push_back(pt);
+            _points.pop_back();
          }
       }
-      else
-      {
-         _points.push_back(pt);
-      }
+      _points.push_back(pt);
    }
    
    void Dump(int segments = 5)

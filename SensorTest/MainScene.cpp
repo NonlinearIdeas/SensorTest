@@ -553,7 +553,7 @@ void MainScene::TestSearchPerformance()
       RIGHT_MID,
       LEFT_MID,
       BOT_MID,
-      TOP_RIGHT,
+      TOP_RIGHT,      
    };
    
    const int32 POS_MAX = sizeof(positions)/sizeof(positions[0]);
