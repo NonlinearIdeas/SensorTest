@@ -348,13 +348,20 @@ void MovingEntity::ExecuteFollowPath()
  * points.  Most of the time, the full path will not
  * be executed anyway...why waste cycles.
  */
-void SmoothPath(vector<Vec2>& path, int32 segments)
+void SmoothPath(vector<Vec2>& path, int32 divisions)
 {
-   const int SMOOTH_POINTS = 8;
+   const int SMOOTH_POINTS = 6;
    
    BezierSpine spline;
+   // Cache off the first point.  If the first point is removed,
+   // the we occasionally run into problems if the collision detection
+   // says the first node is occupied but the splined point is too
+   // close, so the FSM "spins" trying to find a sensor cell that is
+   // not occupied.
+   //   Vec2 firstPoint = path.back();
+   //   path.pop_back();
    // Grab the points.
-   for(int idx = 0; idx < SMOOTH_POINTS; idx++)
+   for(int idx = 0; idx < SMOOTH_POINTS && path.size() > 0; idx++)
    {
       spline.AddPoint(path.back());
       path.pop_back();
@@ -364,12 +371,14 @@ void SmoothPath(vector<Vec2>& path, int32 segments)
    // Push them back in.
    for(int idx = spline.GetPoints().size()-2; idx >= 0; --idx)
    {
-      for(int seg = segments-1; seg >= 0; --seg)
+      for(int division = divisions-1; division >= 0; --division)
       {
-         double t = seg*1.0/segments;
+         double t = division*1.0/divisions;
          path.push_back(spline.Eval(idx, t));
       }
    }
+   // Push back in the original first point.
+   //   path.push_back(firstPoint);
 }
 
 bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec2>& path)
@@ -441,8 +450,11 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
          const NavGraphNode* gNode = (NavGraphNode*)*iter;
          path.push_back(gNode->GetPos());
       }
+      // Throw out the first point.  This point has a 50/50 chance
+      // of being in the wrong direction and will make the motion look
+      // weird.
       path.pop_back();
-      SmoothPath(path,4);
+      SmoothPath(path,5);
       DrawPathList(path);
    }
    else
@@ -500,8 +512,6 @@ void MovingEntity::ExecuteNavigateToPoint()
    vector<Vec2>& path = GetPath();
    bool isNearTarget = IsNearTarget();
    bool isNearNavTarget = IsNearTarget(_navigatePos,5.0);
-   const GridCalculator& gridCalc = GraphSensorManager::Instance().GetGridCalculator();
-   int32 navigateIdx = gridCalc.CalcIndex(_navigatePos);
 
    /* If the state tick timer expires, it means we
     * have spent too long trying to reach the next waypoint
@@ -519,6 +529,10 @@ void MovingEntity::ExecuteNavigateToPoint()
    {  // Must be really close...just seek to it.
       CommandSeek(_navigatePos);
    }
+   else if(!IsNodePassable(GetTargetPos()))
+   {
+      ChangeState(ST_NAVIGATE_TO_POINT);
+   }
    else
    {  // If we are near the target and there are more points
       // on the list, pop the next point and navigate to it.
@@ -529,14 +543,9 @@ void MovingEntity::ExecuteNavigateToPoint()
          ResetStateTickTimer(2*TICKS_PER_SECOND);
          /* If we can't get past the current nodes, replan.
           */
-         if(path.size() > 0)
+         if(path.size() > 0 && !IsNodePassable(path.back()))
          {
-            Vec2 nextPoint = path.back();
-            int32 nextIdx = gridCalc.CalcIndex(nextPoint);
-            if(nextIdx != navigateIdx && !IsNodePassable(nextIdx)  )
-            {
-               ChangeState(ST_NAVIGATE_TO_POINT);
-            }
+            ChangeState(ST_NAVIGATE_TO_POINT);
          }
       }
       ApplyThrust();
@@ -551,12 +560,14 @@ bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3)
 
 
 
-bool MovingEntity::IsNodePassable(int32 nodeIdx)
+bool MovingEntity::IsNodePassable(const Vec2& pos)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
+   const GridCalculator& gridCalc = gsm.GetGridCalculator();
    vector<const GraphNode*> nodesChecked;
    bool result = true;
-   const GraphNode* node = gsm.GetSensorGraph().GetNode(nodeIdx);
+   
+   const GraphNode* node = gsm.GetSensorGraph().GetNode(gridCalc.CalcIndex(pos));
    nodesChecked.push_back(node);
    if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
    {  // The cell is blocked...we need to replan.

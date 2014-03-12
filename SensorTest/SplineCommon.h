@@ -294,6 +294,15 @@ public:
       _p1Points.resize(N);
       _p2Points.resize(N);
       
+      if(N == 1)
+      {  // Only 2 points...just create a straight line.
+         // Constraint:  3*P1 = 2*P0 + P3
+         _p1Points[0] = (2.0/3.0*p[0] + 1.0/3.0*p[1]);
+         // Constraint:  P2 = 2*P1 - P0
+         _p2Points[0] = 2.0*_p1Points[0] - p[0];
+         return true;
+      }
+      
       /*rhs vector*/
       vector<Vec2> a(N);
       vector<Vec2> b(N);
