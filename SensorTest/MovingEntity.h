@@ -53,10 +53,10 @@ private:
    typedef enum
    {
       NA_FIRST = 0,
-      NA_AST_DISTSQ = NA_FIRST,
+      NA_DIJ = NA_FIRST,
+      NA_AST_DISTSQ,
       NA_AST_DIST,
       NA_AST_MANHATTAN,
-      NA_DIJ,
       NA_BFS,
       NA_MAX
    } NAV_ALG_T;

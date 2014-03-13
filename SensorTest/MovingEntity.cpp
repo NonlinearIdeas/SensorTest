@@ -399,26 +399,27 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
    }
    GraphSearchAlgorithm* gsa = NULL;
    AStarHeuristic* ashe = NULL;
+   GoalEvaluator* evaluator = new GoalEvaluator_NodeIndex(sensorGraph,targetIdx);
    
    switch(_navAlg)
    {
       case NA_BFS:
-         gsa = new GraphSearchBFS(sensorGraph,startIdx,targetIdx);
+         gsa = new GraphSearchBFS(sensorGraph,evaluator,startIdx);
          break;
       case NA_DIJ:
-         gsa = new GraphSearchDijkstra(sensorGraph,startIdx,targetIdx);
+         gsa = new GraphSearchDijkstra(sensorGraph,evaluator,startIdx);
          break;
       case NA_AST_DIST:
          ashe = new AStarHeuristic_Distance();
-         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         gsa = new GraphSearchAStar(sensorGraph,ashe,startIdx,targetIdx);
          break;
       case NA_AST_DISTSQ:
          ashe = new AStarHeuristic_DistanceSquared();
-         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         gsa = new GraphSearchAStar(sensorGraph,ashe,startIdx,targetIdx);
          break;
       case NA_AST_MANHATTAN:
          ashe = new AStarHeuristic_DistanceManhattan();
-         gsa = new GraphSearchAStar(sensorGraph,startIdx,targetIdx,ashe);
+         gsa = new GraphSearchAStar(sensorGraph,ashe,startIdx,targetIdx);
          break;
       default:
          assert(false);
@@ -483,6 +484,8 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
       delete gsa;
    if(ashe != NULL)
       delete ashe;
+   if(evaluator != NULL)
+      delete evaluator;
    return sstate == GraphSearchAlgorithm::SS_FOUND;
 }
 

@@ -70,7 +70,8 @@ void TestDFS()
    //graph.EnableEdges(4, 1, false);
    //graph.EnableEdges(4, 3, false);
    // Perform the search.
-   GraphSearchDFS search(graph,4,2);
+   GoalEvaluator_NodeIndex evaluator(graph,2);
+   GraphSearchDFS search(graph,&evaluator,4);
    
    search.SearchGraph();
    search.Dump();
@@ -114,7 +115,8 @@ void TestBFS()
    graph.AddEdge(new GraphEdge(5,4));
    
    // Perform the search.
-   GraphSearchBFS search(graph,4,2);
+   GoalEvaluator_NodeIndex evaluator(graph,2);
+   GraphSearchBFS search(graph,&evaluator,4);
    
    //   graph.EnableNode(5, false);
    //   graph.EnableEdge(0, 2, false);

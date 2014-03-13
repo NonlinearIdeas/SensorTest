@@ -455,7 +455,80 @@ public:
    }
 };
 
-/* This class is a base class for all the 
+/* This class is a base class for a GoalEvaluator.  This
+ * is used by the search algorithm to determine if it has
+ * reached its goal node.  Sometimes this may just be the
+ * node has been reached, but other times it may be that the
+ * search is looking for a specific "something" about the
+ * node it is exploring.
+ *
+ * This evaluator expects to KNOW what type of graph it
+ * is looking at when casting nodes, etc.  Yes, this is
+ * potentially a violation of type safety.  Some
+ * improvement will have to be made to address this...
+ */
+class GoalEvaluator
+{
+private:
+   const Graph& _graph;
+protected:
+   const Graph& GetGraph() const { return _graph; }
+public:
+   GoalEvaluator(const Graph& graph) :
+   _graph(graph)
+   {
+      
+   }
+   
+   /* This function is evaluated at every expanded
+    * node.  Return "true" if the goal is met at
+    * that particular node.  For example, if you are
+    * searching for a particular piece of information
+    * at the node and it is present.
+    */
+   virtual bool IsGoalMet(uint32 nodeIdx) const
+   {
+      return false;
+   }
+};
+
+
+class GoalEvaluator_NodeIndex : public GoalEvaluator
+{
+   uint32 _nodeIdx;
+public:
+   GoalEvaluator_NodeIndex(const Graph& graph, uint32 nodeIdx) :
+   GoalEvaluator(graph),
+   _nodeIdx(nodeIdx)
+   {
+      
+   }
+   
+   virtual bool IsGoalMet(uint32 nodeIdx) const
+   {
+      return nodeIdx == _nodeIdx;
+   }
+};
+
+class GoalEvaluator_NodePassable : public GoalEvaluator
+{
+public:
+   GoalEvaluator_NodePassable(const Graph& graph) :
+   GoalEvaluator(graph)
+   {
+      
+   }
+   
+   virtual bool IsGoalMet(uint32 nodeIdx) const
+   {
+      const GraphNode* node = GetGraph().GetNode(nodeIdx);
+      if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
+         return true;
+      return false;
+   }
+};
+
+/* This class is a base class for all the
  * different search algorithms.  A derived class
  * overloads the methods as needed to implement
  * the graph search.
@@ -485,40 +558,27 @@ public:
    
 private:
    const Graph& _graph;
+   const GoalEvaluator* _goalEvaluator;
    vector<NODE_STATE_T> _visited;
    vector<uint32> _flood;
    vector<uint32> _route;
    uint32 _startNode;
-   uint32 _targetNode;
+   uint32 _resultNode;
    SEARCH_STATE_T _searchState;
    GraphEdge _firstEdge;
    bool _allowDisconnectedStartNode;
-
-   bool IsPathPossible()
-   {
-      if(_graph.GetNode(_startNode)->IsFlagClear(GraphNode::HF_IS_CONNECTED) &&
-         !_allowDisconnectedStartNode)
-      {
-         CCLOG("Start Node %d NOT CONNECTED",_startNode);
-         return false;
-      }
-      if(_graph.GetNode(_targetNode)->IsFlagClear(GraphNode::HF_IS_CONNECTED))
-      {
-         CCLOG("Target Node %d NOT CONNECTED",_targetNode);
-         return false;
-      }
-      return true;
-   }
-   
+  
    
 protected:
    inline vector<NODE_STATE_T>& GetVisited() { return _visited; }
    inline vector<uint32>& GetRoute() { return _route; }
    inline const uint32& GetStartNode() const { return _startNode; }
-   inline const uint32& GetTargetNode() const { return _targetNode; }
+   inline const uint32& GetResultNode() const { return _resultNode; }
    inline const Graph& GetGraph() { return _graph; }
+   inline const GoalEvaluator* GetGoalEvaluator() { return _goalEvaluator; }
    inline const GraphEdge* GetFirstEdge() { return &_firstEdge; }
    inline void AddToFlood(uint32 nodeID) { _flood.push_back(nodeID); }
+   inline void SetResultNode(uint32 nodeID) { _resultNode = nodeID; }
    
    /* These two virtual functions are overloaded by 
     * derived classes.
@@ -539,11 +599,13 @@ public:
    virtual ~GraphSearchAlgorithm() { }
    
    GraphSearchAlgorithm(const class Graph& graph,
-                        uint32 start,
-                        uint32 target) :
+                        const GoalEvaluator* goalEvaluator,
+                        uint32 start
+                       ) :
       _graph(graph),
       _startNode(start),
-      _targetNode(target),
+      _resultNode(start),
+      _goalEvaluator(goalEvaluator),
       _searchState(SS_NOT_STARTED),
       _visited(_graph.GetNodeCount(),NS_NOT_VISITED),
       _route(_graph.GetNodeCount(),NS_NO_PARENT),
@@ -560,13 +622,17 @@ public:
     * been run (so it can be used mulitple times).
     */
 
-   void Init(uint32 start, uint32 target)
+   void Init(uint32 start, const GoalEvaluator* goalEvaluator)
    {
+      assert(goalEvaluator != NULL);
+      assert(start < _graph.GetNodeCount());
       _visited.assign(_visited.size(),NS_NOT_VISITED);
       _route.assign(_route.size(),NS_NO_PARENT);
       _searchState = SS_NOT_STARTED;
       _firstEdge.SetSrc(start);
       _firstEdge.SetDes(start);
+      _goalEvaluator = goalEvaluator;
+      _resultNode = start;
       _flood.clear();
    }
 
@@ -578,15 +644,7 @@ public:
       }
       while(_searchState == SS_STILL_WORKING)
       {
-         // Special case...if the start/target node has been disabled
-         if(!IsPathPossible())
-         {
-            _searchState = SS_NOT_FOUND;
-         }
-         else
-         {
-            _searchState = SearchCycle();
-         }
+         _searchState = SearchCycle();
       }
       return _searchState;
    }
@@ -599,15 +657,7 @@ public:
       }
       while(_searchState == SS_STILL_WORKING && cycles > 0)
       {
-         // Special case...if the start/target node has been disabled
-         if(!IsPathPossible())
-         {
-            _searchState = SS_NOT_FOUND;
-         }
-         else
-         {
-            _searchState = SearchCycle();
-         }
+         _searchState = SearchCycle();
          --cycles;
       }
       return _searchState;
@@ -627,7 +677,7 @@ public:
          return path;
       }
       
-      uint32 nodeIdx = GetTargetNode();
+      uint32 nodeIdx = GetResultNode();
       path.push_back(_graph.GetNode(nodeIdx));
       while(nodeIdx != GetStartNode())
       {
@@ -646,7 +696,7 @@ public:
       }
       path.reserve(_flood.size());
       
-      uint32 desNode = GetTargetNode();
+      uint32 desNode = GetResultNode();
       uint32 srcNode = GetRoute()[desNode];
       
       path.push_back(_graph.GetEdge(srcNode, desNode));
@@ -729,8 +779,9 @@ protected:
       // Mark that we have visited this node.
       GetVisited()[edge->GetDes()] = NS_VISITED;
       // Is this the node we are looking for?
-      if(edge->GetDes() == GetTargetNode())
-      {  // Yes.  We are done.
+      if(GetGoalEvaluator()->IsGoalMet(edge->GetDes()))
+      {
+         SetResultNode(edge->GetDes());
          return SS_FOUND;
       }
       // No.  Push all the edges that lead to the des
@@ -757,9 +808,10 @@ protected:
 
 public:
    GraphSearchDFS(const Graph& graph,
-                  uint32 start,
-                  uint32 target) :
-   GraphSearchAlgorithm(graph,start,target)
+                  const GoalEvaluator* goalEvaluator,
+                  uint32 start
+                  ) :
+   GraphSearchAlgorithm(graph,goalEvaluator,start)
    {
    }
 };
@@ -812,8 +864,9 @@ protected:
       // Update the route for the path we are following.
       GetRoute()[edge->GetDes()] = edge->GetSrc();
       // Is this the node we are looking for?
-      if(edge->GetDes() == GetTargetNode())
-      {  // Yes.  We are done.
+      if(GetGoalEvaluator()->IsGoalMet(edge->GetDes()))
+      {
+         SetResultNode(edge->GetDes());
          return SS_FOUND;
       }
       // No.  Push all the edges that lead to the des
@@ -841,61 +894,13 @@ protected:
    
 public:
    GraphSearchBFS(const Graph& graph,
-                  uint32 start,
-                  uint32 target) :
-   GraphSearchAlgorithm(graph,start,target)
+                  const GoalEvaluator* goalEvaluator,
+                  uint32 start) :
+   GraphSearchAlgorithm(graph,goalEvaluator,start)
    {
    }
 };
 
-
-/* This class is a base class for a GoalEvaluator.  This
- * is used by the search algorithm to determine if it has
- * reached its goal node.  Sometimes this may just be the 
- * node has been reached, but other times it may be that the 
- * search is looking for a specific "something" about the 
- * node it is exploring.
- *
- * This evaluator expects to KNOW what type of graph it 
- * is looking at when casting nodes, etc.  Yes, this is
- * potentially a violation of type safety.  Some 
- * improvement will have to be made to address this...
- */
-class GoalEvaluator
-{
-private:
-   const Graph& _graph;
-protected:
-   const Graph& GetGraph() const { return _graph; }
-public:
-   GoalEvaluator(const Graph& graph) :
-   _graph(graph)
-   {
-      
-   }
-   
-   virtual bool IsGoalMet(uint32 nodeIdx) const
-   {
-      return false;
-   }
-};
-
-class NodeIndexGoal : GoalEvaluator
-{
-   uint32 _nodeIdx;
-public:
-   NodeIndexGoal(const Graph& graph, uint32 nodeIdx) :
-      GoalEvaluator(graph),
-      _nodeIdx(nodeIdx)
-   {
-      
-   }
-
-   virtual bool IsGoalMet(uint32 nodeIdx) const
-   {
-      return nodeIdx == _nodeIdx;
-   }
-};
 
 /* To implement A* and Dijkstra, we will need a class
  * to manage the "Open List", which is a bottleneck
@@ -1160,8 +1165,9 @@ protected:
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
-      if(nextNode == GetTargetNode())
+      if(GetGoalEvaluator()->IsGoalMet(nextNode))
       {
+         SetResultNode(nextNode);
          return SS_FOUND;
       }
 #ifdef DEBUG_FLOODING
@@ -1200,10 +1206,11 @@ protected:
    
 public:
    GraphSearchDijkstra(const Graph& graph,
-                  uint32 start,
-                  uint32 target) :
-   GraphSearchAlgorithm(graph,start,target)
+                       const GoalEvaluator* goalEvaluator,
+                       uint32 start) :
+   GraphSearchAlgorithm(graph,goalEvaluator,start)
    {
+      assert(goalEvaluator != NULL);
    }
    
    virtual ~GraphSearchDijkstra()
@@ -1221,7 +1228,7 @@ public:
       
       path.reserve(GetFloodNodes().size());
       
-      uint32 nodeIdx = GetTargetNode();
+      uint32 nodeIdx = GetResultNode();
       path.push_back(GetGraph().GetNode(nodeIdx));
       while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
       {
@@ -1241,7 +1248,7 @@ public:
       
       path.reserve(GetFloodNodes().size());
       
-      uint32 desNode = GetTargetNode();
+      uint32 desNode = GetResultNode();
       uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
       
       path.push_back(GetGraph().GetEdge(srcNode, desNode));
@@ -1328,6 +1335,7 @@ private:
    vector<double> _GCostToNode;
    OpenList _openList;
    const AStarHeuristic* _heuristic;
+   uint32 _targetNode;
    
 protected:
    virtual SEARCH_STATE_T SearchCycleStart()
@@ -1355,7 +1363,7 @@ protected:
       }
       int32 nextNode = _openList.GetLowestCostNodeIndex();
       _shortestPathTree[nextNode] = _searchFrontier[nextNode];
-      if(nextNode == GetTargetNode())
+      if(nextNode == _targetNode)
       {
          return SS_FOUND;
       }
@@ -1375,7 +1383,7 @@ protected:
             GraphEdge* edge = edges[idx];
             
             double gCost = _GCostToNode[nextNode] + edge->GetCost();
-            double fCost = _heuristic->CalculateFCost(GetGraph(), GetTargetNode(), edge->GetDes(),gCost);
+            double fCost = _heuristic->CalculateFCost(GetGraph(), _targetNode, edge->GetDes(),gCost);
             
             if(_searchFrontier[edge->GetDes()] == NULL)
             {  // Never been visited
@@ -1401,11 +1409,12 @@ protected:
    
 public:
    GraphSearchAStar(const Graph& graph,
-                       uint32 start,
-                       uint32 target,
-                       const AStarHeuristic* heuristic) :
-   GraphSearchAlgorithm(graph,start,target),
-   _heuristic(heuristic)
+                    const AStarHeuristic* heuristic,
+                    uint32 startNode,
+                    uint32 targetNode) :
+   GraphSearchAlgorithm(graph,NULL,startNode),
+   _heuristic(heuristic),
+   _targetNode(targetNode)
    {
    }
    
@@ -1424,7 +1433,7 @@ public:
       
       path.reserve(GetFloodNodes().size());
       
-      uint32 nodeIdx = GetTargetNode();
+      uint32 nodeIdx = _targetNode;
       path.push_back(GetGraph().GetNode(nodeIdx));
       while(nodeIdx != GetStartNode() && _shortestPathTree[nodeIdx] != NULL)
       {
@@ -1445,7 +1454,7 @@ public:
       
       path.reserve(GetFloodNodes().size());
       
-      uint32 desNode = GetTargetNode();
+      uint32 desNode = _targetNode;
       uint32 srcNode = _shortestPathTree[desNode]->GetSrc();
       
       path.push_back(GetGraph().GetEdge(srcNode, desNode));
