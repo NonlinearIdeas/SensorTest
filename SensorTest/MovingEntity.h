@@ -53,8 +53,8 @@ private:
    typedef enum
    {
       NA_FIRST = 0,
-      NA_DIJ = NA_FIRST,
-      NA_AST_DISTSQ,
+      NA_AST_DISTSQ = NA_FIRST,
+      NA_DIJ,
       NA_AST_DIST,
       NA_AST_MANHATTAN,
       NA_BFS,
@@ -81,8 +81,8 @@ private:
    PIDController _turnController;
    
    bool FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec2>& path);
-   bool IsNodePassable(const Vec2& pos);
-   bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3);
+   bool FindUnoccupiedNode(const Vec2& startPos, Vec2& unoccupiedPos);
+   bool IsNodePassable(const Vec2& pos, bool surroundPosition);
    bool IsNearTarget();
    bool IsNearTarget(const Vec2& target,float32 factor);
    void ApplyTurnTorque();

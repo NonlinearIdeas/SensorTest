@@ -293,6 +293,8 @@ public:
       int N = (int)p.size()-1;
       _p1Points.resize(N);
       _p2Points.resize(N);
+      if(N == 0)
+         return false;
       
       if(N == 1)
       {  // Only 2 points...just create a straight line.

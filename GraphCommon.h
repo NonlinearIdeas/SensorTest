@@ -512,19 +512,21 @@ public:
 
 class GoalEvaluator_NodePassable : public GoalEvaluator
 {
+   uint32 _startIdx;
 public:
-   GoalEvaluator_NodePassable(const Graph& graph) :
-   GoalEvaluator(graph)
+   GoalEvaluator_NodePassable(const Graph& graph, uint32 startIdx) :
+   GoalEvaluator(graph),
+   _startIdx(startIdx)
    {
       
    }
    
    virtual bool IsGoalMet(uint32 nodeIdx) const
    {
+      if(nodeIdx == _startIdx)
+         return false;
       const GraphNode* node = GetGraph().GetNode(nodeIdx);
-      if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         return true;
-      return false;
+      return node->IsFlagSet(HasFlags::HF_IS_CONNECTED);
    }
 };
 
@@ -573,7 +575,6 @@ protected:
    inline vector<NODE_STATE_T>& GetVisited() { return _visited; }
    inline vector<uint32>& GetRoute() { return _route; }
    inline const uint32& GetStartNode() const { return _startNode; }
-   inline const uint32& GetResultNode() const { return _resultNode; }
    inline const Graph& GetGraph() { return _graph; }
    inline const GoalEvaluator* GetGoalEvaluator() { return _goalEvaluator; }
    inline const GraphEdge* GetFirstEdge() { return &_firstEdge; }
@@ -593,6 +594,8 @@ protected:
    virtual SEARCH_STATE_T SearchCycle() = 0;
    
 public:
+   inline const uint32& GetResultNode() const { return _resultNode; }
+   
    SEARCH_STATE_T GetSearchState() { return _searchState; }
    
    

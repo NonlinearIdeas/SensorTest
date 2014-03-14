@@ -31,10 +31,6 @@
 #include "SplineCommon.h"
 
 
-//#define NODE_CHECK_ALL_SURROUNDING
-
-
-
 static void DrawNodeList(const vector<const GraphNode*>& nodes, ccColor4F color)
 {
    //   CCLOG("Drawing Node List (%ld nodes)",nodes.size());
@@ -278,10 +274,20 @@ void MovingEntity::ExecuteSeek()
 void MovingEntity::EnterIdle()
 {
    StopBody();
+   Notifier::Instance().Notify(NE_RESET_DRAW_CYCLE, true);
 }
 
 void MovingEntity::ExecuteIdle()
 {
+   if(!IsNodePassable(GetBody()->GetPosition(), false))
+   {  // Something is coming close to us...try to
+      // move out of the way
+      Vec2 unoccupiedPosition;
+      if(FindUnoccupiedNode(GetBody()->GetPosition(), unoccupiedPosition))
+      {
+         CommandSeek(unoccupiedPosition);
+      }
+   }
 }
 
 void MovingEntity::EnterTurnTowards()
@@ -353,6 +359,10 @@ void SmoothPath(vector<Vec2>& path, int32 divisions)
    const int SMOOTH_POINTS = 6;
    
    BezierSpine spline;
+   
+   if(path.size() < 2)
+      return;
+   
    // Cache off the first point.  If the first point is removed,
    // the we occasionally run into problems if the collision detection
    // says the first node is occupied but the splined point is too
@@ -380,6 +390,30 @@ void SmoothPath(vector<Vec2>& path, int32 divisions)
    // Push back in the original first point.
    //   path.push_back(firstPoint);
 }
+
+bool MovingEntity::FindUnoccupiedNode(const Vec2& startPos, Vec2& unoccupiedPos)
+{
+   const uint32 MAX_SEARCH_CYCLES = 20;
+   GraphSensorManager& gsm = GraphSensorManager::Instance();
+   const GridCalculator& gridCalculator = gsm.GetGridCalculator();
+   const Graph& sensorGraph = gsm.GetSensorGraph();
+   
+   int32 startIdx = gridCalculator.CalcIndex(GetBody()->GetWorldCenter());
+   GoalEvaluator_NodePassable evaluator(sensorGraph, startIdx);
+   GraphSearchDijkstra search(sensorGraph, &evaluator, startIdx);
+   
+   // Do the search
+   GraphSearchAlgorithm::SEARCH_STATE_T sstate = search.SearchGraph(MAX_SEARCH_CYCLES);
+   if(sstate == GraphSearchAlgorithm::SS_FOUND)
+   {
+      uint32 unoccupiedNode = search.GetResultNode();
+      NavGraphNode* navNode = (NavGraphNode*)sensorGraph.GetNode(unoccupiedNode);
+      unoccupiedPos = navNode->GetPos();
+      return true;
+   }
+   return false;
+}
+
 
 bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec2>& path)
 {
@@ -454,7 +488,10 @@ bool MovingEntity::FindPath(const Vec2& startPos, const Vec2& endPos, vector<Vec
       // Throw out the first point.  This point has a 50/50 chance
       // of being in the wrong direction and will make the motion look
       // weird.
-      path.pop_back();
+      if(path.size() > 1)
+      {
+         path.pop_back();
+      }
       SmoothPath(path,5);
       DrawPathList(path);
    }
@@ -494,10 +531,6 @@ void MovingEntity::EnterNavigateToPoint()
 {
    if(FindPath(GetBody()->GetWorldCenter(), _navigatePos, _path))
    {
-      if(_path.size() > 0)
-      {  // Erase the first point...it is usually  junk.
-         _path.erase(_path.begin());
-      }
       PrepareForMotion();
       GetTurnController().ResetHistory();
       GetTargetPos() = _path.back();
@@ -532,7 +565,7 @@ void MovingEntity::ExecuteNavigateToPoint()
    {  // Must be really close...just seek to it.
       CommandSeek(_navigatePos);
    }
-   else if(!IsNodePassable(GetTargetPos()))
+   else if(!IsNodePassable(GetTargetPos(),false))
    {
       ChangeState(ST_NAVIGATE_TO_POINT);
    }
@@ -546,7 +579,7 @@ void MovingEntity::ExecuteNavigateToPoint()
          ResetStateTickTimer(2*TICKS_PER_SECOND);
          /* If we can't get past the current nodes, replan.
           */
-         if(path.size() > 0 && !IsNodePassable(path.back()))
+         if(path.size() > 0 && !IsNodePassable(path.back(),false))
          {
             ChangeState(ST_NAVIGATE_TO_POINT);
          }
@@ -563,21 +596,21 @@ bool IsPathPassable(const list<Vec2>&path, int32 lookAhead = 3)
 
 
 
-bool MovingEntity::IsNodePassable(const Vec2& pos)
+bool MovingEntity::IsNodePassable(const Vec2& pos, bool checkSurrounding)
 {
    GraphSensorManager& gsm = GraphSensorManager::Instance();
    const GridCalculator& gridCalc = gsm.GetGridCalculator();
    vector<const GraphNode*> nodesChecked;
    bool result = true;
    
-   const GraphNode* node = gsm.GetSensorGraph().GetNode(gridCalc.CalcIndex(pos));
+   uint32 nodeIdx = gridCalc.CalcIndex(pos);
+   const GraphNode* node = gsm.GetSensorGraph().GetNode(nodeIdx);
    nodesChecked.push_back(node);
    if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
    {  // The cell is blocked...we need to replan.
       result = false;
    }
-#ifdef NODE_CHECK_ALL_SURROUNDING
-   else
+   else if(checkSurrounding)
    {
       // Just check the surrounding nodes...if any of them are blocked, the
       // node is considered blocked.  This is much simpler than
@@ -588,12 +621,11 @@ bool MovingEntity::IsNodePassable(const Vec2& pos)
          node = gsm.GetSensorGraph().GetNode(edges[idx]->GetDes());
          nodesChecked.push_back(node);
          if(node->IsFlagClear(HasFlags::HF_IS_CONNECTED))
-         {
+         {  // The cell is blocked...we need to replan.
             result = false;
          }
       }
    }
-#endif
    DrawNodeList(nodesChecked,ccc4f(0.99, 0.99, 0.99, 1.0));
    return result;
 }
