@@ -82,6 +82,7 @@ bool Viewport::Init(float32 worldSizeMeters)
    _worldSizeMeters.height = worldSizeMeters;
    _screenSizePixels = CCDirector::sharedDirector()->getWinSize();
    _aspectRatio = _screenSizePixels.width/_screenSizePixels.height;
+   _viewportChanged = true;
    Reset();
    return true;
 }
@@ -98,11 +99,12 @@ void Viewport::Reset()
    _vScaleMax = 2.0;
    assert(_vScale >= _vScaleMin);
    assert(_vScale <= _vScaleMax);
-   CalculateViewport();
+   _viewportChanged = true;
 }
 
 bool Viewport::Init()
 {
+   _viewportChanged = true;
    return Init(50.0f);
 }
 
@@ -114,7 +116,7 @@ void Viewport::Shutdown()
 void Viewport::SetCenter(const Vec2& position)
 {
    _vCenterMeters = position;
-   CalculateViewport();
+   _viewportChanged = true;
 }
 
 
@@ -124,7 +126,7 @@ void Viewport::SetScale(float32 scale)
       scale <= GetViewportScaleMax())
    {
       _vScale = scale;
-      CalculateViewport();
+      _viewportChanged = true;
    }
 }
 
@@ -165,49 +167,13 @@ Vec2 Viewport::Convert(const CCPoint& pixel)
    return Vec2(xMeters,yMeters);
 }
 
-
-/* Update the viewport to track a position.  A percentage value is
- * supplied with the call.  This is the percent of the viewport, from
- * any side, that the point must be in.  The range is [0,0.5].
- */
-void Viewport::TrackPosition(Vec2& position, float32 percent)
+void Viewport::Update()
 {
-   Vec2 vBotLeft = _vBottomLeftMeters;
-   Vec2 vTopRight = _vTopRightMeters;
-   Vec2 vCenter = _vCenterMeters;
-   
-   assert(percent <= 0.5);
-   assert(percent >= 0.0);
-   
-   float32 leftEdge = MathUtilities::LinearTween(percent, vBotLeft.x, vTopRight.x);
-   float32 rightEdge = MathUtilities::LinearTween(1-percent, vBotLeft.x, vTopRight.x);
-   float32 topEdge = MathUtilities::LinearTween(1-percent, vBotLeft.y, vTopRight.y);
-   float32 botEdge = MathUtilities::LinearTween(percent, vBotLeft.y, vTopRight.y);
-   bool needsUpdate = false;
-   
-   if(position.x < leftEdge)
+   if(_viewportChanged)
    {
-      needsUpdate = true;
-      vCenter.x -= (leftEdge-position.x);
-   }
-   if(position.x > rightEdge)
-   {
-      needsUpdate = true;
-      vCenter.x += (position.x-rightEdge);
-   }
-   if(position.y < botEdge)
-   {
-      needsUpdate = true;
-      vCenter.y -= (botEdge-position.y);
-   }
-   if(position.y > topEdge)
-   {
-      needsUpdate = true;
-      vCenter.y += position.y-topEdge;
-   }
-   
-   if(needsUpdate)
-   {
-      SetCenter(vCenter);
+      CalculateViewport();
+      _viewportChanged = false;
    }
 }
+
+

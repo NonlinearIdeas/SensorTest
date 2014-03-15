@@ -49,13 +49,14 @@
 #define SENSOR_SEPARATION (3.0f)
 #define SENSOR_DIAMETER (SENSOR_SEPARATION*0.8)
 
-//#define TEST_SEARCH_PERFORMANCE
-#define TEST_SEARCH_SAMPLES (400)
+#define TEST_SEARCH_PERFORMANCE
+#define TEST_SEARCH_SAMPLES (4000)
 //#define TRACK_ENTITY_CELL_INDEX
 
 #define TAG_DEBUG_BOX2D (1000)
 #define TAG_DEBUG_GRID (1001)
 #define TAG_DEBUG_LINES (1002)
+
 #define SCALE_STEPS_START (TICKS_PER_SECOND/2)
 #define SCALE_MIN 0.0625
 #define SCALE_MAX 2.0
@@ -125,8 +126,6 @@ void MainScene::CreateSensors()
 bool MainScene::init()
 {
    InitSystem();
-   _trackingEnabled = false;
-   _scalingEnabled = false;
    
    return true;
 }
@@ -220,86 +219,14 @@ void MainScene::onEnter()
 
 void MainScene::IncreaseScale()
 {
-   // Don't change the scaling if we are already moving.
-   if(_scalingEnabled)
-   {
-      _scalingEnabled = false;
-      return;
-   }
-   
-   Viewport& viewport = Viewport::Instance();
-   
-   float32 scale = viewport.GetScale();
-   
-   
-   if(scale < SCALE_MAX)
-   {
-      scale *= 2;
-      if(scale > SCALE_MAX)
-      {
-         scale = SCALE_MAX;
-      }
-      ZoomViewport(scale);
-   }
+   _camera.ZoomViewport(Viewport::Instance().GetScale()*2);
 }
 
 void MainScene::DecreaseScale()
 {
-   // Don't change the scaling if we are already moving.
-   if(_scalingEnabled)
-   {
-      _scalingEnabled = false;
-      return;
-   }
-   
-   
-   Viewport& viewport = Viewport::Instance();
-   
-   if(viewport.GetScale() > SCALE_MIN)
-   {
-      ZoomViewport(viewport.GetScale()/2);
-   }
+   _camera.ZoomViewport(Viewport::Instance().GetScale()/2);
 }
 
-void MainScene::ZoomViewport(float32 scaleTarget)
-{
-   if(!_scalingEnabled)
-   {
-      _scaleTarget = scaleTarget;
-      _scaleStart = Viewport::Instance().GetScale();
-      _scalingEnabled = true;
-      _scaleStepsLeft = SCALE_STEPS_START;
-   }
-}
-
-void MainScene::ZoomViewport()
-{
-   if(!_scalingEnabled)
-      return;
-   
-   if(_scaleStepsLeft > 0)
-   {
-      _scaleStepsLeft--;
-      float32 time = 1.0 - (1.0*_scaleStepsLeft)/SCALE_STEPS_START;
-      float32 scale = MathUtilities::LinearTween(time, _scaleStart, _scaleTarget);
-      Viewport::Instance().SetScale(scale);
-   }
-   else
-   {
-      _scalingEnabled = false;
-   }
-}
-
-void MainScene::TrackViewport()
-{
-   if(!_trackingEnabled)
-      return;
-   
-   Vec2 pos = _entity->GetBody()->GetPosition();
-   
-   Viewport::Instance().TrackPosition(pos, 0.35);
-   
-}
 
 void MainScene::onExit()
 {
@@ -356,19 +283,25 @@ void MainScene::UpdatePhysics()
    SystemContactListener::Instance().NotifyContacts();
 }
 
+void MainScene::UpdateCamera()
+{
+   _camera.UpdateTrackingPosition(_entity->GetBody()->GetPosition());
+   _camera.Update();
+}
+
 void MainScene::update(float dt)
 {
-   UpdatePhysics();
    UpdateEntity();
+   UpdateCamera();
    EntityScheduler::Instance().Update();
    // Update all the debug info
    Notifier::Instance().Notify(NE_UPDATE_DEBUG_INFO,true);
+   // Update the physics.
+   UpdatePhysics();
    // Clear out any old information
    GraphSensorManager::Instance().ClearChangedSensors();
-   
-   // Do any zooming/tracking
-   ZoomViewport();
-   TrackViewport();
+
+   Viewport::Instance().Update();
 #ifdef TEST_SEARCH_PERFORMANCE
    TestSearchPerformance();
 #endif
@@ -424,7 +357,14 @@ bool MainScene::Notify(NOTIFIED_EVENT_TYPE_T eventType, const bool& value)
          IncreaseScale();
          break;
       case NE_GAME_COMMAND_TRACK:
-         _trackingEnabled = !_trackingEnabled;
+         if(_camera.IsTrackingEnabled())
+         {
+            _camera.SetTrackingMode(ViewportCamera::TM_OFF);
+         }
+         else
+         {
+            _camera.SetTrackingMode(ViewportCamera::TM_FOLLOW_EDGE);
+         }
          break;
       default:
          result = false;

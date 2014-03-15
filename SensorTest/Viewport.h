@@ -91,6 +91,8 @@ private:
    // Pixels to meters ratio of the screen.
    // This is based on the viewport pixels to meters.
    float32 _ptmRatio;
+   
+   bool _viewportChanged;
       
    /* The general method for mapping the world space (Wxmin -> Wxmax) onto
     * the screen coordinates (0,Sxmax) is done by a simple linear mapping
@@ -117,6 +119,8 @@ public:
    virtual void Reset();
    virtual bool Init();
    virtual void Shutdown();
+   
+   void Update();
    
    // Inline for the getters.  Most of these do not have
    // a specific "setter" but are internal members that can be
@@ -145,11 +149,6 @@ public:
    
    // Convert a pixel coordinate to position in meters.
    Vec2 Convert(const CCPoint& pixel);
-   
-   // Update the viewport to track a position.  A percentage value is
-   // supplied with the call.  This is the percent of the viewport, from
-   // any side, that the point must be in.  The range is [0,0.5].
-   void TrackPosition(Vec2& position, float32 percent);
 };
 
 #endif /* defined(__Viewport_h__) */

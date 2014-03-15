@@ -27,9 +27,17 @@
 
 #include "ViewportCamera.h"
 #include "Viewport.h"
+#include "MathUtilities.h"
+
+#define SCALE_STEPS_START (TICKS_PER_SECOND/2)
+#define SCALE_MIN 0.0625
+#define SCALE_MAX 2.0
 
 
-ViewportCamera::ViewportCamera()
+ViewportCamera::ViewportCamera() :
+   _trackingMode(TM_OFF),
+   _trackingPercentage(0.2f),
+   _scalingEnabled(false)
 {
 	
 }
@@ -76,4 +84,136 @@ void ViewportCamera::PinchViewport(const CCPoint& p0Org,const CCPoint& p1Org,
    
    vp.SetCenter(_viewportCenterOrg-centerNew+centerOld);
    vp.SetScale(scaleAdjust*_viewportScaleOrg);
+}
+
+void ViewportCamera::SetTrackingMode(TRACKING_MODE trackingMode)
+{
+   switch(trackingMode)
+   {
+      case TM_OFF:
+      case TM_FOLLOW_EDGE:
+      case TM_JUMP:
+         _trackingMode = trackingMode;
+         break;
+      default:
+         assert(false);
+         break;
+   }
+}
+
+void ViewportCamera::SetTrackingModePercentage(float32 trackingPercentage)
+{
+   assert(trackingPercentage <= 0.5);
+   assert(trackingPercentage >= 0.0);
+   if(trackingPercentage <= 0.5 && trackingPercentage >= 0.0)
+   {
+      _trackingPercentage = trackingPercentage;
+   }
+}
+
+void ViewportCamera::UpdateTracking()
+{
+   if(_trackingMode == TM_OFF)
+      return;
+   
+   Vec2& position = _trackingPosition;
+   Viewport& vp = Viewport::Instance();
+   Vec2 vBotLeft = vp.GetBottomLeftMeters();
+   Vec2 vTopRight = vp.GetTopRightMeters();
+   Vec2 vCenter = vp.GetCenterMeters();
+   float32 percent = _trackingPercentage;
+   
+   
+   float32 leftEdge = MathUtilities::LinearTween(percent, vBotLeft.x, vTopRight.x);
+   float32 rightEdge = MathUtilities::LinearTween(1-percent, vBotLeft.x, vTopRight.x);
+   float32 topEdge = MathUtilities::LinearTween(1-percent, vBotLeft.y, vTopRight.y);
+   float32 botEdge = MathUtilities::LinearTween(percent, vBotLeft.y, vTopRight.y);
+   bool needsUpdate = false;
+   
+   if(position.x < leftEdge)
+   {
+      needsUpdate = true;
+      vCenter.x -= (leftEdge-position.x);
+   }
+   if(position.x > rightEdge)
+   {
+      needsUpdate = true;
+      vCenter.x += (position.x-rightEdge);
+   }
+   if(position.y < botEdge)
+   {
+      needsUpdate = true;
+      vCenter.y -= (botEdge-position.y);
+   }
+   if(position.y > topEdge)
+   {
+      needsUpdate = true;
+      vCenter.y += position.y-topEdge;
+   }
+   
+   if(needsUpdate)
+   {
+      switch(_trackingMode)
+      {
+         case TM_FOLLOW_EDGE:
+            vp.SetCenter(vCenter);
+            break;
+         case TM_JUMP:
+            vp.SetCenter(position);
+            break;
+         case TM_OFF:
+            break;
+         default:
+            assert(false);
+            break;
+      }
+   }
+}
+
+/* Update the viewport to track a position.  A percentage value is
+ * supplied with the call.  This is the percent of the viewport, from
+ * any side, that the point must be in.  The range is [0,0.5].
+ */
+void ViewportCamera::UpdateTrackingPosition(const Vec2& position)
+{
+   _trackingPosition = position;
+}
+
+void ViewportCamera::Update()
+{
+   UpdateTracking();
+   UpdateZooming();
+}
+
+void ViewportCamera::UpdateZooming()
+{
+   if(!_scalingEnabled)
+      return;
+   
+   if(_scaleStepsLeft > 0)
+   {
+      _scaleStepsLeft--;
+      float32 time = 1.0 - (1.0*_scaleStepsLeft)/SCALE_STEPS_START;
+      float32 scale = MathUtilities::LinearTween(time, _scaleStart, _scaleTarget);
+      Viewport::Instance().SetScale(scale);
+   }
+   else
+   {
+      _scalingEnabled = false;
+   }
+}
+
+void ViewportCamera::ZoomViewport(float32 scaleTarget)
+{
+   if(!_scalingEnabled && scaleTarget >= SCALE_MIN && scaleTarget <= SCALE_MAX)
+   {
+      _scaleTarget = scaleTarget;
+      _scaleStart = Viewport::Instance().GetScale();
+      _scalingEnabled = true;
+      _scaleStepsLeft = SCALE_STEPS_START;
+   }
+   else
+   {
+      _scalingEnabled = false;
+   }
 }

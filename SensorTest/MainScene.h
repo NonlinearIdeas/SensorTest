@@ -58,11 +58,6 @@ private:
    SpriteBatchLayer* _shipLayer;
    vector<Asteroid*> _asteroids;
    b2Body* _anchor;
-   bool _trackingEnabled;
-   bool _scalingEnabled;
-   float32 _scaleTarget;
-   float32 _scaleStart;
-   uint32  _scaleStepsLeft;
    
 protected:
    // This is protected so that derived classes can call it
@@ -79,13 +74,11 @@ private:
    void SetZoom(float zoom);
    void UpdateEntity();
    void UpdatePhysics();
+   void UpdateCamera();
    void ViewportChanged();
    void NavigateToPosition(Vec2 pos);
    void IncreaseScale();
    void DecreaseScale();
-   void ZoomViewport();
-   void ZoomViewport(float32 scaleTarget);
-   void TrackViewport();
    void TestSearchPerformance();
    
 public:
