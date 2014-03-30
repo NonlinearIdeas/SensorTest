@@ -46,8 +46,8 @@
 #include "GraphSensorGridSquareSensors.h"
 #include "PlayerGameControlsLayer.h"
 
-#define SENSOR_SEPARATION (3.0f)
-#define SENSOR_DIAMETER (SENSOR_SEPARATION*0.8)
+#define SENSOR_SEPARATION (4.0f)
+#define SENSOR_DIAMETER (SENSOR_SEPARATION*0.95)
 
 #define TEST_SEARCH_PERFORMANCE
 #define TEST_SEARCH_SAMPLES (4000)

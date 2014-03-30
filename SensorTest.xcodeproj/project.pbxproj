@@ -352,7 +352,6 @@
 		1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityScheduler.cpp; sourceTree = "<group>"; };
 		1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityScheduler.h; sourceTree = "<group>"; };
 		1A30C3EC18A675A800195E50 /* GraphCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GraphCommon.cpp; path = ../GraphCommon.cpp; sourceTree = "<group>"; };
-		1A30C3ED18A675A800195E50 /* GraphCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GraphCommon.h; path = ../GraphCommon.h; sourceTree = "<group>"; };
 		1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGridSquareSensors.cpp; sourceTree = "<group>"; };
 		1A4A6E3418B62F3F00E91432 /* GraphSensorGridSquareSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGridSquareSensors.h; sourceTree = "<group>"; };
 		1A5CB4E518BF65E600C359EC /* buttons.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = buttons.plist; sourceTree = "<group>"; };
@@ -1062,6 +1061,7 @@
 		1AFC762C188DE36A00A258FB /* GraphSensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensor.h; sourceTree = "<group>"; };
 		1AFC762E188DE3AC00A258FB /* GraphSensorManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorManager.cpp; sourceTree = "<group>"; };
 		1AFC762F188DE3AC00A258FB /* GraphSensorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorManager.h; sourceTree = "<group>"; };
+		1AFD767818E8426900B1CAB5 /* GraphCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphCommon.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2364,8 +2364,8 @@
 				1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */,
 				1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */,
 				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
-				1A30C3ED18A675A800195E50 /* GraphCommon.h */,
 				1A30C3EC18A675A800195E50 /* GraphCommon.cpp */,
+				1AFD767818E8426900B1CAB5 /* GraphCommon.h */,
 				1A5CB4EF18BF66A200C359EC /* GraphicsUtilities.cpp */,
 				1A5CB4F018BF66A200C359EC /* GraphicsUtilities.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
