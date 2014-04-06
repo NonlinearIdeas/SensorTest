@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1A1FBC01189ED9F200EA0CEC /* EntityScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */; };
-		1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A30C3EC18A675A800195E50 /* GraphCommon.cpp */; };
 		1A4A6E3518B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */; };
 		1A5CB4E718BF65E600C359EC /* buttons.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A5CB4E518BF65E600C359EC /* buttons.plist */; };
 		1A5CB4E818BF65E600C359EC /* buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A5CB4E618BF65E600C359EC /* buttons.png */; };
@@ -329,6 +328,7 @@
 		1A961C1B188AEDFD006789B0 /* AppDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1A188AEDFD006789B0 /* AppDelegate.cpp */; };
 		1A961C1F188AEE57006789B0 /* GridLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C1D188AEE57006789B0 /* GridLayer.cpp */; };
 		1A961C25188AEF2E006789B0 /* ViewportCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */; };
+		1A9D35B118F180C90088F2FE /* GraphCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A9D35B018F180C90088F2FE /* GraphCommon.cpp */; };
 		1AA6069D18CD3BB300EEB512 /* SplineCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AA6069B18CD3BB300EEB512 /* SplineCommon.cpp */; };
 		1AB6EABF18A82173005C2A19 /* GridCalculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */; };
 		1AB7D90D188EA66700D311F2 /* SystemContactListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AB7D90B188EA66700D311F2 /* SystemContactListener.cpp */; };
@@ -351,7 +351,6 @@
 /* Begin PBXFileReference section */
 		1A1FBBFF189ED9F200EA0CEC /* EntityScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityScheduler.cpp; sourceTree = "<group>"; };
 		1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityScheduler.h; sourceTree = "<group>"; };
-		1A30C3EC18A675A800195E50 /* GraphCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GraphCommon.cpp; path = ../GraphCommon.cpp; sourceTree = "<group>"; };
 		1A4A6E3318B62F3F00E91432 /* GraphSensorGridSquareSensors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphSensorGridSquareSensors.cpp; sourceTree = "<group>"; };
 		1A4A6E3418B62F3F00E91432 /* GraphSensorGridSquareSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphSensorGridSquareSensors.h; sourceTree = "<group>"; };
 		1A5CB4E518BF65E600C359EC /* buttons.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = buttons.plist; sourceTree = "<group>"; };
@@ -1030,6 +1029,7 @@
 		1A961C1E188AEE57006789B0 /* GridLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridLayer.h; sourceTree = "<group>"; };
 		1A961C23188AEF2E006789B0 /* ViewportCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ViewportCamera.cpp; sourceTree = "<group>"; };
 		1A961C24188AEF2E006789B0 /* ViewportCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewportCamera.h; sourceTree = "<group>"; };
+		1A9D35B018F180C90088F2FE /* GraphCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphCommon.cpp; sourceTree = "<group>"; };
 		1AA6069B18CD3BB300EEB512 /* SplineCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SplineCommon.cpp; sourceTree = "<group>"; };
 		1AA6069C18CD3BB300EEB512 /* SplineCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplineCommon.h; sourceTree = "<group>"; };
 		1AB6EABD18A82173005C2A19 /* GridCalculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridCalculator.cpp; sourceTree = "<group>"; };
@@ -2364,8 +2364,8 @@
 				1A1FBC00189ED9F200EA0CEC /* EntityScheduler.h */,
 				1AC478CC189D7ED000A7967E /* EntityUtilities.cpp */,
 				1AC478CD189D7ED000A7967E /* EntityUtilities.h */,
-				1A30C3EC18A675A800195E50 /* GraphCommon.cpp */,
 				1AFD767818E8426900B1CAB5 /* GraphCommon.h */,
+				1A9D35B018F180C90088F2FE /* GraphCommon.cpp */,
 				1A5CB4EF18BF66A200C359EC /* GraphicsUtilities.cpp */,
 				1A5CB4F018BF66A200C359EC /* GraphicsUtilities.h */,
 				1AFC762C188DE36A00A258FB /* GraphSensor.h */,
@@ -2630,7 +2630,6 @@
 				1A9619ED188AED44006789B0 /* TGAlib.cpp in Sources */,
 				1A96187E188AED40006789B0 /* CCConfiguration.cpp in Sources */,
 				1A961868188AED40006789B0 /* CCActionPageTurn3D.cpp in Sources */,
-				1A30C3EE18A675A800195E50 /* GraphCommon.cpp in Sources */,
 				1A961B27188AED46006789B0 /* Bone.cpp in Sources */,
 				1A9618FD188AED41006789B0 /* CCKeypadDispatcher.cpp in Sources */,
 				1A9619F9188AED44006789B0 /* CCUserDefault.mm in Sources */,
@@ -2732,6 +2731,7 @@
 				1A96186B188AED40006789B0 /* CCActionProgressTimer.cpp in Sources */,
 				1A961B67188AED46006789B0 /* b2TimeOfImpact.cpp in Sources */,
 				1A961A59188AED45006789B0 /* CCBAnimationManager.cpp in Sources */,
+				1A9D35B118F180C90088F2FE /* GraphCommon.cpp in Sources */,
 				1A961B58188AED46006789B0 /* b2CollideCircle.cpp in Sources */,
 				1A961944188AED41006789B0 /* CCFileUtils.cpp in Sources */,
 				1A961C13188AEDB7006789B0 /* DebugLinesLayer.cpp in Sources */,
